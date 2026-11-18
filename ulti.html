@@ -353,8 +353,10 @@ img.ico{width:1.2em;height:1.2em;vertical-align:-.25em;object-fit:contain;displa
    képernyőn (és számítógépen) a megszokott görgethető oldal marad. */
 .cnt{display:none}
 @media (max-width:979px) and (min-height:620px){
+  /* a keret rögzített (position:fixed): iOS-en így az oldal semmiképp nem csúszhat el, a fejléc nem tűnik el felül */
+  :root{padding:0}
   html,body{height:100%;overflow:hidden;overscroll-behavior:none}
-  .wrap{height:100vh;height:100dvh;display:flex;flex-direction:column;padding-top:calc(env(safe-area-inset-top,0px) + 6px);padding-bottom:0}
+  .wrap{position:fixed;inset:0;margin:0 auto;max-width:760px;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top,0px) + 6px) max(12px,env(safe-area-inset-right,0px)) 0 max(12px,env(safe-area-inset-left,0px))}
   header{flex:none;margin-bottom:6px}
   .game{flex:1;min-height:0;display:flex;flex-direction:column}
   .opps{flex:none;margin-bottom:6px}
@@ -2185,7 +2187,7 @@ function renderPanel(){
   renderPanel0(el);
   const nl=$('bidList');
   el.classList.toggle('fit',!!nl&&!UI.hint);
-  if(nl){nl.scrollTop=blTop;const on=nl.querySelector('.chip.on');if(on&&UI.bidScrollTo){UI.bidScrollTo=false;on.scrollIntoView({block:'nearest'});}}
+  if(nl){nl.scrollTop=blTop;const on=nl.querySelector('.chip.on');if(on&&UI.bidScrollTo){UI.bidScrollTo=false;scrollInside(nl,on,false);}}
 }
 function renderPanel0(el){
   if(G.phase==='result'){
@@ -2312,10 +2314,15 @@ function renderSee(){
   $('seeOv').classList.add('show');
 }
 function renderLog(){$('log').innerHTML=G.log.map(t=>`<li>${t}</li>`).join('');}
+function scrollInside(box,el,center){
+  const b=box.getBoundingClientRect(),r=el.getBoundingClientRect();
+  if(center){box.scrollTop+=r.top-b.top-(b.height-r.height)/2;return;}
+  if(r.top<b.top)box.scrollTop-=b.top-r.top+8;else if(r.bottom>b.bottom)box.scrollTop+=Math.min(r.bottom-b.bottom+8,r.top-b.top-8);
+}
 function panelScroll(){
   const el=$('panel'),key=[G.phase,G.turn,G.trickNo,G.trick.length,REV.show].join(':');
   if(UI.panelKey!==key){UI.panelKey=key;el.scrollTop=0;}
-  if(UI.scrollHint){UI.scrollHint=false;const hb=el.querySelector('.hintbox');if(hb&&el.scrollHeight>el.clientHeight)hb.scrollIntoView({block:'nearest',behavior:'smooth'});}
+  if(UI.scrollHint){UI.scrollHint=false;const hb=el.querySelector('.hintbox');if(hb&&el.scrollHeight>el.clientHeight)scrollInside(el,hb,false);}
 }
 function render(){syncHint();renderTable();renderPanel();panelScroll();renderHand();renderLog();maybeTip();const st=statusText();if($('live').textContent!==st)$('live').textContent=st;}
 
@@ -2592,7 +2599,7 @@ function maybeTip(){
   const fresh=b.style.display!=='block'||b.dataset.k!==tip.k;b.dataset.k=tip.k;
   b.style.display='block';
   // új tippnél a célelemet a képernyőre görgetjük, hogy a buborék mellette legyen
-  if(fresh){const el=document.querySelector(tipSel(tip)),r=el.getBoundingClientRect();if(r.top<0||r.bottom>innerHeight)el.scrollIntoView({block:'center',behavior:'instant'});}
+  if(fresh){const el=document.querySelector(tipSel(tip)),r=el.getBoundingClientRect();if(r.top<0||r.bottom>innerHeight){const box=el.closest('#panel');if(box&&box.scrollHeight>box.clientHeight)scrollInside(box,el,true);else el.scrollIntoView({block:'center',behavior:'instant'});}}
   requestAnimationFrame(placeTip);
   $('tipOk').onclick=()=>{seenTip(tip.k);hideTip();};
 }
