@@ -68,6 +68,16 @@ Mindig be van kapcsolva; a `LIVELY=false` csak teszteléshez maradt meg (akkor a
 
 Visszaállítás: a `backup/ulti_v34_elenk_licit_elott.html` fájl.
 
+## Bemutató, statisztika, mentés (UI)
+
+- **Elrendezés:** a fejlécben csak a cím, az „Új játék” és a menü (☰; széles képernyőn mellette Szabályok és Statisztikám). A menüben: Szabályok, Statisztikám, Bemutató újra, és a beállítások (oktató mód kapcsoló, betűméret, a botok kockázata). A pontok az ellenfelek dobozában és a saját sávodban vannak. Az asztal tetején egy sáv mutatja a játékot, az adut és az ütés számát; a közép csak a lapoké. A kéz mobilon alul rögzítve, egy sorban, jobbra-balra húzható (a kijátszható lap a képbe gördül). Licitnél a vállalások öt fülre bontva (Parti, 100-as, Ulti, Betli, Durchmars). Lapjátéknál a ritka műveletek (Játszd le helyettem, Bedobás) a ··· menü mögött. 980 px fölött két oszlop: balra asztal és kéz, jobbra a döntési panel. Állapotváltozások képernyőolvasónak (`aria-live`).
+- **Bemutató:** első látogatáskor 7 lépéses körbevezetés (sötétített háttér, kiemelt elem, buborék nyíllal; Tovább/Vissza/Kihagyom, billentyűzettel is). Utána helyzeti tippek egyszer-egyszer: talonfelvétel, kontra, 20/40 bemondás, felmutatás, elszámolás. A Szabályokból („Bemutató újra”) újraindítható, ez a tippeket is visszaállítja.
+- **Statisztika** (fejléc „Statisztika” gomb): leosztások, felvevőként és védőként elért eredmény, vállalás-típusonként, kontrák és rekontrák sikere, felmutatás, bedobás, legjobb/legrosszabb leosztás, és hogy a saját lapjátékod hány százalékban egyezett a Tippel. Törölhető.
+- **Félbehagyott leosztás:** minden lépés után mentődik; újratöltés vagy bezárás után onnan folytatódik.
+- Minden adat csak a böngésző localStorage-ában van (`ulti-score-v1`, `ulti-settings-v1`, `ulti-stats-v1`, `ulti-game-v1`, `ulti-tour-v1`, `ulti-tips-v1`). Süti nincs, szerverre semmi nem megy.
+- **Ikon és kezdőképernyő:** `icons/` mappa: favicon (ico, 16, 32 px, az ágacskák nélkül, átlátszó háttérrel), `apple-touch-icon.png` (180 px), 192/512 px és maszkolható 512 px ikon, `manifest.webmanifest` (standalone mód, `start_url: ../`). A láblécben a „Tedd ki a kezdőképernyőre” gomb Chrome/Edge/Androidon a böngésző telepítő ablakát nyitja, iPhone-on lépésenkénti útmutatót mutat; a már telepített (önálló) futásban rejtve van.
+- **Lábléc:** visszajelzés (GitHub issues), adatvédelmi sor, források, licencek, készítő.
+
 ## Talonozás alacsony licitnél
 
 Parti és piros parti licitnél a talonba nem kerül ász, X, VII, király vagy felső (ultiblog), kivéve az X-et, ha ugyanabból a színből az ász és a király is a kézben van. Betlire nem vonatkozik. Ez kötelező szabály (`discardAllowed`), nem csak levonás. Ha a tiltott lerakás kártyajátékban jobb lenne, a Tipp ezt tanulságként megmutatja.

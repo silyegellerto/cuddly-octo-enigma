@@ -4,6 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Rablóulti</title>
+<meta name="description" content="Rablóulti két gépi ellenfél ellen, tippekkel és oktató móddal.">
+<link rel="icon" href="icons/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="manifest" href="icons/manifest.webmanifest">
+<meta name="apple-mobile-web-app-title" content="Rablóulti">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#e4e8de" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#151a16" media="(prefers-color-scheme: dark)">
 <style>
 @font-face{font-family:'Atkinson Hyperlegible Next';font-style:normal;font-weight:200 800;font-display:swap;src:url(fonts/atkinson-hyperlegible-next-latin-ext-wght-normal.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
 @font-face{font-family:'Atkinson Hyperlegible Next';font-style:normal;font-weight:200 800;font-display:swap;src:url(fonts/atkinson-hyperlegible-next-latin-wght-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
@@ -42,12 +54,16 @@
 *{box-sizing:border-box}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible Next","Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:calc(17px * var(--fs));line-height:1.45;font-weight:500;-webkit-tap-highlight-color:transparent}
-.wrap{max-width:760px;margin:0 auto;padding:12px 12px 28px}
+.wrap{max-width:760px;margin:0 auto;padding:8px 12px 28px}
 button{font:inherit;cursor:pointer}
 button:focus-visible,.card:focus-visible{outline:3px solid var(--brass);outline-offset:2px}
 
-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
-.hbtns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;min-height:48px}
+.hnav{display:flex;gap:6px;align-items:center}
+.navlink{display:none;border:0;background:none;color:var(--ink);font:inherit;font-size:calc(16px * var(--fs));font-weight:600;padding:10px 12px;border-radius:10px}
+.navlink:hover{background:var(--chip)}
+.iconbtn.round{width:44px;height:44px;padding:0;display:inline-flex;align-items:center;justify-content:center}
+#newBtn{height:44px}
 .iconbtn{border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 12px;font-size:calc(15px * var(--fs));font-weight:500}
 .iconbtn.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 h1{font-family:Alegreya,Georgia,serif;font-weight:800;font-size:calc(30px * var(--fs));margin:0;line-height:1}
@@ -59,19 +75,26 @@ h1{font-family:Alegreya,Georgia,serif;font-weight:800;font-size:calc(30px * var(
 .neg{color:var(--bad)} .pos{color:var(--good)}
 
 .table{background:radial-gradient(ellipse at 50% 45%,var(--felt) 0%,var(--felt2) 100%);border-radius:22px;padding:10px;color:var(--felt-ink);box-shadow:inset 0 0 0 4px rgba(0,0,0,.12)}
-.opps{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.opp{background:var(--felt-box);border-radius:14px;padding:8px 10px;border:2px solid transparent;min-height:74px;transition:border-color .2s}
-.opp.active{border-color:var(--brass)}
+.opps{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.opp{background:var(--surface);border-radius:14px;padding:8px 10px;border:1.5px solid var(--line);min-height:70px;transition:border-color .2s,box-shadow .2s}
+.opp.active{border-color:var(--brass);box-shadow:0 0 0 2px rgba(214,169,61,.3)}
 .opp .nm{display:flex;justify-content:space-between;align-items:center;gap:6px;font-weight:700}
-.badge{font-size:calc(15px * var(--fs));font-weight:700;border-radius:999px;padding:2px 8px;background:rgba(255,255,255,.14);color:var(--felt-ink);white-space:nowrap}
+.opp .pts{font-variant-numeric:tabular-nums;font-weight:800;font-size:calc(19px * var(--fs))}
+.badge{font-size:calc(14px * var(--fs));font-weight:700;border-radius:999px;padding:2px 8px;background:var(--chip);color:var(--chip-ink);white-space:nowrap}
 .badge.decl{background:var(--brass);color:#2a2008}
-.opp .meta{font-size:calc(15px * var(--fs));color:var(--felt-muted);margin-top:4px;min-height:18px}
+.opp .meta{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;font-size:calc(14px * var(--fs));color:var(--muted);margin-top:4px;min-height:20px}
+.dl{font-size:calc(13px * var(--fs));font-weight:600;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:0 6px}
 .backs{display:flex;margin-top:6px;height:24px}
 .backs i{display:block;width:16px;height:24px;border-radius:3px;margin-right:-8px;background:repeating-linear-gradient(45deg,#7d2520 0 3px,#9b2f28 3px 6px);border:1.5px solid #f3ead6}
 .open{display:flex;flex-wrap:wrap;gap:3px;margin-top:6px}
 .open .card{--cw:30px}
 
-.center{position:relative;height:200px;margin:6px 0 2px}
+.tbar{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 10px;margin:-4px -4px 0;border-radius:14px;background:rgba(0,0,0,.18);font-size:calc(15px * var(--fs));color:var(--felt-muted);min-height:24px}
+.tbar b{color:var(--felt-ink)}
+.tbar .ad{display:flex;align-items:center;gap:5px;white-space:nowrap}
+.tbar .ico{width:16px;height:16px}
+.center{position:relative;height:170px;margin:6px 0 2px;transition:height .2s}
+.table.idle .center{height:64px}
 .slot{position:absolute;--cw:64px}
 .slot.seat2{left:22%;top:6px;transform:translateX(-50%) rotate(-6deg)}
 .slot.seat1{right:22%;top:6px;transform:translateX(50%) rotate(6deg)}
@@ -85,6 +108,57 @@ h1{font-family:Alegreya,Georgia,serif;font-weight:800;font-size:calc(30px * var(
 .info svg{width:14px;height:14px;vertical-align:-2px}
 
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;margin:10px 0}
+/* döntési sáv: Tipp, Mindig mutasd és a ··· menü egy sorban */
+.actrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px}
+.actrow .grow{margin-left:auto}
+details.more{position:relative}
+details.more>summary{list-style:none;cursor:pointer;width:48px;height:44px;border-radius:12px;border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--ink)}
+details.more>summary::-webkit-details-marker{display:none}
+details.more[open]>summary{background:var(--chip)}
+details.more .pop{position:absolute;right:0;bottom:calc(100% + 6px);z-index:30;min-width:240px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.25);padding:6px;display:flex;flex-direction:column}
+details.more .pop button{border:0;background:none;color:var(--ink);font:inherit;font-size:calc(16px * var(--fs));text-align:left;padding:12px;border-radius:10px;font-weight:600}
+details.more .pop button:hover{background:var(--chip)}
+details.more .pop button.danger{color:var(--bad)}
+details.more .pop button.danger.armed{background:var(--bad);color:var(--accent-ink)}
+/* licit: csoport-fülek */
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;min-height:40px;padding:0 14px;border-radius:999px;border:1.5px solid var(--line);background:transparent;color:var(--ink);font:inherit;font-size:calc(15px * var(--fs));font-weight:600}
+.tab[aria-selected="true"]{background:var(--ink);border-color:var(--ink);color:var(--surface);font-weight:700}
+.tab:disabled{opacity:.35}
+/* menü lap */
+.sheet.menu{max-width:460px}
+.mhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.mhead h2{margin:0}
+.mlist{display:flex;flex-direction:column}
+.mlist button{display:flex;align-items:center;gap:12px;min-height:50px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);font:inherit;font-size:calc(17px * var(--fs));font-weight:600;text-align:left;padding:0 4px}
+.mlist button:last-child{border-bottom:0}
+.mlist svg{width:22px;height:22px;flex:none}
+.mlist span{flex:1}
+.mlist i{font-style:normal;color:var(--muted);font-size:20px}
+.mcap{margin:14px 0 6px;font-size:calc(14px * var(--fs));text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+.mset{border:1px solid var(--line);border-radius:16px;padding:2px 14px;background:var(--bg)}
+.mrow{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px;border-bottom:1px solid var(--line);padding:6px 0}
+.mrow:last-child{border-bottom:0}
+.mrow.col{flex-direction:column;align-items:stretch}
+.mrow span b{display:block;font-size:calc(16px * var(--fs))}
+.mrow span small{display:block;font-size:calc(13px * var(--fs));color:var(--muted);margin-top:2px}
+.switch{flex:none;width:52px;height:32px;border-radius:999px;border:0;background:var(--line);position:relative;padding:0}
+.switch i{position:absolute;left:3px;top:3px;width:26px;height:26px;border-radius:999px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .15s}
+.switch[aria-checked="true"]{background:var(--go)}
+.switch[aria-checked="true"] i{left:23px}
+.seg{display:flex;background:var(--chip);border-radius:10px;padding:3px;gap:2px}
+.seg.wide{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.seg button{min-height:38px;min-width:44px;border:0;border-radius:8px;background:transparent;color:var(--ink);font:inherit;font-size:calc(15px * var(--fs));font-weight:600;padding:0 10px}
+.seg button[aria-checked="true"]{background:var(--surface);font-weight:800;box-shadow:0 1px 3px rgba(0,0,0,.18)}
+/* széles képernyő: két oszlop, a döntés jobbra */
+@media (min-width:980px){
+  .wrap{max-width:1240px;padding:8px 24px 32px}
+  .navlink{display:inline-block}
+  .game{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,400px);grid-template-areas:"opps panel" "table panel" "dock panel" "sr sr";column-gap:22px;align-items:start}
+  .opps{grid-area:opps}.table{grid-area:table}.dock{grid-area:dock}
+  .panel{grid-area:panel;margin:0;position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto}
+}
 .status{font-weight:500;margin:0 0 8px}
 .status:last-child{margin-bottom:0}
 .err{color:var(--bad);font-size:calc(15px * var(--fs));margin:6px 0 0}
@@ -107,11 +181,19 @@ h1{font-family:Alegreya,Georgia,serif;font-weight:800;font-size:calc(30px * var(
 .suits svg{width:18px;height:18px}
 .ico.s0{color:var(--c0)} .ico.s1{color:var(--c1)} .ico.s2{color:var(--c2)} .ico.s3{color:var(--c3)}
 
-.mine{display:flex;justify-content:space-between;align-items:center;font-size:calc(15px * var(--fs));color:var(--muted);margin:2px 2px 6px}
-.hand{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
-.hand .card{--cw:clamp(46px,calc((100% - 30px) / 6),70px);width:var(--cw);transition:transform .15s}
+.mine{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font-size:calc(15px * var(--fs));color:var(--muted);margin:0 2px 2px}
+.mine .me b.pts{font-variant-numeric:tabular-nums}
+/* a kéz egy sorban, minden lap a saját helyén; ha nem fér ki, jobbra-balra húzható */
+.hand{display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto;overflow-y:hidden;padding:14px 6px 10px;scroll-snap-type:x proximity;scroll-padding:0 6px;-webkit-overflow-scrolling:touch;scrollbar-width:thin;overscroll-behavior-x:contain}
+.hand>.card:first-child{margin-left:auto}.hand>.card:last-child{margin-right:auto}
+.hand .card{--cw:64px;width:var(--cw);transition:transform .15s;scroll-snap-align:center}
+.dock{position:sticky;bottom:0;z-index:5;background:var(--bg);margin:0 -12px;padding:6px 12px calc(env(safe-area-inset-bottom,0px) + 4px);box-shadow:0 -6px 14px rgba(0,0,0,.08)}
+.dock .more{font-size:calc(13px * var(--fs));color:var(--muted)}
+.hand-wrap{position:relative}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .hand .card.play{cursor:pointer}
 .hand .card.play:hover{transform:translateY(-4px)}
+.hand .card.play.legal{box-shadow:0 0 0 2px var(--go),0 4px 10px rgba(0,0,0,.2)}
 .hand .card.dim{filter:brightness(.6) saturate(.5)}
 .hand .card.sel{transform:translateY(-9px);box-shadow:0 0 0 3px var(--accent),0 6px 12px rgba(0,0,0,.25)}
 .hand .card.hint{outline:3px dashed var(--brass);outline-offset:3px}
@@ -226,6 +308,56 @@ img.ico{width:1.2em;height:1.2em;vertical-align:-.25em;object-fit:contain;displa
 #zoom{position:fixed;z-index:1000;display:none;pointer-events:none;--cw:min(44vw,170px);box-shadow:0 10px 30px rgba(0,0,0,.45);border:1px solid rgba(0,0,0,.35);animation:none}
 @media (prefers-reduced-motion:no-preference){#zoom.on{animation:zin .12s ease-out}}
 @keyframes zin{from{transform:scale(.9);opacity:.85}to{transform:none;opacity:1}}
+/* lábléc */
+.foot{margin-top:22px;padding:16px 4px calc(env(safe-area-inset-bottom,0px) + 18px);border-top:1px solid var(--line);color:var(--muted);font-size:calc(14px * var(--fs));line-height:1.5;text-align:center}
+.foot p{margin:6px 0}
+.foot a{color:var(--ink);text-underline-offset:2px}
+.foot .frow{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:8px}
+.foot .frow .btn{text-decoration:none;display:inline-block}
+.foot .copy{font-weight:600;color:var(--ink)}
+/* statisztika */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:12px 0}
+.tile{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.tile .k{font-size:calc(13px * var(--fs));color:var(--muted)}
+.tile .v{font-size:calc(24px * var(--fs));font-weight:800;line-height:1.2;font-variant-numeric:tabular-nums}
+.tile .s{font-size:calc(13px * var(--fs));color:var(--muted)}
+.sttbl{width:100%;border-collapse:collapse;font-size:calc(15px * var(--fs));font-variant-numeric:tabular-nums}
+.sttbl th,.sttbl td{padding:6px 4px;border-bottom:1px solid var(--line);text-align:right}
+.sttbl th:first-child,.sttbl td:first-child{text-align:left}
+.sttbl th{font-weight:600;color:var(--muted)}
+/* bemutató és helyzeti tippek */
+#tour{position:fixed;inset:0;z-index:900;display:none}
+#tour.show{display:block}
+#tour .tspot{position:fixed;border-radius:14px;box-shadow:0 0 0 9999px rgba(8,12,9,.74);pointer-events:none;transition:all .2s ease}
+#tour .tspot.none{width:0;height:0;left:50%;top:50%}
+.tbub{position:fixed;z-index:901;max-width:min(340px,calc(100vw - 24px));background:var(--surface);color:var(--ink);border-radius:14px;padding:14px 16px 12px;box-shadow:0 12px 34px rgba(0,0,0,.4);font-size:calc(16px * var(--fs));line-height:1.45}
+.tbub h3{margin:0 0 6px;font-size:calc(18px * var(--fs))}
+.tbub p{margin:0 0 10px}
+.tbub .tnav{display:flex;align-items:center;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.tbub .tnav .cnt{color:var(--muted);font-size:calc(14px * var(--fs))}
+.tbub .btn{padding:8px 14px;font-size:calc(15px * var(--fs))}
+.tbub::before{content:"";position:absolute;width:14px;height:14px;background:var(--surface);transform:rotate(45deg);left:var(--ax,50%);margin-left:-7px}
+.tbub.up::before{top:-7px}
+.tbub.down::before{bottom:-7px}
+.tbub.mid::before{display:none}
+#tipBub{z-index:800;outline:2px solid var(--brass)}
+#toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);transform:translateX(-50%);z-index:950;background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:12px;font-size:calc(15px * var(--fs));box-shadow:0 8px 24px rgba(0,0,0,.35);display:none;max-width:calc(100vw - 32px)}
+#toast.show{display:block}
+/* egérrel (számítógépen) a vízszintes húzás kényelmetlen: ott a kéz több sorba törik */
+@media (hover:hover) and (pointer:fine){
+  .hand{flex-wrap:wrap;overflow:visible;justify-content:center;row-gap:10px;scroll-snap-type:none}
+  .hand>.card:first-child,.hand>.card:last-child{margin-left:0;margin-right:0}
+}
+/* széles képernyő: ezek a szabályok a fenti alapértékeket írják felül, ezért a stíluslap végén vannak */
+@media (min-width:980px){
+  .dock{position:static;margin:4px 0 0;padding:0;box-shadow:none;background:none}
+  .center{height:300px}
+  .table.idle .center{height:120px}
+  .slot{--cw:92px}
+  .hand .card{--cw:84px}
+}
+.tbub .tskip{border:0;background:none;color:var(--muted);font:inherit;font-size:calc(14px * var(--fs));text-decoration:underline;padding:4px 2px;margin-right:auto}
+
 </style>
 </head>
 <body>
@@ -241,28 +373,58 @@ img.ico{width:1.2em;height:1.2em;vertical-align:-.25em;object-fit:contain;displa
 <div class="wrap">
   <header>
     <h1>Rablóulti</h1>
-    <div class="hbtns">
-      <button class="iconbtn" id="tutorBtn" aria-pressed="false">Oktató mód</button>
-      <button class="iconbtn" id="rulesBtn">Szabályok</button>
-      <select class="iconbtn" id="fsSel" aria-label="Betűméret"><option value="0">A−</option><option value="1">A</option><option value="2">A+</option></select>
-      <select class="iconbtn" id="riskSel" aria-label="Botok kockázatvállalása"><option value="0">Kockázat: óvatos</option><option value="1">Kockázat: normál</option><option value="2">Kockázat: merész</option></select>
+    <nav class="hnav" aria-label="Fő menü">
+      <button class="navlink" id="navRules">Szabályok</button>
+      <button class="navlink" id="navStats">Statisztikám</button>
       <button class="iconbtn" id="newBtn">Új játék</button>
-    </div>
+      <button class="iconbtn round" id="menuBtn" aria-label="Menü" aria-haspopup="dialog"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    </nav>
   </header>
-  <div class="scores" id="scores"></div>
-  <div class="table">
+  <main class="game">
     <div class="opps">
       <div class="opp" id="opp2"></div>
       <div class="opp" id="opp1"></div>
     </div>
-    <div class="center" id="center"></div>
-  </div>
-  <div class="panel" id="panel"></div>
-  <div class="mine" id="mine"></div>
+    <section class="table" aria-label="Asztal">
+      <div class="tbar" id="tbar"></div>
+      <div class="center" id="center"></div>
+    </section>
+    <section class="panel" id="panel" aria-label="Döntés"></section>
+    <div class="dock" id="dock">
+      <div class="mine" id="mine"></div>
+      <div class="hand" id="hand" aria-label="A lapjaid"></div>
+    </div>
+    <div class="sr" aria-live="polite" id="live"></div>
+  </main>
   <div class="ov" id="seeOv"><div class="sheet" id="seeSheet"></div></div>
-  <div class="hand" id="hand"></div>
   <details class="log"><summary>Napló</summary><ol id="log"></ol></details>
+  <footer class="foot">
+    <div class="frow"><button class="btn ghost small" id="a2hsBtn" hidden>Tedd ki a kezdőképernyőre</button><a class="btn ghost small" id="fbLink" href="https://github.com/silyegellerto/cuddly-octo-enigma/issues" target="_blank" rel="noopener noreferrer">Visszajelzés, hibabejelentés</a></div>
+    <p><b>Adatvédelem:</b> a játék a pontszámot, a statisztikát, a beállításokat és a félbehagyott leosztást csak a saját böngésződben tárolja. Semmit nem küld el, sütit nem használ.</p>
+    <p><b>Források:</b> a szabályok és a stratégia az <a href="https://ultiblog.hu" target="_blank" rel="noopener noreferrer">ultiblog.hu</a> és Jánoska Levente – Zsigri: <i>A rablóulti szabályai</i> című könyve alapján. Betűk: Atkinson Hyperlegible Next és Alegreya (SIL Open Font License).</p>
+    <p class="copy">© 2026 Silye Gellért · <a href="https://github.com/silyegellerto" target="_blank" rel="noopener noreferrer">GitHub</a></p>
+  </footer>
 </div>
+<div class="ov" id="menuOv" role="dialog" aria-modal="true" aria-label="Menü"><div class="sheet menu">
+  <div class="mhead"><h2>Menü</h2><button class="iconbtn round" id="menuClose" aria-label="Bezár"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <nav class="mlist" aria-label="Oldalak">
+    <button id="mRules"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></svg><span>Szabályok</span><i aria-hidden="true">›</i></button>
+    <button id="mStats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-6"/></svg><span>Statisztikám</span><i aria-hidden="true">›</i></button>
+    <button id="mTour"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 9l5 3-5 3z"/></svg><span>Bemutató újra</span><i aria-hidden="true">›</i></button>
+  </nav>
+  <h3 class="mcap">Beállítások</h3>
+  <div class="mset">
+    <div class="mrow"><span><b>Oktató mód</b><small>Leosztás után: mi lett volna jobb?</small></span><button class="switch" id="tutorBtn" role="switch" aria-checked="false" aria-label="Oktató mód"><i></i></button></div>
+    <div class="mrow"><span><b>Betűméret</b></span><div class="seg" role="radiogroup" aria-label="Betűméret"><button role="radio" data-fs="0">A−</button><button role="radio" data-fs="1">A</button><button role="radio" data-fs="2">A+</button></div></div>
+    <div class="mrow col"><span><b>A botok kockázata</b><small>A Tipp is ezen a szinten dönt.</small></span><div class="seg wide" role="radiogroup" aria-label="A botok kockázata"><button role="radio" data-risk="0">Óvatos</button><button role="radio" data-risk="1">Normál</button><button role="radio" data-risk="2">Merész</button></div></div>
+  </div>
+  <div class="row" style="margin-top:14px"><button class="btn ghost" id="mA2hs">Kezdőképernyőre</button><a class="btn ghost" href="https://github.com/silyegellerto/cuddly-octo-enigma/issues" target="_blank" rel="noopener noreferrer">Visszajelzés</a></div>
+</div></div>
+<div class="ov" id="a2hsOv"><div class="sheet" id="a2hsSheet"></div></div>
+<div class="ov" id="statsOv"><div class="sheet" id="statsSheet"></div></div>
+<div id="tour" role="dialog" aria-modal="true" aria-label="Bemutató"><div class="tspot"></div><div class="tbub" id="tourBub"></div></div>
+<div class="tbub" id="tipBub" role="status" style="display:none"></div>
+<div id="toast" role="status"></div>
 
 <div class="ov" id="rules">
   <div class="sheet">
@@ -312,7 +474,9 @@ img.ico{width:1.2em;height:1.2em;vertical-align:-.25em;object-fit:contain;displa
     <div class="tw"><table id="ctable"></table></div>
     <p>Ha a felvevő nyer, mindkét védő kifizeti neki az értéket, ha veszít, ő fizet mindkettőnek. Összetett játékban minden rész külön számít.</p>
     <p style="color:var(--muted);font-size:14px">Egyszerűsített változat: a rekontrát is az első lap előtt kell mondani, nincs szubkontra és négy ász játék.</p>
-    <div class="row" style="margin-top:12px"><button class="btn" id="closeRules">Bezár</button></div>
+    <h3>Adatok</h3>
+    <p>A pontszám, a statisztika, a beállítások és a félbehagyott leosztás csak ebben a böngészőben van elmentve (localStorage). Nem kerül szerverre, és sütit sem használ a játék. Ha törlöd a webhely adatait, ezek is törlődnek.</p>
+    <div class="row" style="margin-top:12px"><button class="btn" id="closeRules">Bezár</button><button class="btn ghost" id="tourAgain">Bemutató újra</button></div>
   </div>
 </div>
 
@@ -1914,62 +2078,60 @@ function buildAnalysis(){
 }
 
 // ---------- render ----------
-function hintHTML(){
-  if(!humanTurn())return '';
-  let h=`<div class="row hintrow"><button class="btn ghost" id="hintBtn" aria-expanded="${UI.hint}">${UI.hint?'Tipp elrejtése':'Tipp'}</button><label class="auto"><input type="checkbox" id="autoHint"${SET.autoHint?' checked':''}> Mindig mutasd</label></div>`;
-  if(UI.hint&&UI.hc)h+=`<div class="hintbox">${UI.hc.html}<p class="rule">A javaslat ugyanazzal a döntési móddal készül, mint a botok lépései (kockázat: ${RISK_NAME[RISK]}).</p>${UI.hc.apply?'<button class="btn small" id="applyHint">Javaslat átvétele</button>':''}</div>`;
+function hintHTML(extra=''){
+  const tip=humanTurn()?`<button class="btn ghost" id="hintBtn" aria-expanded="${UI.hint}">${UI.hint?'Tipp elrejtése':'Tipp'}</button><label class="auto"><input type="checkbox" id="autoHint"${SET.autoHint?' checked':''}> Mindig mutasd</label>`:'';
+  if(!tip&&!extra)return '';
+  let h=`<div class="actrow">${tip}${extra?`<span class="grow">${extra}</span>`:''}</div>`;
+  if(tip&&UI.hint&&UI.hc)h+=`<div class="hintbox">${UI.hc.html}<p class="rule">A javaslat ugyanazzal a döntési móddal készül, mint a botok lépései (kockázat: ${RISK_NAME[RISK]}).</p>${UI.hc.apply?'<button class="btn small" id="applyHint">Javaslat átvétele</button>':''}</div>`;
   return h;
 }
 function bindHint(){
+  const d=$('moreDd');if(d)d.ontoggle=()=>{UI.moreOpen=d.open;};
   const b=$('hintBtn');if(!b)return;
   b.onclick=()=>{UI.hint=!UI.hint;render();};
   $('autoHint').onchange=e=>{SET.autoHint=e.target.checked;saveSet();if(SET.autoHint)UI.hint=true;render();};
-  const a=$('applyHint');if(a)a.onclick=()=>{UI.hc.apply();render();};
+  const a=$('applyHint');if(a)a.onclick=()=>{UI.hc.apply();UI.grp=null;render();};
 }
-function renderScores(){
-  $('scores').innerHTML=[0,1,2].map(p=>{
-    const v=SCORE.tot[p];
-    return `<div class="score"><span>${NAME[p]}${G&&G.dealer===p?' <span class="dl">oszt</span>':''}</span><b class="${v<0?'neg':v>0?'pos':''}">${v>0?'+':''}${v}</b></div>`;
-  }).join('');
-}
+function renderScores(){}
 function kontraTag(p){
   if(!G.kmult||(G.phase==='bid'||G.phase==='trump'))return '';
   if(p===G.decl)return [0,1,2].some(q=>Object.values(G.kmult[q]).includes(4))?'Rekontra':'';
   const ks=Object.keys(G.kmult[p]);return ks.length?'Kontra: '+ks.map(k=>COMP_NAMES[k]).join(', '):'';
 }
 function oppHTML(p){
-  let badge='',meta='';
+  const v=SCORE.tot[p],sgn=x=>`${x>0?'+':''}${x}`;
+  let badge='';const parts=[];
   if((G.phase==='bid'||G.phase==='trump')){
     if(G.lastAction[p])badge=`<span class="badge">${G.lastAction[p]}</span>`;
-    if(G.bid&&G.bid.seat===p)meta='Övé a licit';
+    if(G.bid&&G.bid.seat===p)parts.push('Övé a licit');
   }else{
     badge=p===G.decl?'<span class="badge decl">Felvevő</span>':'<span class="badge">Védő</span>';
-    const parts=[];
     if(G.phase==='kontra'){if(G.lastAction[p])parts.push(G.lastAction[p]);}
-    else{parts.push(`Ütés: ${G.tcount[p]}`);const k=kontraTag(p);if(k)parts.push(k);}
+    else{parts.push(`Ütés ${G.tcount[p]}`);const k=kontraTag(p);if(k)parts.push(k);}
     // az ultiban csak az értéket mondják be (20 vagy 40), a színt nem
     if(G.marr[p].length)parts.push('Bemondás: '+G.marr[p].map(m=>m.v).join('+'));
-    meta=parts.join(' | ');
   }
   const HH=shownHand(p),n=HH.length;
   const showOpen=(G.revealed&&p===G.decl)||G.phase==='result';
-  const cards=showOpen&&n?`<div class="open">${sortHand(HH).map(c=>cardHTML(c)).join('')}</div>`:`<div class="backs">${'<i></i>'.repeat(n)}</div>`;
-  return `<div class="nm"><span>${NAME[p]}</span>${badge}</div><div class="meta">${meta.replace(/<svg/g,'<svg style="width:13px;height:13px;vertical-align:-2px"')}</div>${cards}`;
+  const cards=showOpen&&n?`<div class="open">${sortHand(HH).map(c=>cardHTML(c)).join('')}</div>`:`<div class="backs" aria-label="${n} lap">${'<i></i>'.repeat(n)}</div>`;
+  return `<div class="nm"><span>${NAME[p]}${G.dealer===p?' <span class="dl">oszt</span>':''}</span><span class="pts ${v>0?'pos':v<0?'neg':''}">${sgn(v)}</span></div><div class="meta">${badge}${parts.map(x=>`<span>${x}</span>`).join('')}</div>${cards}`;
 }
 function renderTable(){
   for(const p of [1,2]){const el=$('opp'+p);el.innerHTML=oppHTML(p);el.classList.toggle('active',G.turn===p&&G.phase!=='result');}
-  let info='';
+  let bar='';
   if((G.phase==='bid'||G.phase==='trump')){
-    info=G.bid?`<div class="sub">Licit</div><div class="ct">${CONTRACTS[G.bid.ci].name}</div><div class="sub">${NAME[G.bid.seat]}</div>`:`<div class="sub">Licit</div><div class="ct">Még nincs</div>`;
+    bar=G.bid?`<span>Licit: <b>${CONTRACTS[G.bid.ci].name}</b> · ${NAME[G.bid.seat]}</span><span>${G.phase==='trump'?'Adu választása':'Licit'}</span>`:`<span>Licit: <b>még nincs</b></span><span>Licit</span>`;
   }else{
     const c=CONTRACTS[G.ci];
     const st=G.phase==='kontra'?'Kontrák':G.phase==='play'?`${Math.min(G.trickNo+1,10)}. ütés`:'Vége';
-    info=`<div class="ct">${c.name}</div><div class="sub">${G.trumpGame?`Adu: ${ico(G.trump)} ${SUIT_NAMES[G.trump].toLowerCase()}`:'Nincs adu'}</div><div class="sub">${st}</div>`;
+    bar=`<span><b>${c.name}</b> · ${NAME[G.decl]}</span><span class="ad">${G.trumpGame?`Adu: ${ico(G.trump)} <b>${SUIT_NAMES[G.trump].toLowerCase()}</b>`:'Nincs adu'}</span><span>${st}</span>`;
   }
+  $('tbar').innerHTML=bar;
+  document.querySelector('.table').classList.toggle('idle',!(G.phase==='play'||G.phase==='result'));
   const tr=G.trick.length?G.trick:(G.phase==='result'&&G.lastTrick?G.lastTrick:[]);
   const wi=tr.length===3?trickWinnerIdx(tr):-1;
   const slots=[0,1,2].map(p=>{const i=tr.findIndex(t=>t.p===p);return `<div class="slot seat${p}">${i>=0?cardHTML(tr[i].c,i===wi?'win':''):''}</div>`;}).join('');
-  $('center').innerHTML=`<div class="info">${info}</div>${slots}`;
+  $('center').innerHTML=slots;
 }
 function statusText(){
   if(G.phase==='bid'||G.phase==='trump'||G.phase==='kontra')return G.turn!==0?`${NAME[G.turn]} gondolkodik…`:'';
@@ -1980,6 +2142,8 @@ function statusText(){
   }
   return '';
 }
+const GROUPS=[['parti','Parti'],['100','100-as'],['ulti','Ulti'],['betli','Betli'],['durch','Durchmars']];
+const grpOf=c=>c.comps.betli?'betli':c.comps.ulti?'ulti':c.comps.durch?'durch':(c.comps.c40||c.comps.c20)?'100':'parti';
 function renderPanel(){
   const el=$('panel');
   if(G.phase==='result'){
@@ -2010,14 +2174,20 @@ function renderPanel(){
   if(G.phase==='bid'&&G.turn===0){
     if(holding12(0)){
       const min=minBidIndex();
-      const opts=CONTRACTS.map((c,i)=>i>=min?`<button class="chip${UI.ci===i?' on':''}" data-ci="${i}"><span>${c.name}</span><small>${bidLabel(c)}</small></button>`:'').join('');
+      // a vállalások csoportokban: csak a mondható (erősebb) vállalások látszanak
+      const avail=new Set(CONTRACTS.map((c,i)=>i>=min?grpOf(c):null).filter(Boolean));
+      const grp=UI.grp&&avail.has(UI.grp)?UI.grp:UI.ci!=null&&UI.ci>=min?grpOf(CONTRACTS[UI.ci]):(min<CONTRACTS.length?grpOf(CONTRACTS[min]):'parti');
+      const tabs=`<div class="tabs" role="tablist" aria-label="Játékcsoportok">${GROUPS.map(([k,l])=>`<button class="tab" role="tab" data-grp="${k}" aria-selected="${k===grp}"${avail.has(k)?'':' disabled'}>${l}</button>`).join('')}</div>`;
+      const opts=tabs+'<div class="chips">'+CONTRACTS.map((c,i)=>i>=min&&grpOf(c)===grp?`<button class="chip${UI.ci===i?' on':''}" data-ci="${i}"><span>${c.name}</span><small>${bidLabel(c)}</small></button>`:'').join('')+'</div>';
       const c=UI.ci!=null?CONTRACTS[UI.ci]:null;
       const head=G.bid?`A licit most: <b>${CONTRACTS[G.bid.ci].name}</b> (${NAME[G.bid.seat]}). Tegyél le 2 lapot, és mondj magasabbat.`:'Te kezdesz. Jelölj ki 2 lapot a talonba, és válassz játékot.';
       let fw='';
       if(c&&UI.sel.length===2&&isTrumpC(c)){const ids=new Set(UI.sel.map(x=>x.id)),rest=G.hands[0].filter(x=>!ids.has(x.id));const ok=suitsFor(c).filter(s=>!checkReq(rest,UI.ci,s));if(ok.length&&ok.every(s=>forcedParts(rest,UI.ci,s).length))fw=`<p class="err">Kényszervállalás: ehhez a játékhoz nincs meg a ${c.comps.c40?'40':'20'}. Mondhatod, de a bemondás pontja nem számít, és akinél a kulcslap van, kötelezően megkontrázza.</p>`;}
       const quick=min<CONTRACTS.length?`<button class="btn ghost" id="quickBtn">Passz: ${CONTRACTS[min].name}</button>`:'';
-      el.innerHTML=`<p class="status">${head}</p>${hintHTML()}<p class="lbl2">Talonba jelölve: ${UI.sel.length} / 2</p><div class="chips">${opts}</div>${c&&isTrumpC(c)&&!c.red?'<p class="lbl2">Az adut csak akkor kell megadnod, ha a licited marad.</p>':''}${fw}${UI.err?`<p class="err">${UI.err}</p>`:''}<div class="row" style="margin-top:10px"><button class="btn" id="bidBtn">Licitálok</button>${quick}</div>`;
-      el.querySelectorAll('[data-ci]').forEach(b=>b.onclick=()=>{UI.ci=+b.dataset.ci;UI.err='';render();});
+      el.innerHTML=`<p class="status">${head}</p>${hintHTML()}<div class="actrow" style="justify-content:space-between"><p class="lbl2" style="margin:0">Talonba jelölve: ${UI.sel.length} / 2</p><label class="auto"><input type="checkbox" id="betliSort"${UI.betliSort?' checked':''}> Szín nélküli sorrend</label></div>${opts}${c&&isTrumpC(c)&&!c.red?'<p class="lbl2">Az adut csak akkor kell megadnod, ha a licited marad.</p>':''}${fw}${UI.err?`<p class="err">${UI.err}</p>`:''}<div class="row" style="margin-top:10px"><button class="btn" id="bidBtn">${c?`Bemondom: ${c.name}`:'Licitálok'}</button>${quick}</div>`;
+      el.querySelectorAll('[data-ci]').forEach(b=>b.onclick=()=>{UI.ci=+b.dataset.ci;UI.grp=grpOf(CONTRACTS[UI.ci]);UI.err='';render();});
+      el.querySelectorAll('[data-grp]').forEach(b=>b.onclick=()=>{UI.grp=b.dataset.grp;render();});
+      $('betliSort').onchange=e=>{UI.betliSort=e.target.checked;render();};
       $('bidBtn').onclick=humanBid;
       if($('quickBtn'))$('quickBtn').onclick=()=>{UI.ci=min;if(UI.sel.length===2)humanBid();else{UI.err='Jelölj ki 2 lapot a talonba, aztán nyomd meg újra.';render();}};
     }else{
@@ -2048,10 +2218,14 @@ function renderPanel(){
     $('konBtn').onclick=()=>{const list=opts.filter(o=>UI.kon.has(o.k+':'+o.def));UI.kon=new Set();REV.kon={decl:G.decl===0,opts:opts.slice(),list:list.slice()};doKontra(0,list);advance();};
     bindHint();return;
   }
-  el.innerHTML=`<p class="status">${statusText()}</p>${UI.err?`<p class="err">${UI.err}</p>`:''}${G.phase==='play'&&G.decl===0?`<div class="row" style="margin-top:8px"><button class="btn ghost danger small${UI.armCon?' armed':''}" id="conBtn">${UI.armCon?`Biztos? Bedobás: ${fmt(-[1,2].reduce((a,q)=>a+concedeLoss(G.ci,G.kmult,q),0))} pont`:'Bedobom a lapjaimat'}</button></div>`:''}${G.phase==='play'&&G.claimAt&&G.claimAt.n===G.trickNo&&G.claimAt.side&&claimHuman(G.claimAt.side)?`<div class="row" style="margin-top:8px"><button class="btn go" id="claimBtn">Felmutatom</button><span class="sub" style="align-self:center">${claimText(G.claimAt.side).replace('innentől','Innentől biztosan')}.</span></div>`:''}${G.phase==='play'?`<div class="row" style="margin-top:8px"><button class="btn ghost small" id="autoBtn">${UI.auto?'Megállítás, játszom tovább':'Játszd le helyettem'}</button></div>`:''}${UI.auto?'':hintHTML()}`;
-  if($('conBtn'))$('conBtn').onclick=()=>{if(!UI.armCon){UI.armCon=true;render();return;}UI.armCon=false;clearTimeout(timer);doConcede(0);advance();};
+  const play=G.phase==='play';
+  const canClaim=play&&G.claimAt&&G.claimAt.n===G.trickNo&&G.claimAt.side&&claimHuman(G.claimAt.side);
+  const dots='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M5 12h.01M12 12h.01M19 12h.01"/></svg>';
+  const more=play&&!UI.auto?`<details class="more" id="moreDd"${UI.moreOpen?' open':''}><summary aria-label="További lehetőségek">${dots}</summary><div class="pop"><button id="autoBtn">Játszd le helyettem</button>${G.decl===0?`<button class="danger${UI.armCon?' armed':''}" id="conBtn">${UI.armCon?`Biztos? Bedobás: ${fmt(-[1,2].reduce((a,q)=>a+concedeLoss(G.ci,G.kmult,q),0))} pont`:'Bedobom a lapjaimat'}</button>`:''}</div></details>`:'';
+  el.innerHTML=`<p class="status">${statusText()}</p>${UI.err?`<p class="err">${UI.err}</p>`:''}${canClaim?`<div class="row" style="margin-top:8px;align-items:center"><button class="btn go" id="claimBtn">Felmutatom</button><span class="sub" style="color:var(--muted)">${claimText(G.claimAt.side).replace('innentől','Innentől biztosan')}.</span></div>`:''}${UI.auto?`<div class="actrow"><button class="btn ghost" id="autoBtn">Megállítás, játszom tovább</button></div>`:hintHTML(more)}`;
+  if($('conBtn'))$('conBtn').onclick=()=>{if(!UI.armCon){UI.armCon=true;render();return;}UI.armCon=false;UI.moreOpen=false;clearTimeout(timer);doConcede(0);advance();};
   if($('claimBtn'))$('claimBtn').onclick=()=>{clearTimeout(timer);resolveClaim(G.claimAt.side);advance();};
-  if($('autoBtn'))$('autoBtn').onclick=()=>{UI.auto=!UI.auto;UI.warnId=null;UI.err='';advance();};
+  if($('autoBtn'))$('autoBtn').onclick=()=>{UI.auto=!UI.auto;UI.moreOpen=false;UI.warnId=null;UI.err='';advance();};
   bindHint();
 }
 // a végeredménynél felmutatás után a felmutatáskori lapok látszanak (a gép lejátszotta a maradékot)
@@ -2064,7 +2238,7 @@ function renderHand(){
   const hintIds=UI.hint&&UI.hc?UI.hc.cards:null;
   $('hand').innerHTML=h.map(c=>{
     let cls='';
-    if(legal)cls=legal.has(c.id)?'play':'dim';
+    if(legal)cls=legal.has(c.id)?'play legal':'dim';
     if(selecting)cls='play'+(UI.sel.some(x=>x.id===c.id)?' sel':'');
     if(hintIds&&hintIds.has(c.id))cls+=' hint';
     if(UI.warnId===c.id)cls+=' warn';
@@ -2075,15 +2249,18 @@ function renderHand(){
     el.onclick=act;
     el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();act();}};
   });
-  let mine=`<span>A lapjaid (${shownHand(0).length}) <button class="linkbtn" id="seeBtn">Talon és ütések</button></span>`;
+  const v=SCORE.tot[0],n0=shownHand(0).length;
+  let role=`${n0} lap`;
   if(G.phase!=='bid'&&G.phase!=='trump'){
     const k=kontraTag(0);
-    mine+=`<span>${G.decl===0?'<b>Felvevő</b>':'Védő'} | Ütés: ${G.tcount[0]}${G.marr[0].length?' | '+G.marr[0].map(m=>m.v).join(', '):''}${k?' | '+k:''}</span>`;
+    role=`${G.decl===0?'<b>Felvevő</b>':'Védő'} · ütés ${G.tcount[0]}${G.marr[0].length?' · '+G.marr[0].map(m=>m.v).join('+'):''}${k?' · '+k:''}`;
   }
-  if(G.phase==='bid')mine+=`<label class="auto"><input type="checkbox" id="betliSort"${UI.betliSort?' checked':''}> Szín nélküli sorrend</label>`;
+  let mine=`<span class="me"><b>Te</b> <b class="pts ${v>0?'pos':v<0?'neg':''}">${v>0?'+':''}${v}</b>${G.dealer===0?' <span class="dl">oszt</span>':''} · ${role}</span><button class="linkbtn" id="seeBtn">Talon és ütések</button>`;
   $('mine').innerHTML=mine;
+  // ha a kijátszható lap nem látszik a sorban, odagörgetjük
+  if(legal){const key=G.trickNo+':'+G.trick.length;if(UI.scrollKey!==key){UI.scrollKey=key;const hd=$('hand'),el=hd.querySelector('.card.play');
+    if(el&&(el.offsetLeft<hd.scrollLeft||el.offsetLeft+el.offsetWidth>hd.scrollLeft+hd.clientWidth))hd.scrollTo({left:el.offsetLeft-(hd.clientWidth-el.offsetWidth)/2,behavior:'smooth'});}}
   $('seeBtn').onclick=renderSee;
-  if($('betliSort'))$('betliSort').onchange=e=>{UI.betliSort=e.target.checked;render();};
 }
 function renderSee(){
   const known=G.talonBy===0||G.phase==='result';
@@ -2097,7 +2274,7 @@ function renderSee(){
   $('seeOv').classList.add('show');
 }
 function renderLog(){$('log').innerHTML=G.log.map(t=>`<li>${t}</li>`).join('');}
-function render(){syncHint();renderScores();renderTable();renderPanel();renderHand();renderLog();}
+function render(){syncHint();renderTable();renderPanel();renderHand();renderLog();maybeTip();const st=statusText();if($('live').textContent!==st)$('live').textContent=st;}
 
 function onCard(id){
   if(G.phase==='bid'&&G.turn===0&&holding12(0)){
@@ -2131,9 +2308,12 @@ function advance(){
   if(G.phase==='result'&&!G.scored){
     G.scored=true;for(let p=0;p<3;p++)SCORE.tot[p]+=G.result.change[p];
     SCORE.n++;SCORE.dealer=G.dealer;saveScore();
+    try{recordStats();}catch(e){}
   }
   const cl=G.phase==='play'&&!G.trick.length?claimCheck():null;
+  saveGame();
   render();
+  if(TOUR_ON)return; // a bemutató alatt a botok várnak
   if(cl&&(!claimHuman(cl)||UI.auto)){timer=setTimeout(()=>{resolveClaim(cl);advance();},900);return;}
   if(G.phase==='bid'&&G.turn!==0){
     timer=setTimeout(()=>{
@@ -2162,19 +2342,242 @@ $('newBtn').onclick=()=>{
   clearTimeout(timer);
   SCORE={tot:[0,0,0],n:0,dealer:Math.floor(Math.random()*3)};saveScore();G=null;nextDeal();
 };
-$('fsSel').value=String(SET.fs??1);document.documentElement.dataset.fs=String(SET.fs??1);
-$('fsSel').onchange=e=>{SET.fs=+e.target.value;document.documentElement.dataset.fs=String(SET.fs);saveSet();};
-$('riskSel').value=String(SET.risk??1);RISK=+(SET.risk??1);
-$('riskSel').onchange=e=>{SET.risk=+e.target.value;RISK=SET.risk;saveSet();UI.hc=null;if(G)render();};
-function syncTutor(){const b=$('tutorBtn');b.classList.toggle('on',!!SET.tutor);b.setAttribute('aria-pressed',SET.tutor?'true':'false');}
+document.documentElement.dataset.fs=String(SET.fs??1);RISK=+(SET.risk??1);
+function syncSeg(){
+  document.querySelectorAll('[data-fs]').forEach(b=>b.setAttribute('aria-checked',String(+b.dataset.fs===(SET.fs??1))));
+  document.querySelectorAll('[data-risk]').forEach(b=>b.setAttribute('aria-checked',String(+b.dataset.risk===(SET.risk??1))));
+}
+document.querySelectorAll('[data-fs]').forEach(b=>b.onclick=()=>{SET.fs=+b.dataset.fs;document.documentElement.dataset.fs=String(SET.fs);saveSet();syncSeg();});
+document.querySelectorAll('[data-risk]').forEach(b=>b.onclick=()=>{SET.risk=+b.dataset.risk;RISK=SET.risk;saveSet();syncSeg();UI.hc=null;if(G)render();});
+syncSeg();
+function syncTutor(){$('tutorBtn').setAttribute('aria-checked',SET.tutor?'true':'false');}
+const openMenu=()=>{$('menuOv').classList.add('show');$('mA2hs').hidden=standalone();setTimeout(()=>$('menuClose').focus(),30);};
+const closeMenu=()=>{$('menuOv').classList.remove('show');$('menuBtn').focus();};
+$('menuBtn').onclick=openMenu;$('menuClose').onclick=closeMenu;
+$('menuOv').onclick=e=>{if(e.target.id==='menuOv')closeMenu();};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('menuOv').classList.contains('show'))closeMenu();});
+const openRules=()=>{$('menuOv').classList.remove('show');$('rules').classList.add('show');};
+$('navRules').onclick=openRules;$('mRules').onclick=openRules;
 $('tutorBtn').onclick=()=>{SET.tutor=!SET.tutor;saveSet();syncTutor();if(G)render();};
 syncTutor();
-$('rulesBtn').onclick=()=>$('rules').classList.add('show');
 $('closeRules').onclick=()=>$('rules').classList.remove('show');
 $('seeOv').onclick=e=>{if(e.target.id==='seeOv')$('seeOv').classList.remove('show');};
 $('rules').onclick=e=>{if(e.target.id==='rules')$('rules').classList.remove('show');};
 $('ctable').innerHTML=CONTRACTS.map(c=>`<tr><td>${c.name}</td><td style="text-align:right">${bidLabel(c)}</td></tr>`).join('');
-nextDeal();
+
+// ---- félbehagyott leosztás mentése (csak ebben a böngészőben) ----
+const GAMEKEY='ulti-game-v1';
+function saveGame(){try{if(G)localStorage.setItem(GAMEKEY,JSON.stringify({v:1,G,REV:{...REV,an:null,show:false}}));}catch(e){}}
+function loadGame(){
+  try{
+    const raw=localStorage.getItem(GAMEKEY);if(!raw)return false;
+    // a lapok azonossága számít (ugyanaz az objektum a kézben, az ütésben, a talonban), ezért minden lapot a pakli egyetlen példányára cserélünk
+    const canon=makeDeck();
+    const o=JSON.parse(raw,(k,v)=>v&&typeof v==='object'&&!Array.isArray(v)&&Object.keys(v).length===3&&'id' in v&&'s' in v&&'r' in v?canon[v.id]:v);
+    if(!o||o.v!==1||!o.G||!Array.isArray(o.G.hands))return false;
+    G=o.G;REV=Object.assign({bids:[],kon:null,plays:[],an:null,show:false},o.REV||{});return true;
+  }catch(e){return false;}
+}
+function toast(t,ms=3200){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),ms);}
+
+// ---- saját statisztika ----
+const STATKEY='ulti-stats-v1';
+const blankStats=()=>({v:1,since:Date.now(),hands:0,decl:{n:0,win:0,pts:0},def:{n:0,win:0,pts:0},kinds:{},kontra:{n:0,good:0},rekontra:{n:0,good:0},concede:0,claims:0,tip:{n:0,same:0},best:null,worst:null});
+let ST=blankStats();
+try{const s=JSON.parse(localStorage.getItem(STATKEY)||'null');if(s&&s.v===1)ST=Object.assign(blankStats(),s);}catch(e){}
+function saveStats(){try{localStorage.setItem(STATKEY,JSON.stringify(ST));}catch(e){}}
+const KIND_ORDER=['Parti','Ulti','40-100 / 20-100','Betli','Durchmars'];
+function kindOf(c){return c.comps.betli?'Betli':c.comps.ulti?'Ulti':(c.comps.c40||c.comps.c20)?'40-100 / 20-100':c.comps.durch?'Durchmars':'Parti';}
+function recordStats(){
+  const r=G.result,c=CONTRACTS[G.ci],d=G.decl,me=r.change[0];
+  ST.hands++;
+  if(d===0){
+    ST.decl.n++;if(me>0)ST.decl.win++;ST.decl.pts+=me;
+    const k=kindOf(c),K=ST.kinds[k]=ST.kinds[k]||{n:0,win:0,pts:0};K.n++;if(me>0)K.win++;K.pts+=me;
+    if(r.conceded)ST.concede++;
+  }else{ST.def.n++;if(me>0)ST.def.win++;ST.def.pts+=me;}
+  // a te kontráid részenként: akkor jött be, ha az a rész elbukott (rekontránál: ha teljesült)
+  if(REV.kon&&REV.kon.list&&REV.kon.list.length&&!r.conceded){
+    const seen=new Set();
+    for(const o of REV.kon.list){
+      if(seen.has(o.k))continue;seen.add(o.k);
+      const row=r.rows.find(x=>x.k===o.k);if(!row)continue;
+      const T=REV.kon.decl?ST.rekontra:ST.kontra;T.n++;if(REV.kon.decl?row.win:!row.win)T.good++;
+    }
+  }
+  if(G.claimShow&&claimers(G.claimShow.side).includes(0))ST.claims++;
+  for(const pl of REV.plays||[]){ST.tip.n++;if(pl.sug&&pl.card&&pl.sug.id===pl.card.id)ST.tip.same++;}
+  const name=c.name+(d===0?', te vállaltad':`, ${NAME[d]} vállalta`);
+  if(!ST.best||me>ST.best.pts)ST.best={pts:me,name,at:Date.now()};
+  if(!ST.worst||me<ST.worst.pts)ST.worst={pts:me,name,at:Date.now()};
+  saveStats();
+}
+function renderStats(){
+  const pc=(a,b)=>b?Math.round(a/b*100)+'%':'–',sg=v=>`${v>0?'+':''}${v}`,avg=(a,b)=>b?sg(Math.round(a/b*10)/10).replace('.',','):'–';
+  const since=new Date(ST.since).toLocaleDateString('hu-HU',{year:'numeric',month:'long',day:'numeric'});
+  const tile=(k,v,sub)=>`<div class="tile"><div class="k">${k}</div><div class="v">${v}</div>${sub?`<div class="s">${sub}</div>`:''}</div>`;
+  const total=ST.decl.pts+ST.def.pts;
+  let h=`<h2>Statisztikám</h2><p class="small">Ebben a böngészőben, ${since} óta.</p>`;
+  if(!ST.hands){h+=`<p>Még nincs lejátszott leosztás. Az első leosztás végén itt látod majd az eredményeidet.</p>`;}
+  else{
+    h+=`<div class="tiles">${tile('Leosztás',ST.hands,`összesen ${sg(total)} pont`)}${tile('Felvevőként nyertél',pc(ST.decl.win,ST.decl.n),`${ST.decl.n} vállalásból, átlag ${avg(ST.decl.pts,ST.decl.n)}`)}${tile('Védőként pluszban',pc(ST.def.win,ST.def.n),`${ST.def.n} leosztásból, átlag ${avg(ST.def.pts,ST.def.n)}`)}${tile('Lapjáték = Tipp',pc(ST.tip.same,ST.tip.n),`${ST.tip.n} saját lapból`)}</div>`;
+    const ks=KIND_ORDER.filter(k=>ST.kinds[k]);
+    if(ks.length)h+=`<h3>Vállalásaid</h3><table class="sttbl"><tr><th>Játék</th><th>Db</th><th>Nyert</th><th>Átlag</th></tr>${ks.map(k=>{const K=ST.kinds[k];return `<tr><td>${k}</td><td>${K.n}</td><td>${pc(K.win,K.n)}</td><td>${avg(K.pts,K.n)}</td></tr>`;}).join('')}</table>`;
+    h+=`<h3>Kontrák és egyebek</h3><table class="sttbl">
+      <tr><td>Kontráid (részenként)</td><td>${ST.kontra.n}</td><td>${ST.kontra.n?pc(ST.kontra.good,ST.kontra.n)+' bejött':''}</td></tr>
+      <tr><td>Rekontráid</td><td>${ST.rekontra.n}</td><td>${ST.rekontra.n?pc(ST.rekontra.good,ST.rekontra.n)+' bejött':''}</td></tr>
+      <tr><td>Felmutatás</td><td>${ST.claims}</td><td></td></tr>
+      <tr><td>Bedobás</td><td>${ST.concede}</td><td></td></tr></table>`;
+    if(ST.best)h+=`<p class="small" style="margin-top:12px">Legjobb leosztás: <b>${sg(ST.best.pts)}</b> (${ST.best.name}). Legrosszabb: <b>${sg(ST.worst.pts)}</b> (${ST.worst.name}).</p>`;
+    h+=`<p class="small">A „Lapjáték = Tipp” azt mutatja, hogy a saját kezűleg kijátszott lapjaid hány százaléka egyezett a Tipp javaslatával.</p>`;
+  }
+  h+=`<div class="row" style="margin-top:12px"><button class="btn" id="closeStats">Bezár</button>${ST.hands?`<button class="btn ghost danger small" id="resetStats">Statisztika törlése</button>`:''}</div>`;
+  $('statsSheet').innerHTML=h;
+  $('closeStats').onclick=()=>$('statsOv').classList.remove('show');
+  if($('resetStats'))$('resetStats').onclick=e=>{const b=e.target;if(!b.classList.contains('armed')){b.classList.add('armed');b.textContent='Biztos? Még egyszer';return;}ST=blankStats();saveStats();renderStats();};
+}
+const openStats=()=>{$('menuOv').classList.remove('show');renderStats();$('statsOv').classList.add('show');};
+$('navStats').onclick=openStats;$('mStats').onclick=openStats;
+$('statsOv').onclick=e=>{if(e.target.id==='statsOv')$('statsOv').classList.remove('show');};
+
+// ---- bemutató: eszközönként egyszer jelenik meg, a Szabályokból újraindítható ----
+const TOURKEY='ulti-tour-v1',TIPKEY='ulti-tips-v1';
+let TOUR_ON=false,TOUR_I=0;
+const TOUR=[
+  {t:'Üdv a Rablóultiban!',x:'Két gépi ellenfél, Gellért és Samu ellen játszol. Mutatok pár dolgot a képernyőn, utána kezdhetsz.'},
+  {sel:['.opps'],t:'Az ellenfeleid',x:'A nevük mellett az összesített pontjuk. Itt látod, ki a felvevő és ki a védő, hány ütést vittek, és ha 20-at vagy 40-et mondanak be. Az „oszt” jelzi az osztót.'},
+  {sel:['.table'],t:'Az asztal',x:'A felső sávban a játék, az adu és hogy hányadik ütésnél tartotok. Középre kerülnek a kijátszott lapok.'},
+  {sel:['#dock'],t:'A lapjaid',x:'Mindig itt vannak, egy sorban. Ha nem fér ki mind, húzd jobbra-balra. Koppintással jelölsz ki vagy játszol ki egy lapot, hosszan nyomva nagyban mutatja. Fölötte a saját pontod és a „Talon és ütések”.'},
+  {sel:['#panel'],t:'Itt döntesz',x:'Licit (a játékok csoportokba rendezve), talonfelvétel, kontra és a „Felmutatom”. A „Tipp” megmondja, mit lépne egy tapasztalt játékos, és miért. A ··· gomb mögött van a „Játszd le helyettem” és a bedobás.'},
+  {sel:['#menuBtn'],t:'Menü',x:'Itt találod a Szabályokat, a Statisztikádat és ezt a bemutatót, valamint a beállításokat: oktató mód, betűméret és a botok kockázata.'},
+  {t:'Jó játékot!',x:'Ha elakadsz, nyomd meg a Tippet. Játék közben egy-egy rövid tipp még felugrik, amikor először kerülsz új helyzetbe.'}
+];
+function unionRect(sels){
+  let r=null;
+  for(const q of sels){
+    const el=document.querySelector(q);if(!el)continue;
+    const b=el.getBoundingClientRect();if(!b.width&&!b.height)continue;
+    r=r?{left:Math.min(r.left,b.left),top:Math.min(r.top,b.top),right:Math.max(r.right,b.right),bottom:Math.max(r.bottom,b.bottom)}:{left:b.left,top:b.top,right:b.right,bottom:b.bottom};
+  }
+  return r;
+}
+// a buborék a célelem alá (vagy fölé) kerül, a nyíl az elem felé mutat
+function placeBubble(bub,r,pad){
+  const vw=innerWidth,vh=innerHeight,w=bub.offsetWidth,h=bub.offsetHeight;
+  bub.classList.remove('up','down','mid');
+  if(!r){bub.classList.add('mid');bub.style.left=Math.max(12,(vw-w)/2)+'px';bub.style.top=Math.max(12,(vh-h)/2)+'px';return;}
+  const cx=(r.left+r.right)/2,left=Math.max(12,Math.min(cx-w/2,vw-w-12));let top;
+  if(r.bottom+pad+12+h<=vh-8){top=r.bottom+pad+12;bub.classList.add('up');}
+  else if(r.top-pad-12-h>=8){top=r.top-pad-12-h;bub.classList.add('down');}
+  else{top=Math.max(8,vh-h-8);bub.classList.add('mid');}
+  // ha a cél épp nem látszik (kigörgetett), a buborék a képernyőn marad, nyíl nélkül
+  if(top<8||top+h>vh-8){top=Math.max(8,Math.min(top,vh-h-8));bub.classList.remove('up','down');bub.classList.add('mid');}
+  bub.style.left=left+'px';bub.style.top=top+'px';bub.style.setProperty('--ax',Math.max(18,Math.min(cx-left,w-18))+'px');
+}
+function tourDraw(){
+  const st=TOUR[TOUR_I],last=TOUR_I===TOUR.length-1,bub=$('tourBub'),spot=document.querySelector('#tour .tspot');
+  bub.innerHTML=`<h3>${st.t}</h3><p>${st.x}</p><div class="tnav">${last?'<span style="margin-right:auto"></span>':`<button class="tskip" id="tSkip">Kihagyom</button>`}<span class="cnt">${TOUR_I+1} / ${TOUR.length}</span>${TOUR_I?`<button class="btn ghost" id="tBack">Vissza</button>`:''}<button class="btn" id="tNext">${TOUR_I===0?'Mutasd':last?'Kezdjük':'Tovább'}</button></div>`;
+  let r=null;
+  if(st.sel){
+    // a célt a képernyő közepére görgetjük; ha nagy, a tetejét mutatjuk
+    const el=document.querySelector(st.sel[0]);
+    if(el){const b=el.getBoundingClientRect();window.scrollBy({top:b.top-(b.height>innerHeight*0.5?16:(innerHeight-b.height)/3),behavior:'instant'});}
+    r=unionRect(st.sel);
+  }
+  const pad=6;
+  if(r){spot.classList.remove('none');Object.assign(spot.style,{left:(r.left-pad)+'px',top:(r.top-pad)+'px',width:(r.right-r.left+2*pad)+'px',height:(r.bottom-r.top+2*pad)+'px'});}
+  else{spot.classList.add('none');spot.removeAttribute('style');}
+  placeBubble(bub,r,pad);
+  $('tNext').onclick=()=>{if(last)endTour();else{TOUR_I++;tourDraw();}};
+  if($('tBack'))$('tBack').onclick=()=>{TOUR_I--;tourDraw();};
+  if($('tSkip'))$('tSkip').onclick=endTour;
+  $('tNext').focus({preventScroll:true});
+}
+function startTour(){
+  TOUR_ON=true;TOUR_I=0;clearTimeout(timer);hideTip();
+  ['rules','statsOv','menuOv','a2hsOv','seeOv'].forEach(id=>$(id).classList.remove('show'));
+  $('tour').classList.add('show');tourDraw();
+}
+function endTour(){
+  $('tour').classList.remove('show');TOUR_ON=false;
+  try{localStorage.setItem(TOURKEY,'1');}catch(e){}
+  window.scrollTo({top:0,behavior:'instant'});
+  if(G)advance();
+}
+addEventListener('resize',()=>{if(TOUR_ON)tourDraw();else if(UI.tip)maybeTip();});
+document.addEventListener('keydown',e=>{
+  if(!TOUR_ON)return;
+  if(e.key==='Escape'){e.preventDefault();endTour();}
+  else if(e.key==='ArrowRight'||e.key==='Enter'){e.preventDefault();if(TOUR_I===TOUR.length-1)endTour();else{TOUR_I++;tourDraw();}}
+  else if(e.key==='ArrowLeft'&&TOUR_I>0){e.preventDefault();TOUR_I--;tourDraw();}
+});
+$('tourAgain').onclick=()=>{try{localStorage.removeItem(TIPKEY);}catch(e){}TIPS_SEEN=new Set();startTour();};
+$('mTour').onclick=()=>{$('menuOv').classList.remove('show');$('tourAgain').onclick();};
+
+// ---- helyzeti tippek: minden helyzet első előfordulásakor egyszer ----
+let TIPS_SEEN=new Set();try{TIPS_SEEN=new Set(JSON.parse(localStorage.getItem(TIPKEY)||'[]'));}catch(e){}
+const TIPS=[
+  {k:'pickup',when:()=>G.phase==='bid'&&G.turn===0&&!!$('pickBtn'),sel:'#pickBtn',x:'Felveheted a talont, és erősebb játékot mondhatsz. Ha passzolsz, a mostani licit marad. Ha bizonytalan vagy, nyomd meg a Tippet.'},
+  {k:'kontra',when:()=>G.phase==='kontra'&&G.turn===0&&G.decl!==0&&!!$('konBtn'),sel:'#panel .chips',x:'Most mondhatsz kontrát: ha szerinted a felvevő elbukik, duplázod a tétet. Adus játékban a kontra a két védőé közös.'},
+  {k:'marr',when:()=>(G.phase==='play'||G.phase==='kontra')&&[1,2].some(q=>G.marr[q]&&G.marr[q].length),sel:()=>'#opp'+[1,2].find(q=>G.marr[q]&&G.marr[q].length),x:'„Bemondás: 20”: a király és a felső egy színből 20 pontot ér (adu színben 40). Partiban a fél pontjaihoz adódik, ha vitt ászt, X-et vagy az utolsó ütést.'},
+  {k:'claim',when:()=>!!$('claimBtn'),sel:'#claimBtn',x:'Ha már biztos, hogy innentől minden ütés a tiéd, felmutathatod a lapjaidat, és a leosztás véget ér. Nem kötelező, tovább is játszhatsz.'},
+  {k:'result',when:()=>G.phase==='result'&&!REV.show,sel:'#panel .res',x:'A leosztás elszámolása: soronként és védőnként látod, mi mennyit ért. Oktató módban a „Mi lett volna jobb?” elmagyarázza a döntéseidet.'}
+];
+const tipSel=t=>typeof t.sel==='function'?t.sel():t.sel;
+function hideTip(){const b=$('tipBub');if(b)b.style.display='none';UI.tip=null;}
+function seenTip(k){TIPS_SEEN.add(k);try{localStorage.setItem(TIPKEY,JSON.stringify([...TIPS_SEEN]));}catch(e){}}
+function placeTip(){
+  const t=UI.tip&&TIPS.find(x=>x.k===UI.tip),el=t&&document.querySelector(tipSel(t));if(!el)return;
+  const r=el.getBoundingClientRect();placeBubble($('tipBub'),{left:r.left,top:r.top,right:r.right,bottom:r.bottom},4);
+}
+function maybeTip(){
+  if(TOUR_ON||!G){hideTip();return;}
+  // ha a helyzet elmúlt (pl. döntöttél), a tipp látottnak számít
+  const cur=UI.tip&&TIPS.find(t=>t.k===UI.tip);
+  if(cur&&!cur.when()){seenTip(cur.k);hideTip();}
+  const tip=UI.tip?TIPS.find(t=>t.k===UI.tip):TIPS.find(t=>!TIPS_SEEN.has(t.k)&&t.when());
+  if(!tip||!document.querySelector(tipSel(tip))){hideTip();return;}
+  UI.tip=tip.k;const b=$('tipBub');
+  b.innerHTML=`<p>${tip.x}</p><div class="tnav"><button class="btn" id="tipOk">Értem</button></div>`;
+  const fresh=b.style.display!=='block'||b.dataset.k!==tip.k;b.dataset.k=tip.k;
+  b.style.display='block';
+  // új tippnél a célelemet a képernyőre görgetjük, hogy a buborék mellette legyen
+  if(fresh){const el=document.querySelector(tipSel(tip)),r=el.getBoundingClientRect();if(r.top<0||r.bottom>innerHeight)el.scrollIntoView({block:'center',behavior:'instant'});}
+  requestAnimationFrame(placeTip);
+  $('tipOk').onclick=()=>{seenTip(tip.k);hideTip();};
+}
+addEventListener('scroll',()=>{if(UI.tip)placeTip();},{passive:true});
+
+// ---- kezdőképernyőre tétel (telepítés): a lábléc gombja, ha még nem onnan fut ----
+let installEvt=null;
+const standalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const isIOS=()=>/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+if(!standalone())$('a2hsBtn').hidden=false;
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e;$('a2hsBtn').hidden=false;});
+addEventListener('appinstalled',()=>{$('a2hsBtn').hidden=true;$('a2hsOv').classList.remove('show');});
+$('a2hsBtn').onclick=async()=>{
+  // Chrome, Edge, Android: a böngésző saját telepítő ablaka
+  if(installEvt){installEvt.prompt();try{await installEvt.userChoice;}catch(e){}installEvt=null;return;}
+  const ios=isIOS(),and=/Android/.test(navigator.userAgent);
+  const steps=ios?`<ol><li>Koppints a <b>Megosztás</b> gombra (négyzet felfelé mutató nyíllal; Safariban alul vagy a címsor mellett).</li><li>Görgess le, és válaszd a <b>Főképernyőhöz adás</b> lehetőséget.</li><li>Koppints a <b>Hozzáadás</b> gombra.</li></ol><p class="small">iPhone-on a főképernyőről indított játék külön tárolót kap: a Safariban gyűjtött pontszám és statisztika ott nem jelenik meg, onnantól külön számolódik.</p>`
+    :and?`<ol><li>Nyisd meg a böngésző menüjét (jobb felül a <b>⋮</b>).</li><li>Válaszd az <b>Alkalmazás telepítése</b> vagy a <b>Hozzáadás a kezdőképernyőhöz</b> lehetőséget.</li></ol>`
+    :`<p>Chrome-ban vagy Edge-ben a címsor jobb oldalán lévő telepítés ikonnal (vagy a menü <b>Telepítés</b> pontjával) külön ablakban, saját ikonnal futtathatod. Safariban: Fájl menü → <b>Hozzáadás a Dockhoz</b>.</p>`;
+  $('a2hsSheet').innerHTML=`<h2>Tedd ki a kezdőképernyőre</h2><p>Így egy koppintással indul, saját ikonnal, a böngésző címsora nélkül, mint egy alkalmazás.</p>${steps}<div class="row" style="margin-top:12px"><button class="btn" id="closeA2hs">Rendben</button></div>`;
+  $('closeA2hs').onclick=()=>$('a2hsOv').classList.remove('show');
+  $('a2hsOv').classList.add('show');
+};
+$('a2hsOv').onclick=e=>{if(e.target.id==='a2hsOv')$('a2hsOv').classList.remove('show');};
+$('mA2hs').onclick=()=>{$('menuOv').classList.remove('show');$('a2hsBtn').onclick();};
+
+// ---- indulás: félbehagyott leosztás folytatása, első alkalommal bemutató ----
+let firstVisit=false;try{firstVisit=!localStorage.getItem(TOURKEY);}catch(e){}
+TOUR_ON=firstVisit;
+let resumed=false;
+if(loadGame()){try{advance();resumed=true;}catch(e){G=null;REV={bids:[],kon:null,plays:[],an:null,show:false};}}
+if(!resumed)nextDeal();
+else if(G.phase!=='result')toast('Folytatod a félbehagyott leosztást.');
+if(firstVisit)setTimeout(startTour,250);
+
 </script>
 </body>
 </html>
