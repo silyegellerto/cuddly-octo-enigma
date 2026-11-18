@@ -1,0 +1,2177 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rablóulti</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alegreya:wght@700;800&family=Atkinson+Hyperlegible+Next:wght@400;500;600;700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+  --bg:#e4e8de; --surface:#f6f7f1; --ink:#1a201b; --muted:#3f4841; --line:#c9d0c2;
+  --felt:#2c5e48; --felt2:#1d4433; --felt-ink:#eef3ea; --felt-muted:#e2efe6; --felt-box:rgba(0,0,0,.2);
+  --accent:#9b2a26; --accent-ink:#fff8f2; --brass:#d6a93d;
+  --chip:#ffffff; --chip-ink:#1a201b;
+  --c0:#c0332b; --c1:#c7870c; --c2:#2e7a3a; --c3:#7b5131;
+  --good:#2e7a3a; --bad:#b0302a; --hint-bg:#f8eed2; --fs:1; --go:#2e7a3a; --go-ink:#ffffff;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#151a16; --surface:#1f2620; --ink:#ebf0e6; --muted:#c2cdc2; --line:#344036;
+    --felt:#20493a; --felt2:#132e23; --felt-box:rgba(0,0,0,.28);
+    --accent:#c4413a; --chip:#273029; --chip-ink:#ebf0e6;
+    --good:#5db36b; --bad:#e2675f; --hint-bg:#2d2a1c; --go:#4fa862; --go-ink:#0d1a10;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#151a16; --surface:#1f2620; --ink:#ebf0e6; --muted:#c2cdc2; --line:#344036;
+  --felt:#20493a; --felt2:#132e23; --felt-box:rgba(0,0,0,.28);
+  --accent:#c4413a; --chip:#273029; --chip-ink:#ebf0e6;
+  --good:#5db36b; --bad:#e2675f; --hint-bg:#2d2a1c; --go:#4fa862; --go-ink:#0d1a10;
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible Next","Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:calc(17px * var(--fs));line-height:1.45;font-weight:500;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:760px;margin:0 auto;padding:12px 12px 28px}
+button{font:inherit;cursor:pointer}
+button:focus-visible,.card:focus-visible{outline:3px solid var(--brass);outline-offset:2px}
+
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.hbtns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.iconbtn{border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 12px;font-size:calc(15px * var(--fs));font-weight:500}
+.iconbtn.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+h1{font-family:Alegreya,Georgia,serif;font-weight:800;font-size:calc(30px * var(--fs));margin:0;line-height:1}
+
+.scores{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.score{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:6px 10px;display:flex;justify-content:space-between;align-items:baseline;gap:6px;font-size:calc(15px * var(--fs))}
+.score b{font-variant-numeric:tabular-nums;font-size:calc(21px * var(--fs));font-weight:800}
+.score .dl{color:var(--muted);font-size:calc(15px * var(--fs))}
+.neg{color:var(--bad)} .pos{color:var(--good)}
+
+.table{background:radial-gradient(ellipse at 50% 45%,var(--felt) 0%,var(--felt2) 100%);border-radius:22px;padding:10px;color:var(--felt-ink);box-shadow:inset 0 0 0 4px rgba(0,0,0,.12)}
+.opps{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.opp{background:var(--felt-box);border-radius:14px;padding:8px 10px;border:2px solid transparent;min-height:74px;transition:border-color .2s}
+.opp.active{border-color:var(--brass)}
+.opp .nm{display:flex;justify-content:space-between;align-items:center;gap:6px;font-weight:700}
+.badge{font-size:calc(15px * var(--fs));font-weight:700;border-radius:999px;padding:2px 8px;background:rgba(255,255,255,.14);color:var(--felt-ink);white-space:nowrap}
+.badge.decl{background:var(--brass);color:#2a2008}
+.opp .meta{font-size:calc(15px * var(--fs));color:var(--felt-muted);margin-top:4px;min-height:18px}
+.backs{display:flex;margin-top:6px;height:24px}
+.backs i{display:block;width:16px;height:24px;border-radius:3px;margin-right:-8px;background:repeating-linear-gradient(45deg,#7d2520 0 3px,#9b2f28 3px 6px);border:1.5px solid #f3ead6}
+.open{display:flex;flex-wrap:wrap;gap:3px;margin-top:6px}
+.open .card{--cw:30px}
+
+.center{position:relative;height:200px;margin:6px 0 2px}
+.slot{position:absolute;--cw:64px}
+.slot.seat2{left:22%;top:6px;transform:translateX(-50%) rotate(-6deg)}
+.slot.seat1{right:22%;top:6px;transform:translateX(50%) rotate(6deg)}
+.slot.seat0{left:50%;bottom:4px;transform:translateX(-50%)}
+.slot .card{animation:drop .22s ease-out}
+.slot .card.win{box-shadow:0 0 0 3px var(--brass),0 6px 16px rgba(0,0,0,.35)}
+@keyframes drop{from{transform:translateY(-10px);opacity:0}to{transform:none;opacity:1}}
+.info{position:absolute;left:50%;top:50%;transform:translate(-50%,-62%);text-align:center;font-size:calc(15px * var(--fs));color:var(--felt-ink);width:48%;line-height:1.3}
+.info .ct{font-family:Alegreya,Georgia,serif;font-weight:800;font-size:calc(20px * var(--fs))}
+.info .sub{color:var(--felt-muted);font-size:calc(15px * var(--fs))}
+.info svg{width:14px;height:14px;vertical-align:-2px}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;margin:10px 0}
+.status{font-weight:500;margin:0 0 8px}
+.status:last-child{margin-bottom:0}
+.err{color:var(--bad);font-size:calc(15px * var(--fs));margin:6px 0 0}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{appearance:none;border:0;border-radius:12px;padding:11px 18px;font-weight:700;font-size:calc(17px * var(--fs));background:var(--accent);color:var(--accent-ink)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--ink)}
+.btn.go{background:var(--go);color:var(--go-ink)}
+.btn.ghost.danger{border-color:var(--bad);color:var(--bad)}
+.btn.ghost.danger.armed{background:var(--bad);color:var(--accent-ink)}
+.btn.small{padding:8px 14px;font-size:calc(15px * var(--fs));margin-top:4px}
+.lbl2{font-size:calc(15px * var(--fs));color:var(--muted);margin:10px 0 6px}
+.chips{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.chip{border:1.5px solid var(--line);background:var(--chip);color:var(--chip-ink);border-radius:10px;padding:8px 10px;font-size:calc(16px * var(--fs));display:flex;justify-content:space-between;align-items:center;gap:6px;text-align:left}
+.chip small{color:var(--muted);font-weight:700}
+.chip.on{border-color:var(--accent);background:var(--accent);color:var(--accent-ink)}
+.chip.on small{color:var(--accent-ink)}
+.suits{display:flex;gap:6px}
+.suits .chip{flex:1;justify-content:center}
+.suits svg{width:18px;height:18px}
+.ico.s0{color:var(--c0)} .ico.s1{color:var(--c1)} .ico.s2{color:var(--c2)} .ico.s3{color:var(--c3)}
+
+.mine{display:flex;justify-content:space-between;align-items:center;font-size:calc(15px * var(--fs));color:var(--muted);margin:2px 2px 6px}
+.hand{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.hand .card{--cw:clamp(46px,calc((100% - 30px) / 6),70px);width:var(--cw);transition:transform .15s}
+.hand .card.play{cursor:pointer}
+.hand .card.play:hover{transform:translateY(-4px)}
+.hand .card.dim{filter:brightness(.6) saturate(.5)}
+.hand .card.sel{transform:translateY(-9px);box-shadow:0 0 0 3px var(--accent),0 6px 12px rgba(0,0,0,.25)}
+.hand .card.hint{outline:3px dashed var(--brass);outline-offset:3px}
+.hand .card.warn{box-shadow:0 0 0 3px var(--bad)}
+
+.card{width:var(--cw);aspect-ratio:2/3;background:#fff center/cover no-repeat;border:1px solid rgba(0,0,0,.28);border-radius:calc(var(--cw) * .09);position:relative;box-shadow:0 1px 3px rgba(0,0,0,.25);user-select:none;-webkit-user-select:none;flex:none}
+.card.t{box-shadow:0 0 0 2px var(--brass),0 1px 3px rgba(0,0,0,.25)}
+
+.res{width:100%;border-collapse:collapse;font-size:calc(16px * var(--fs));margin:4px 0 10px}
+.res td{padding:6px 4px;border-bottom:1px solid var(--line)}
+.res td:last-child{text-align:right;font-weight:700}
+.res td.det{color:var(--muted);font-size:calc(15px * var(--fs))}
+.mark{font-weight:800}
+.talon{display:flex;gap:4px;align-items:center;font-size:calc(15px * var(--fs));color:var(--muted);margin-bottom:10px}
+.talon .card{--cw:34px}
+.tw{overflow-x:auto}
+.linkbtn{border:0;background:none;color:var(--accent);font:inherit;font-size:calc(15px * var(--fs));text-decoration:underline;padding:0 0 0 8px;white-space:nowrap}
+.mine .auto{white-space:nowrap}
+.trio{display:flex;gap:6px;align-items:flex-end}
+.trio .card{--cw:56px}
+.trickrow{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--line)}
+.trickrow .tn{width:24px;color:var(--muted);font-weight:700}
+.trickrow .tw2{margin-left:auto;font-weight:700}
+.tc{display:flex;flex-direction:column;align-items:center;gap:2px}
+.tc small{font-size:calc(15px * var(--fs));color:var(--muted)}
+.card.win{box-shadow:0 0 0 3px var(--brass)}
+#seeOv .small,.sheet .small{font-size:calc(15px * var(--fs));color:var(--muted)}
+
+details.log{margin-top:12px;font-size:calc(15px * var(--fs));color:var(--muted)}
+details.log summary{cursor:pointer;font-weight:500}
+details.log ol{margin:6px 0 0;padding-left:20px;max-height:220px;overflow:auto}
+
+.hintrow{margin-top:10px;align-items:center}
+.auto{display:flex;gap:6px;align-items:center;font-size:calc(15px * var(--fs));color:var(--muted)}
+.auto input{width:18px;height:18px;accent-color:var(--accent)}
+.hintbox{margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--hint-bg);border-left:4px solid var(--brass);font-size:calc(16px * var(--fs))}
+.hintbox p{margin:0 0 6px}
+.hintbox .rule{color:var(--muted);font-size:calc(15px * var(--fs))}
+.hintbox ul{margin:0 0 6px;padding-left:18px;font-size:calc(15px * var(--fs))}
+
+.analysis{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.analysis h3{font-family:Alegreya,Georgia,serif;font-weight:800;font-size:calc(22px * var(--fs));margin:0 0 4px}
+.analysis .an-h{font-family:Alegreya,Georgia,serif;font-size:calc(18px * var(--fs));margin:14px 0 4px}
+.analysis p{margin:0 0 8px}
+.analysis ul{margin:0 0 8px;padding-left:20px}
+.analysis li{margin-bottom:4px}
+.analysis .note{color:var(--muted);font-size:calc(15px * var(--fs));margin-top:10px}
+.an-t{border-collapse:collapse;width:100%;font-size:calc(15px * var(--fs));margin:4px 0 8px}
+.an-t th{text-align:left;font-weight:500;color:var(--muted);padding:4px;border-bottom:1px solid var(--line)}
+.an-t td{padding:5px 4px;border-bottom:1px solid var(--line)}
+.an-t td:not(:first-child),.an-t th:not(:first-child){text-align:right;white-space:nowrap}
+.an-t tr.you td{background:var(--hint-bg)}
+.an-t td.best{font-weight:700}
+
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;z-index:20;padding:calc(env(safe-area-inset-top,0px) + 16px) 12px calc(env(safe-area-inset-bottom,0px) + 16px);overflow:auto}
+.ov.show{display:block}
+.sheet{max-width:620px;margin:0 auto;background:var(--surface);color:var(--ink);border-radius:18px;padding:18px}
+.sheet h2{font-family:Alegreya,Georgia,serif;font-weight:800;margin:0 0 8px;font-size:calc(25px * var(--fs))}
+.sheet h3{font-family:Alegreya,Georgia,serif;margin:16px 0 4px;font-size:calc(19px * var(--fs))}
+.sheet p,.sheet li{line-height:1.5}
+.sheet table{border-collapse:collapse;width:100%;font-size:calc(16px * var(--fs))}
+.sheet td{padding:4px 6px;border-bottom:1px solid var(--line)}
+@media (min-width:600px){
+  .center{height:230px}
+  .slot{--cw:76px}
+  h1{font-size:calc(36px * var(--fs))}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.c0{background-image:url(cards/c0.webp)}
+.c1{background-image:url(cards/c1.webp)}
+.c2{background-image:url(cards/c2.webp)}
+.c3{background-image:url(cards/c3.webp)}
+.c4{background-image:url(cards/c4.webp)}
+.c5{background-image:url(cards/c5.webp)}
+.c6{background-image:url(cards/c6.webp)}
+.c7{background-image:url(cards/c7.webp)}
+.c8{background-image:url(cards/c8.webp)}
+.c9{background-image:url(cards/c9.webp)}
+.c10{background-image:url(cards/c10.webp)}
+.c11{background-image:url(cards/c11.webp)}
+.c12{background-image:url(cards/c12.webp)}
+.c13{background-image:url(cards/c13.webp)}
+.c14{background-image:url(cards/c14.webp)}
+.c15{background-image:url(cards/c15.webp)}
+.c16{background-image:url(cards/c16.webp)}
+.c17{background-image:url(cards/c17.webp)}
+.c18{background-image:url(cards/c18.webp)}
+.c19{background-image:url(cards/c19.webp)}
+.c20{background-image:url(cards/c20.webp)}
+.c21{background-image:url(cards/c21.webp)}
+.c22{background-image:url(cards/c22.webp)}
+.c23{background-image:url(cards/c23.webp)}
+.c24{background-image:url(cards/c24.webp)}
+.c25{background-image:url(cards/c25.webp)}
+.c26{background-image:url(cards/c26.webp)}
+.c27{background-image:url(cards/c27.webp)}
+.c28{background-image:url(cards/c28.webp)}
+.c29{background-image:url(cards/c29.webp)}
+.c30{background-image:url(cards/c30.webp)}
+.c31{background-image:url(cards/c31.webp)}
+html[data-fs="0"]{--fs:.9} html[data-fs="2"]{--fs:1.15}
+.status{font-weight:700}
+.hintbox .rule{color:var(--ink);font-style:italic}
+.chip small,.score .dl,.opp .meta,.badge{font-weight:600}
+img.ico{width:1.2em;height:1.2em;vertical-align:-.25em;object-fit:contain;display:inline-block}
+.suits .chip{flex-direction:column;gap:4px;padding:10px 6px;font-weight:700}
+.suits .chip img.ico{width:40px;height:40px}
+.suits .chip:disabled{opacity:.4}
+.info img.ico{width:1.3em;height:1.3em}
+/* kártya nagyító: egérrel rámutatva, érintésnél hosszan nyomva */
+.card{-webkit-touch-callout:none}
+#zoom{position:fixed;z-index:1000;display:none;pointer-events:none;--cw:min(44vw,170px);box-shadow:0 10px 30px rgba(0,0,0,.45);border:1px solid rgba(0,0,0,.35);animation:none}
+@media (prefers-reduced-motion:no-preference){#zoom.on{animation:zin .12s ease-out}}
+@keyframes zin{from{transform:scale(.9);opacity:.85}to{transform:none;opacity:1}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="su0" viewBox="0 0 24 24"><path fill="currentColor" d="M12 21.4l-1.5-1.3C5.4 15.4 2 12.3 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.5c0 3.8-3.4 6.9-8.5 11.5L12 21.4z"/></symbol>
+    <symbol id="su1" viewBox="0 0 24 24"><rect x="10.3" y="1.6" width="3.4" height="3.6" rx="1.2" fill="currentColor"/><circle cx="12" cy="13.2" r="8.6" fill="currentColor"/><path d="M4.6 11.6h14.8" stroke="var(--card-bg)" stroke-width="1.4" fill="none"/><circle cx="12" cy="16.6" r="1.6" fill="var(--card-bg)"/><path d="M12 18.2v3.4" stroke="var(--card-bg)" stroke-width="1.3"/></symbol>
+    <symbol id="su2" viewBox="0 0 24 24"><path fill="currentColor" d="M12 1.5C6.8 6 4 10.2 4 14.4 4 18.6 7.6 22 12 22s8-3.4 8-7.6C20 10.2 17.2 6 12 1.5z"/><path d="M12 5.5V22M12 11l-3.6-2.6M12 11l3.6-2.6M12 15.5l-4.4-3M12 15.5l4.4-3" stroke="var(--card-bg)" stroke-width="1.2" fill="none" stroke-linecap="round"/></symbol>
+    <symbol id="su3" viewBox="0 0 24 24"><rect x="11.1" y="0.8" width="1.8" height="3" rx=".6" fill="currentColor"/><path fill="currentColor" d="M4.5 10.2C4.5 6.3 7.9 3.4 12 3.4s7.5 2.9 7.5 6.8H4.5z"/><path fill="currentColor" opacity=".72" d="M6.2 11.4h11.6c0 5.6-2.7 10.2-5.8 11.2-3.1-1-5.8-5.6-5.8-11.2z"/><path d="M6 7.6h12M7.5 5.6h9" stroke="var(--card-bg)" stroke-width=".9" fill="none" opacity=".7"/></symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <header>
+    <h1>Rablóulti</h1>
+    <div class="hbtns">
+      <button class="iconbtn" id="tutorBtn" aria-pressed="false">Oktató mód</button>
+      <button class="iconbtn" id="rulesBtn">Szabályok</button>
+      <select class="iconbtn" id="fsSel" aria-label="Betűméret"><option value="0">A−</option><option value="1">A</option><option value="2">A+</option></select>
+      <select class="iconbtn" id="riskSel" aria-label="Botok kockázatvállalása"><option value="0">Kockázat: óvatos</option><option value="1">Kockázat: normál</option><option value="2">Kockázat: merész</option></select>
+      <button class="iconbtn" id="newBtn">Új játék</button>
+    </div>
+  </header>
+  <div class="scores" id="scores"></div>
+  <div class="table">
+    <div class="opps">
+      <div class="opp" id="opp2"></div>
+      <div class="opp" id="opp1"></div>
+    </div>
+    <div class="center" id="center"></div>
+  </div>
+  <div class="panel" id="panel"></div>
+  <div class="mine" id="mine"></div>
+  <div class="ov" id="seeOv"><div class="sheet" id="seeSheet"></div></div>
+  <div class="hand" id="hand"></div>
+  <details class="log"><summary>Napló</summary><ol id="log"></ol></details>
+</div>
+
+<div class="ov" id="rules">
+  <div class="sheet">
+    <h2>Röviden a szabályokról</h2>
+    <p>32 lapos magyar kártya, három játékos. A kezdő 12 lapot kap, a többiek 10-et. A kezdőnek licitálnia kell: letesz 2 lapot a talonba, és bemond egy játékot. Utána sorban mindenki passzolhat, vagy felveheti a talont – ekkor neki is le kell tennie 2 lapot, és csak magasabbat mondhat. Ha a licit után ketten egymás után passzolnak, a licit véget ér, és a felvevő játszik a másik kettő ellen.</p>
+    <h3>Lapsorrend</h3>
+    <p>Adus játékban: ász, X, király, felső, alsó, IX, VIII, VII. Betliben és durchmarsban nincs adu, és a X a helyére kerül: ász, király, felső, alsó, X, IX, VIII, VII. Az ász és a X 10–10 pontot ér, az utolsó ütés további 10-et, összesen 90 pont van.</p>
+    <h3>Kötelező lapok</h3>
+    <p>Színt kell adni, és ha lehet, felül kell ütni. Ha nincs a hívott színből, adut kell adni (és ha lehet, a korábbi adut felülütni). Ha adu sincs, bármit le lehet tenni.</p>
+    <h3>Játékok</h3>
+    <ul>
+      <li><b>Parti:</b> a felvevőnek több pontot kell gyűjtenie, mint a két védőnek együtt. A király+felső párok (20, adu színben 40) itt számítanak, ha az adott fél vitt ászt, X-et vagy az utolsó ütést. A talonba tett ászok és X-ek a védőké.</li>
+      <li><b>40-100:</b> az adu királlyal és felsővel együtt legalább 100 pont kell (a 40 mellé 60 pont ütésből).</li>
+      <li><b>20-100:</b> egy nem adu király+felső mellé 80 pont kell ütésből.</li>
+      <li><b>Ulti:</b> a felvevő adu VII-esének kell az utolsó ütést vinnie. Amíg más adu van nála, a VII-est nem játszhatja ki. Bukott ulti dupla árat fizet. Az ulti mellé partit is játszol.</li>
+      <li><b>Betli:</b> egyetlen ütést sem szabad vinni.</li>
+      <li><b>Durchmars:</b> minden ütést el kell vinni. Adus változatban (makk, zöld, tök vagy piros) a sorrend ász, X, király…; szín nélküli változatban ász, király, felső, alsó, X… A szín nélküli durchmars kontrája egyéni, az adusé közös.</li>
+      <li><b>Összetett vállalások:</b> a 40-100, a 20-100, az ulti és az adus durchmars kombinálható, például 40-100 ulti durchmars. Minden rész külön számít, az egyenleget fizetik.</li>
+      <li><b>Kényszervállalás:</b> 40-100 a 40 nélkül, 20-100 a 20 nélkül is mondható. Ilyenkor a bemondás pontja nem számít, és a kulcslapot tartó védő kötelezően kontrázza.</li>
+      <li><b>Licit:</b> csak erősebb vállalással lehet tovább licitálni. Az ulti és a piros ulti esetén a parti pontja csak döntetlennél számít, ezért az ulti (4+1) után betli (5) mondható. Azonos értéknél az egyszerű vállalás erősebb a kombináltnál (pl. a 20-100 a 40-100 ultinál), az egyforma erősségűek kizárják egymást.</li>
+      <li><b>Piros:</b> a piros az adu, és a játék dupla értékű.</li>
+      <li><b>Terített:</b> az első ütés után a felvevő lapjai mindenki előtt nyitva vannak.</li>
+    </ul>
+    <h3>Kontra</h3>
+    <p>A licit után, az első lap előtt a védők kontrát mondhatnak a játék bármelyik részére (például csak az ultira). Adus játékban a kontra közös, mindkét védő tétjét duplázza; betliben és adu nélküli durchmarsban egyéni. A felvevő rekontrával felelhet, ez négyszerez. A bukott ulti kontrázva háromszoros, rekontrázva ötszörös árat fizet.</p>
+    <h3>Csendes bemondások</h3>
+    <ul>
+      <li><b>Csendes ulti:</b> adus játékban, ha nincs bemondva ulti, és valaki az adu VII-essel viszi az utolsó ütést, 2 pontot ér. Ha az utolsó ütésben kijátszott adu VII-es nem viszi el, az 4 pont büntetés. A védők közösen nyernek vagy fizetnek.</li>
+      <li><b>Csendes négy ász:</b> partiban, ha egy fél ütéseivel mind a négy ászt megszerzi, 2 pontot ér.</li>
+      <li><b>Csendes durchmars:</b> adus játékban, ha a felvevő bemondás nélkül minden ütést elvisz, 3 pontot ér.</li>
+      <li><b>Csendes 100:</b> partiban, ha egy fél a bemondásokkal együtt eléri a 100 pontot, 2 pontot kap. A bemondás csak akkor számít, ha az adott fél vitt ászt, X-et vagy az utolsó ütést.</li>
+      <li>Piros játékban ezek is duplán érnek. A kontra nem vonatkozik rájuk.</li>
+    </ul>
+    <h3>Korai vége</h3>
+    <p>Ha a bemondás minden része eldőlt (a betlis ütést vitt, a durchmarsos ütést vesztett, a 100 már megvan vagy már nem érhető el, az ulti VII-ese idő előtt kiment), a leosztás azonnal véget ér, a maradék lapot nem kell lejátszani. A partit tartalmazó játékok a végéig mennek. Ha a felvevő addig minden ütést vitt, a csendes durchmars miatt tovább játszunk.</p>
+    <h3>Felmutatás</h3>
+    <p>Ha egy ütés elején már biztos, hogy innentől minden ütés az egyik félé (a felvevőé, vagy betliben egyetlen ütés sem az övé, vagy minden a védőké), az a fél felmutatja a lapjait, és a leosztás véget ér. A gép minden szabályos lejátszást végigszámol, csak akkor engedi. Ha te mutathatsz fel, megjelenik a „Felmutatom” gomb; a botok maguktól felmutatnak.</p>
+    <h3>Bedobás</h3>
+    <p>A licitnyerő bármikor bedobhatja a lapjait: amikor a licit visszajön hozzá, vagy játék közben. Ilyenkor a bemondást kontrázott áron fizeti ki mindkét védőnek (a bukott ulti kontrázva háromszoros). Ha a kezdő parti után senki nem vette fel a talont, a bedobás így 2-2 egység.</p>
+    <h3>Talonolvasás és gyűjtés</h3>
+    <p>A botok és a Tipp „olvassák” a talont: az előző licitáló vállalásából következtetnek arra, mit tehetett le (ulti után inkább kis lapokat, betli után magasakat). A passzt sem tekintik ingyenesnek, hiszen védőként átlagosan veszít az ember, és gyűjthetnek is: tartó licittel a célukra dolgoznak, abban bízva, hogy a talon visszajön.</p>
+    <h3>Tipp</h3>
+    <p>Amikor te jössz, a „Tipp” gomb megmutatja, mit lépne egy tapasztalt játékos, és miért. A „Mindig mutasd” bekapcsolásával minden lépésnél automatikusan kapsz tanácsot.</p>
+    <h3>Oktató mód</h3>
+    <p>Bekapcsolva minden kör után elemzést kapsz: mi lett volna a lapjaid alapján a legjobb mondás, mit érdemes lett volna a talonba tenni, megérte-e a kontra, és hol tértél el a javasolt lejátszástól. Azt is megmutatja, mit hozott volna a többi játék a lapok ismeretében. Kikapcsolva a kör végén a „Mi lett volna jobb?” gombbal kérheted.</p>
+    <h3>Értékek</h3>
+    <div class="tw"><table id="ctable"></table></div>
+    <p>Ha a felvevő nyer, mindkét védő kifizeti neki az értéket, ha veszít, ő fizet mindkettőnek. Összetett játékban minden rész külön számít.</p>
+    <p style="color:var(--muted);font-size:14px">Egyszerűsített változat: a rekontrát is az első lap előtt kell mondani, nincs szubkontra és négy ász játék.</p>
+    <div class="row" style="margin-top:12px"><button class="btn" id="closeRules">Bezár</button></div>
+  </div>
+</div>
+
+<script>
+// ===== ENGINE START =====
+const SUIT_NAMES=['Piros','Tök','Zöld','Makk'];
+const SUIT_ACC=['pirosat','tököt','zöldet','makkot'];
+const RANK_NAMES=['VII','VIII','IX','X','Alsó','Felső','Király','Ász'];
+const NAME=['Te','Gellért','Samu'];
+const TP=[0,1,2,6,3,4,5,7];
+// licitsor: Jánoska–Zsigri, A rablóulti szabályai
+const CONTRACTS=[
+  {name:'Parti',val:1,comps:{parti:1},kind:'trump'},
+  {name:'Piros parti',val:2,comps:{parti:2},kind:'trump',red:true},
+  {name:'40-100',val:4,comps:{c40:4},kind:'trump'},
+  {name:'Ulti',val:5,comps:{parti:1,ulti:4},kind:'trump'},
+  {name:'Betli',val:5,comps:{betli:5},kind:'betli'},
+  {name:'Durchmars',val:6,comps:{durch:6},kind:'trump'},
+  {name:'Szín nélküli durchmars',val:6,comps:{durch:6},kind:'durch'},
+  {name:'40-100 ulti',val:8,comps:{c40:4,ulti:4},kind:'trump'},
+  {name:'20-100',val:8,comps:{c20:8},kind:'trump'},
+  {name:'Piros 40-100',val:8,comps:{c40:8},kind:'trump',red:true},
+  {name:'Piros ulti',val:10,comps:{parti:2,ulti:8},kind:'trump',red:true},
+  {name:'40-100 durchmars',val:10,comps:{c40:4,durch:6},kind:'trump'},
+  {name:'Ulti durchmars',val:10,comps:{ulti:4,durch:6},kind:'trump'},
+  {name:'Piros betli',val:10,comps:{betli:10},kind:'betli'},
+  {name:'20-100 ulti',val:12,comps:{c20:8,ulti:4},kind:'trump'},
+  {name:'Piros szín nélküli durchmars',val:12,comps:{durch:12},kind:'durch'},
+  {name:'Piros durchmars',val:12,comps:{durch:12},kind:'trump',red:true},
+  {name:'Terített durchmars',val:12,comps:{durch:12},kind:'trump',open:true},
+  {name:'40-100 ulti durchmars',val:14,comps:{c40:4,ulti:4,durch:6},kind:'trump'},
+  {name:'20-100 durchmars',val:14,comps:{c20:8,durch:6},kind:'trump'},
+  {name:'40-100 terített durchmars',val:16,comps:{c40:4,durch:12},kind:'trump',open:true},
+  {name:'Ulti terített durchmars',val:16,comps:{ulti:4,durch:12},kind:'trump',open:true},
+  {name:'Piros 40-100 ulti',val:16,comps:{c40:8,ulti:8},kind:'trump',red:true},
+  {name:'Piros 20-100',val:16,comps:{c20:16},kind:'trump',red:true},
+  {name:'20-100 ulti durchmars',val:18,comps:{c20:8,ulti:4,durch:6},kind:'trump'},
+  {name:'40-100 ulti terített durchmars',val:20,comps:{c40:4,ulti:4,durch:12},kind:'trump',open:true},
+  {name:'20-100 terített durchmars',val:20,comps:{c20:8,durch:12},kind:'trump',open:true},
+  {name:'Piros 40-100 durchmars',val:20,comps:{c40:8,durch:12},kind:'trump',red:true},
+  {name:'Piros ulti durchmars',val:20,comps:{ulti:8,durch:12},kind:'trump',red:true},
+  {name:'Terített betli',val:20,comps:{betli:20},kind:'betli',open:true},
+  {name:'20-100 ulti terített durchmars',val:24,comps:{c20:8,ulti:4,durch:12},kind:'trump',open:true},
+  {name:'Piros 20-100 ulti',val:24,comps:{c20:16,ulti:8},kind:'trump',red:true},
+  {name:'Szín nélküli terített durchmars',val:24,comps:{durch:24},kind:'durch',open:true},
+  {name:'Piros terített durchmars',val:24,comps:{durch:24},kind:'trump',red:true,open:true},
+  {name:'Piros 40-100 ulti durchmars',val:28,comps:{c40:8,ulti:8,durch:12},kind:'trump',red:true},
+  {name:'Piros 20-100 durchmars',val:28,comps:{c20:16,durch:12},kind:'trump',red:true},
+  {name:'Piros 40-100 terített durchmars',val:32,comps:{c40:8,durch:24},kind:'trump',red:true,open:true},
+  {name:'Piros ulti terített durchmars',val:32,comps:{ulti:8,durch:24},kind:'trump',red:true,open:true},
+  {name:'Piros 20-100 ulti durchmars',val:36,comps:{c20:16,ulti:8,durch:12},kind:'trump',red:true},
+  {name:'Piros 40-100 ulti terített durchmars',val:40,comps:{c40:8,ulti:8,durch:24},kind:'trump',red:true,open:true},
+  {name:'Piros 20-100 terített durchmars',val:40,comps:{c20:16,durch:24},kind:'trump',red:true,open:true},
+  {name:'Piros 20-100 ulti terített durchmars',val:48,comps:{c20:16,ulti:8,durch:24},kind:'trump',red:true,open:true},
+];
+// Licit-erősség (pagat.com, ultiblog): a parti pontja a kombinált vállalásoknál (ulti, piros ulti) csak döntetlennél számít,
+// így pl. az ulti 4(+1) értékű, és a betli (5) felülüti. Azonos értéknél az egyszerű (egyrészes) vállalás erősebb a kombináltnál,
+// a 20-100 erősebb a piros 40-100-nál. Az egyforma erősségűek kizárják egymást.
+function bidRank(c){
+  const ks=Object.keys(c.comps),other=ks.filter(k=>k!=='parti');
+  let r=other.length?other.reduce((a,k)=>a+c.comps[k],0)+(c.comps.parti?0.5:0):c.val;
+  if(other.length<=1)r+=0.3;
+  if(other.length===1&&other[0]==='c20')r+=0.05;
+  return r;
+}
+CONTRACTS.sort((a,b)=>bidRank(a)-bidRank(b));
+const bidLabel=c=>{const ks=Object.keys(c.comps);return c.comps.parti&&ks.length>1?`${c.val-c.comps.parti}+${c.comps.parti}`:String(c.val);};
+const pts=c=>(c.r===3||c.r===7)?10:0;
+const pow=(c,tg)=>tg?TP[c.r]:c.r;
+const nxt=p=>(p+1)%3;
+const sig=x=>1/(1+Math.exp(-x));
+const hasC=(h,s,r)=>h.some(x=>x.s===s&&x.r===r);
+function makeDeck(){const d=[];for(let s=0;s<4;s++)for(let r=0;r<8;r++)d.push({s,r,id:s*8+r});return d;}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+let G=null;
+function addLog(t){G.log.push(t);}
+
+function newDeal(dealer){
+  const d=shuffle(makeDeck());
+  const fh=nxt(dealer);
+  const hands=[[],[],[]];
+  let k=0;
+  for(const p of [fh,nxt(fh),nxt(nxt(fh))]){const n=p===fh?12:10;hands[p]=d.slice(k,k+n);k+=n;}
+  G={dealer,fh,hands,talon:[],phase:'bid',turn:fh,bid:null,passes:0,lastAction:['','',''],log:[],
+     decl:-1,ci:-1,trump:-1,trumpGame:false,trick:[],won:[[],[],[]],tcount:[0,0,0],trickNo:0,leader:-1,
+     marr:[[],[],[]],ultiBroken:false,ultiWon:false,lastWinner:-1,played:[],result:null,revealed:false,talonPts:0,lastTrick:null};
+  addLog(`${NAME[fh]} kezd, 12 lappal.`);
+}
+const holding12=p=>G.hands[p].length===12;
+// csak pontszámban értékesebb vállalás mondható
+const minBidIndex=()=>{if(!G.bid)return 0;const r=bidRank(CONTRACTS[G.bid.ci]),i=CONTRACTS.findIndex(c=>bidRank(c)>r+1e-9);return i<0?CONTRACTS.length:i;};
+function canPickUp(p){return G.phase==='bid'&&G.turn===p&&!holding12(p)&&G.bid&&minBidIndex()<CONTRACTS.length&&G.talon.length===2;}
+function isTrumpC(c){return c.kind==='trump';}
+function suitsFor(c){return !isTrumpC(c)?[-1]:c.red?[0]:[1,2,3];}
+const cardName=c=>`${SUIT_NAMES[c.s].toLowerCase()} ${c.r>=4?RANK_NAMES[c.r].toLowerCase():RANK_NAMES[c.r]}`;
+
+const has40=(h,t)=>hasC(h,t,6)&&hasC(h,t,5);
+const has20=(h,t)=>[0,1,2,3].some(s=>s!==t&&hasC(h,s,6)&&hasC(h,s,5));
+// kényszervállalás: 40-100 / 20-100 a hozzá tartozó pár nélkül
+function forcedParts(hand,ci,suit){const c=CONTRACTS[ci],f=[];if(!isTrumpC(c))return f;if(c.comps.c40&&!has40(hand,suit))f.push('c40');if(c.comps.c20&&!has20(hand,suit))f.push('c20');return f;}
+function checkReq(hand,ci,suit){
+  const c=CONTRACTS[ci];
+  if(!isTrumpC(c)) return null;
+  if(c.red){if(suit!==0) return 'Piros játékban a piros az adu.';}
+  else if(!(suit>=1&&suit<=3)) return 'Válassz adut: tök, zöld vagy makk.';
+  if(c.comps.ulti&&!hasC(hand,suit,0)) return 'Az ultihoz kell az adu VII-es.';
+  return null;
+}
+function validateBid(p,disc,ci,suit){
+  if(ci==null||ci<0) return 'Válassz játékot.';
+  if(ci<minBidIndex()) return 'Csak erősebb vállalást mondhatsz: nagyobb értékűt, vagy azonos értéknél egyszerűbbet (ultinál a parti pontja nem számít).';
+  if(disc.length!==2) return 'Jelölj ki pontosan 2 lapot a talonba.';
+  const ids=new Set(disc.map(x=>x.id)),rest=G.hands[p].filter(x=>!ids.has(x.id));
+  if(suit===-2){const es=[1,2,3].map(s=>checkReq(rest,ci,s));return es.every(Boolean)?es.find(e=>!/adut/.test(e))||es[0]:null;}
+  return checkReq(rest,ci,suit);
+}
+// két passz után a licit visszajön a licittévőhöz: visszaveheti a saját talonját és emelhet, vagy marad
+function doPass(p){
+  G.passes++;
+  const own=G.bid&&G.bid.seat===p;
+  G.lastAction[p]=own?'Marad':'Passz';addLog(own?`${NAME[p]}: marad a licitnél.`:`${NAME[p]}: passz`);
+  if(G.passes>=3||(G.passes>=2&&minBidIndex()>=CONTRACTS.length)) endBidding(); else G.turn=nxt(p);
+}
+// bedobás: a licitnyerő a bemondást kontrázott áron fizeti ki (bukott ulti kontrázva 3x)
+function concedeLoss(ci,kmult,q){
+  let s=0;
+  for(const [k,v] of Object.entries(CONTRACTS[ci].comps)){const m=Math.max((kmult&&kmult[q][k])||1,2);s+=k==='ulti'?v*(m+1):v*m;}
+  return s;
+}
+function doConcede(p){
+  if(G.phase==='bid'||G.phase==='trump'){const b=G.bid,c=CONTRACTS[b.ci];if(b.suit===-2)b.suit=[1,2,3].find(s=>!checkReq(G.hands[b.seat],b.ci,s))??1;G.decl=b.seat;G.ci=b.ci;G.trump=b.suit;G.trumpGame=isTrumpC(c);G.kmult=[{},{},{}];G.talonPts=G.talon.reduce((a,x)=>a+pts(x),0);}
+  const c=CONTRACTS[G.ci],d=G.decl,defs=[0,1,2].filter(q=>q!==d);
+  const rows=Object.entries(c.comps).map(([k,v])=>({k,v,label:COMP_NAMES[k],detail:'Bedobva, kontrázott áron',win:false,delta:-(k==='ulti'?3*v:2*v)}));
+  const change=[0,0,0];
+  for(const q of defs){const s=concedeLoss(G.ci,G.kmult,q);change[q]=s;change[d]-=s;}
+  for(const r of rows){const m=defs.filter(q=>G.kmult[q][r.k]).map(q=>`${NAME[q]} ×${G.kmult[q][r.k]}`);if(m.length)r.kontra=m.join(', ');}
+  G.result={rows,change,declPts:0,defPts:0,conceded:true};G.phase='result';G.turn=-1;
+  addLog(`${NAME[d]} bedobta a lapjait (${c.name}): ${change[d]} pont.`);
+}
+function doPickUp(p){G.hands[p].push(...G.talon);G.talon=[];G.lastAction[p]='Felvette';addLog(`${NAME[p]} felvette a talont.`);}
+function doBid(p,disc,ci,suit){
+  const ids=new Set(disc.map(x=>x.id));
+  G.hands[p]=G.hands[p].filter(x=>!ids.has(x.id));
+  G.talon=disc.slice();G.talonBy=p;
+  const c=CONTRACTS[ci];
+  G.bid={ci,suit:isTrumpC(c)?suit:-1,seat:p};
+  G.passes=0;G.lastAction[p]=c.name;
+  addLog(`${NAME[p]}: ${c.name}`);
+  G.turn=nxt(p);
+}
+const COMP_NAMES={parti:'Parti',c40:'40-100',c20:'20-100',ulti:'Ulti',betli:'Betli',durch:'Durchmars'};
+function pickTrump(s){G.bid.suit=s;endBidding();}
+function endBidding(){
+  const b=G.bid,c=CONTRACTS[b.ci];
+  if(b.suit===-2){G.phase='trump';G.turn=b.seat;addLog(`${NAME[b.seat]} licitje maradt: ${c.name}. Adu kiválasztása…`);return;}
+  G.decl=b.seat;G.ci=b.ci;G.trump=b.suit;G.trumpGame=isTrumpC(c);
+  G.talonPts=G.talon.reduce((a,x)=>a+pts(x),0);
+  G.lastAction=['','',''];
+  addLog(`${NAME[b.seat]} játszik: ${c.name}${G.trumpGame?', adu: '+SUIT_NAMES[G.trump].toLowerCase():''}.`);
+  if(c.comps.parti){
+    for(let p=0;p<3;p++)for(let s=0;s<4;s++)if(hasC(G.hands[p],s,6)&&hasC(G.hands[p],s,5)){
+      const v=s===G.trump?40:20;G.marr[p].push({s,v});addLog(`${NAME[p]} bemondja: ${v}.`);
+    }
+  }
+  G.kmult=[{},{},{}];G.kseq=[nxt(b.seat),nxt(nxt(b.seat)),b.seat];G.kidx=0;
+  G.phase='kontra';G.turn=G.kseq[0];G.ultiLock=!!c.comps.ulti;
+  G.forced={};for(const k of forcedParts(G.hands[b.seat],b.ci,b.suit)){G.forced[k]=true;addLog(`${NAME[b.seat]} kényszervállalás: ${k==='c40'?'40':'20'} nélkül mondta a ${COMP_NAMES[k]}-at.`);}
+}
+const kontraCommon=()=>isTrumpC(CONTRACTS[G.ci]);
+function kontraOptions(p){
+  const c=CONTRACTS[G.ci];
+  if(p!==G.decl)return Object.keys(c.comps).filter(k=>!G.kmult[p][k]).map(k=>({k,def:p}));
+  const ks=new Set();
+  for(const q of [0,1,2])if(q!==G.decl)for(const k in G.kmult[q])if(G.kmult[q][k]===2)ks.add(k);
+  return [...ks].map(k=>({k,def:-1}));
+}
+function mustKontra(p,k){
+  if(p===G.decl||!G.forced||!G.forced[k])return false;
+  const h=G.hands[p],t=G.trump;
+  return k==='c40'?(hasC(h,t,6)||hasC(h,t,5)):h.some(x=>x.s!==t&&(x.r===6||x.r===5));
+}
+function doKontra(p,list){
+  if(p!==G.decl)for(const o of kontraOptions(p))if(mustKontra(p,o.k)&&!list.some(x=>x.k===o.k))list=list.concat([o]);
+  const defs=[0,1,2].filter(q=>q!==G.decl);
+  for(const {k} of list){
+    if(p!==G.decl){for(const q of kontraCommon()?defs:[p])G.kmult[q][k]=2;addLog(`${NAME[p]}: kontra ${COMP_NAMES[k]}${kontraCommon()?' (közös a két védőé)':''}.`);}
+    else{for(const q of defs)if(G.kmult[q][k]===2)G.kmult[q][k]=4;addLog(`${NAME[p]}: rekontra ${COMP_NAMES[k]}.`);}
+  }
+  if(!list.length)addLog(`${NAME[p]}: ${p===G.decl?'nincs rekontra':'nincs kontra'}.`);
+  G.lastAction[p]=list.length?(p===G.decl?'Rekontra':'Kontra'):(p===G.decl?'Nincs rekontra':'Nincs kontra');
+  G.kidx++;
+  while(G.kidx<3&&!kontraOptions(G.kseq[G.kidx]).length)G.kidx++;
+  if(G.kidx>=3)startPlay();else G.turn=G.kseq[G.kidx];
+}
+function startPlay(){G.phase='play';G.turn=G.decl;G.leader=G.decl;}
+function beats(a,b){
+  const tg=G.trumpGame,t=G.trump;
+  if(tg){if(a.s===t&&b.s!==t)return true;if(a.s!==t&&b.s===t)return false;}
+  if(a.s!==b.s) return false;
+  return pow(a,tg)>pow(b,tg);
+}
+function trickWinnerIdx(tr){let w=0;for(let i=1;i<tr.length;i++)if(beats(tr[i].c,tr[w].c))w=i;return w;}
+function legalCards(p){
+  const L=legalRaw(p);
+  if(G.ultiLock&&p===G.decl&&G.hands[p].some(x=>x.s===G.trump&&x.r!==0)){
+    const f=L.filter(x=>!(x.s===G.trump&&x.r===0));if(f.length)return f;
+  }
+  return L;
+}
+function legalRaw(p){
+  const h=G.hands[p],tr=G.trick,tg=G.trumpGame;
+  if(!tr.length) return h.slice();
+  const lead=tr[0].c.s,W=tr[trickWinnerIdx(tr)].c;
+  const same=h.filter(x=>x.s===lead);
+  if(same.length){
+    if(W.s===lead){const b=same.filter(x=>pow(x,tg)>pow(W,tg));if(b.length)return b;}
+    return same;
+  }
+  if(tg){
+    const ts=h.filter(x=>x.s===G.trump);
+    if(ts.length){
+      if(W.s===G.trump){const b=ts.filter(x=>pow(x,tg)>pow(W,tg));if(b.length)return b;}
+      return ts;
+    }
+  }
+  return h.slice();
+}
+function playCard(p,card){
+  G.hands[p]=G.hands[p].filter(x=>x.id!==card.id);
+  G.trick.push({p,c:card});G.played.push(card);
+  const c=CONTRACTS[G.ci];
+  if(c.comps.ulti&&p===G.decl&&card.s===G.trump&&card.r===0&&G.trickNo<9&&!G.ultiBroken){
+    G.ultiBroken=true;addLog('Az adu VII-es az utolsó ütés előtt kiment, az ulti elbukott.');
+  }
+  G.turn=G.trick.length<3?nxt(p):-1;
+}
+function collectTrick(){
+  const w=G.trick[trickWinnerIdx(G.trick)].p;
+  const c=CONTRACTS[G.ci];
+  addLog(`${G.trickNo+1}. ütés: ${G.trick.map(t=>`${NAME[t.p]} ${cardName(t.c)}`).join(', ')}. Vitte: ${NAME[w]}.`);
+  G.won[w].push(...G.trick.map(t=>t.c));G.tcount[w]++;
+  if(G.trickNo===9){
+    G.lastWinner=w;
+    if(c.comps.ulti){const dc=G.trick.find(t=>t.p===G.decl).c;if(w===G.decl&&dc.s===G.trump&&dc.r===0&&!G.ultiBroken)G.ultiWon=true;}
+  }
+  (G.hist=G.hist||[]).push(G.trick.slice());
+  G.lastTrick=G.trick;G.trick=[];G.trickNo++;G.leader=w;G.turn=w;
+  if(c.open) G.revealed=true;
+  const early=allDecided();
+  if(early)addLog('Minden bemondás eldőlt, a többi lapot nem kell lejátszani.');
+  let end=G.trickNo===10||early;
+  if(end) finishHand();
+  return w;
+}
+// Eldőlt-e már minden bemondott rész? Ha igen, a leosztás itt véget ér (a maradék lapot nem kell lejátszani).
+function decidedComp(k){
+  const d=G.decl,c=CONTRACTS[G.ci];
+  const wonPts=p=>G.won[p].reduce((a,x)=>a+pts(x),0);
+  if(k==='betli')return G.tcount[d]>0;
+  if(k==='durch')return G.tcount[d]<G.trickNo;
+  if(k==='ulti')return !!G.ultiBroken;
+  if(k==='c40'||k==='c20'){
+    const m=G.forced&&G.forced[k]?0:(k==='c40'?40:20),have=wonPts(d)+m;
+    const left=90-[0,1,2].reduce((a,p)=>a+wonPts(p),0)-G.talonPts;// még kint lévő ász/X (80-ból) + az utolsó ütés 10 pontja
+    return have>=100||have+left<100;
+  }
+  return false; // parti: a végéig megy
+}
+// Ha a felvevő eddig minden ütést vitt, még csendes durchmars lehet belőle: ilyenkor végigjátsszuk.
+// (A csendes ulti miatt nem játsszuk tovább: ha minden bemondás eldőlt, a lapokat bedobják.)
+function silentPending(){
+  const c=CONTRACTS[G.ci];
+  return G.trumpGame&&!c.comps.durch&&G.tcount[G.decl]===G.trickNo;
+}
+function allDecided(){return G.trickNo<10&&Object.keys(CONTRACTS[G.ci].comps).every(decidedComp)&&!silentPending();}
+// védő nyeresége egy tételen m szorzóval (bukott ulti: kontra nélkül 2x, kontrával 3x, rekontrával 5x)
+function defGain(r,m){return (r.k==='ulti'&&!r.win)?r.v*(m+1):-r.delta*m;}
+function finishHand(){
+  const c=CONTRACTS[G.ci],d=G.decl;
+  const cp=p=>G.won[p].reduce((a,x)=>a+pts(x),0);
+  const complete=G.trickNo===10;
+  const defs=[0,1,2].filter(p=>p!==d);
+  const declPts=cp(d)+(complete&&G.lastWinner===d?10:0);
+  const defPts=defs.reduce((a,p)=>a+cp(p),0)+G.talonPts+(complete&&G.lastWinner!==d?10:0);
+  const declTricks=G.tcount[d],defTricks=defs.reduce((a,p)=>a+G.tcount[p],0);
+  const msum=p=>G.marr[p].reduce((a,m)=>a+m.v,0);
+  const defTrickPts=defs.reduce((a,p)=>a+cp(p),0)+(complete&&G.lastWinner!==d?10:0);
+  const A=declPts+(declPts>0?msum(d):0),B=defPts+(defTrickPts>0?defs.reduce((x,p)=>x+msum(p),0):0);
+  const lt=complete?' Utolsó ütés: '+G.lastTrick.map(t=>`${NAME[t.p]} ${cardName(t.c)}`).join(', ')+`, vitte: ${NAME[G.lastWinner]}.`:'';
+  const base=c.red?2:1;
+  const rows=[];
+  for(const [k,v] of Object.entries(c.comps)){
+    let win,label,detail;
+    if(k==='parti'){win=A>B;label='Parti';detail=`${A} : ${B} pont`;}
+    else if(k==='c40'){const m=G.forced&&G.forced.c40?0:40;win=declPts+m>=100;label='40-100';detail=`${declPts} + ${m} = ${declPts+m}${m?'':' (kényszervállalás)'}`;}
+    else if(k==='c20'){const m=G.forced&&G.forced.c20?0:20;win=declPts+m>=100;label='20-100';detail=`${declPts} + ${m} = ${declPts+m}${m?'':' (kényszervállalás)'}`;}
+    else if(k==='ulti'){win=G.ultiWon;label='Ulti';detail=(win?'A VII-es vitte az utolsót.':(G.ultiBroken?'A VII-es az utolsó ütés előtt kiment.':'A VII-es nem vitte az utolsót.'))+lt;}
+    else if(k==='betli'){win=G.tcount[d]===0;label='Betli';detail=win?'Egy ütés sem':'Ütést vitt';}
+    else{win=G.tcount[d]===10;label='Durchmars';detail=win?'Minden ütés':'Elveszett egy ütés';}
+    rows.push({k,v,label,detail,win,delta:win?v:-(k==='ulti'?2*v:v)});
+  }
+  if(complete&&G.trumpGame&&!c.comps.ulti){
+    for(const t of G.lastTrick)if(t.c.s===G.trump&&t.c.r===0){
+      const ok=G.lastWinner===t.p,mine=t.p===d,v=2*base;
+      const delta=ok?(mine?v:-v):(mine?-2*v:2*v);
+      rows.push({k:null,label:'Csendes ulti',detail:`${NAME[t.p]}: ${ok?'a VII-es vitte az utolsót.':'a VII-es elbukott az utolsón.'}${lt}`,win:delta>0,delta});
+    }
+  }
+  if(complete&&c.comps.parti){
+    if(A>=100)rows.push({k:null,label:'Csendes 100',detail:`${NAME[d]}: ${A} pont`,win:true,delta:2*base});
+    if(B>=100)rows.push({k:null,label:'Csendes 100',detail:`Védők: ${B} pont`,win:false,delta:-2*base});
+    const aces=p=>G.won[p].filter(x=>x.r===7).length;
+    if(aces(d)===4)rows.push({k:null,label:'Csendes négy ász',detail:d===0?'Te ütötted mind a négy ászt':`${NAME[d]} ütötte mind a négy ászt`,win:true,delta:2*base});
+    else if(defs.reduce((a,p)=>a+aces(p),0)===4)rows.push({k:null,label:'Csendes négy ász',detail:'A védők ütötték mind a négy ászt',win:false,delta:-2*base});
+  }
+  if(complete&&G.trumpGame&&!c.comps.durch&&G.tcount[d]===10)rows.push({k:null,label:'Csendes durchmars',detail:d===0?'Minden ütést elvittél':`${NAME[d]} minden ütést elvitt`,win:true,delta:3*base});
+  const change=[0,0,0];
+  for(const q of defs){let s=0;for(const r of rows)s-=defGain(r,r.k?(G.kmult[q][r.k]||1):1);change[q]=-s;change[d]+=s;}
+  for(const r of rows)if(r.k){const m=defs.filter(q=>G.kmult[q][r.k]).map(q=>`${NAME[q]} ×${G.kmult[q][r.k]}`);if(m.length)r.kontra=m.join(', ');}
+  G.result={rows,change,declPts,defPts};
+  G.phase='result';
+  addLog(`${NAME[d]} ${change[d]>0?'nyert':'vesztett'}: ${change[d]>0?'+':''}${change[d]} pont.`);
+}
+
+// ---- bot: bidding ----
+function trumpStats(h,t){
+  const tr=h.filter(x=>x.s===t).map(x=>TP[x.r]).sort((a,b)=>b-a),n=tr.length;
+  let run=0;while(run<n&&tr[run]===7-run)run++;
+  const tt=run+Math.max(0,(n-run)-(8-n)*0.6);
+  let side=0,voids=0,singles=0,aces=0;
+  for(let s=0;s<4;s++){
+    if(s===t)continue;
+    const cs=h.filter(x=>x.s===s),A=hasC(cs,s,7),X=hasC(cs,s,3),K=hasC(cs,s,6);
+    if(!cs.length)voids++;else if(cs.length===1)singles++;
+    if(A){side+=1;aces++;}
+    if(A&&X)side+=0.9;else if(X&&cs.length>=2)side+=0.35;
+    if(A&&X&&K)side+=0.4;
+  }
+  const spare=n-3,ruff=spare>0?Math.min(spare,voids*1.2+singles*0.5)*0.7:0;
+  const top3=(hasC(h,t,7)?1:0)+(hasC(h,t,3)?1:0)+(hasC(h,t,6)?1:0);
+  let marr=0,offMarr=false;
+  for(let s=0;s<4;s++)if(hasC(h,s,6)&&hasC(h,s,5)){marr+=s===t?40:20;if(s!==t)offMarr=true;}
+  return {n,S:tt+side+ruff,top3,aces,marr,trumpMarr:hasC(h,t,6)&&hasC(h,t,5),offMarr,has7:hasC(h,t,0)};
+}
+// betli: a „fogó” lapok számától és mélységétől függő, valószínűségi becslés (ultiblog: 2-3 kis fogó lappal is vállalható)
+function pBetli(h,open){
+  // egy lap annál veszélyesebb, minél több kint lévő kisebb lap van alatta a saját kisebb lapjaidhoz képest:
+  // ilyenkor a védők alá tudnak hívni, és a felülütési kényszer miatt neked kell ütnöd
+  let p=0.82;const voids=[0,1,2,3].filter(s=>!h.some(x=>x.s===s)).length;
+  for(let s=0;s<4;s++){const rs=h.filter(x=>x.s===s).map(x=>x.r).sort((a,b)=>a-b);
+    rs.forEach((r,i)=>{const ex=r-2*i;if(ex<=0)return;
+      let q=[1,0.45,0.25,0.12,0.06][Math.min(ex,4)];
+      if(voids)q=Math.pow(q,1-0.12*voids);if(open)q=Math.pow(q,1.6);p*=q;});}
+  return p;
+}
+// durchmars: a felülről zárt sor utáni lapok akkor ütnek, ha a hiányzó nagyobb lapok „leesnek”
+function pDurch(h,open,tg=false){
+  let p=0.93;const rk=x=>tg?TP[x.r]:x.r;
+  for(let s=0;s<4;s++){
+    const rs=h.filter(x=>x.s===s).map(rk).sort((a,b)=>b-a),n=rs.length;if(!n)continue;
+    let run=0;while(run<n&&rs[run]===7-run)run++;
+    for(let k=run;k<n;k++){
+      const g=(7-rs[k])-k;
+      let q=g<=0?1:g===1?(run>=2?0.6:run===1?0.4:0.08):g===2?(run>=3?0.35:run===2?0.2:0.04):0.03;
+      if(n>=5)q=Math.min(1,q+0.1);
+      if(k>run)q=Math.max(q,0.85);
+      if(open)q=Math.pow(q,1.3);
+      p*=q;
+    }
+  }
+  return p;
+}
+function compP(hand,ci,suit,k,pen=0){
+  let p=compP0(hand,ci,suit,k,pen)*(bookComp(hand,ci,suit,k).ok?1:0.82);
+  // a lapelosztásra építő játékok (betli, durchmars) bátorsága a kockázati szinttől függ
+  if(k==='betli'||k==='durch')p=Math.min(0.97,p*RISK_DIST[RISK]);
+  return p;
+}
+function compP0(hand,ci,suit,k,pen=0){
+  const c=CONTRACTS[ci];
+  if(k==='betli')return pBetli(hand,c.open);
+  if(k==='durch'){if(!isTrumpC(c))return pDurch(hand,c.open);const st=trumpStats(hand,suit);return st.n>=4?Math.min(1,sig(2*(st.S-9.2))*1.1)*pDurch(hand.filter(x=>x.s!==suit),c.open,true)/0.93:0;}
+  const st=trumpStats(hand,suit);
+  if(k==='parti')return sig(1.5*(st.S-4.3)+0.75+(st.marr-20)/24-pen);
+  if(k==='c40')return st.trumpMarr?sig(1.7*(st.S-6.0)-pen):0;
+  if(k==='c20')return st.offMarr?sig(1.7*(st.S-7.5)-pen):0;
+  return (st.has7&&st.n>=4)?sig(1.4*(st.n+0.7*st.top3+0.3*st.aces-6.6)):0;
+}
+function estimate(hand,ci,suit,disc){
+  const c=CONTRACTS[ci];
+  if(checkReq(hand,ci,suit))return -1e9;
+  const pen=disc?disc.reduce((a,x)=>a+pts(x),0)/10*0.6:0;
+  let ev=0;
+  for(const [k,v] of Object.entries(c.comps)){const p=compP(hand,ci,suit,k,pen);ev+=p*v-(1-p)*v*(k==='ulti'?2:1);}
+  return ev;
+}
+function bidOptions(h,minCi,noise=0){
+  const res=[];
+  for(let ci=minCi;ci<CONTRACTS.length;ci++){
+    const c=CONTRACTS[ci];
+    for(const s of suitsFor(c)){let best=null;
+      const anyOk=h.some((x,i)=>h.some((y,j)=>j>i&&discardAllowed([x,y],h,ci)));
+      for(let i=0;i<h.length;i++)for(let j=i+1;j<h.length;j++){
+        if(anyOk&&!discardAllowed([h[i],h[j]],h,ci))continue;
+        const rest=h.filter((_,k)=>k!==i&&k!==j);
+        const ev=estimate(rest,ci,s,c.kind==='trump'?[h[i],h[j]]:null)-giftPenalty([h[i],h[j]],h,c.val)+Math.random()*noise;
+        if(!best||ev>best.ev)best={ev,ci,suit:s,disc:[h[i],h[j]],rest};
+      }
+      if(best&&best.ev>-1e8)res.push(best);}
+  }
+  return res.sort((a,b)=>b.ev-a.ev);
+}
+// lapelosztásra építő játékok (betli, durchmars) esélye: a többi lap véletlen kiosztásával lejátszott próbajátékok.
+// Rögzített véletlenmag, így ugyanarra a lapra a bot és a Tipp ugyanazt az eredményt kapja.
+function rng(seed){return ()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const pureDist=c=>Object.keys(c.comps).every(k=>k==='betli'||k==='durch');
+// ===== egységes értékelő: minden licitdöntés, Tipp és elemzés ebből számol =====
+// A lapot n-szer lejátssza a többi lap véletlen kiosztásával (a 20/40 bemondások, csendes bónuszok, kontra nélkül).
+// Rögzített véletlenmag: ugyanarra a lapra, lerakásra és játékcsaládra mindig ugyanaz az eredmény,
+// így pl. a betli és a piros betli ugyanazokon a próbaosztásokon fut, az esélyük azonos.
+const famKey=c=>c.kind+':'+Object.keys(c.comps).sort().join(',');
+function evalOpt(o,n=N_SCREEN){
+  if(o.p!=null&&(o.n||0)>=n)return o;
+  const c=CONTRACTS[o.ci],sG=G,sW=WHY,hand=o.rest,disc=o.disc||[];
+  const mine=new Set([...hand,...disc].map(x=>x.id)),rest=makeDeck().filter(x=>!mine.has(x.id));
+  let seed=7;
+  for(const x of hand.slice().sort((a,b)=>a.id-b.id))seed=(Math.imul(seed,31)+x.id+1)|0;
+  for(const x of disc.slice().sort((a,b)=>a.id-b.id))seed=(Math.imul(seed,17)+x.id+3)|0;
+  for(const ch of famKey(c)+o.suit)seed=(Math.imul(seed,33)+ch.charCodeAt(0))|0;
+  const R=rng(seed);let win=0,sum=0;const pc={};
+  try{
+    for(let k=0;k<n;k++){
+      const d=rest.slice();for(let i=d.length-1;i>0;i--){const j=Math.floor(R()*(i+1));[d[i],d[j]]=[d[j],d[i]];}
+      G={dealer:2,fh:0,hands:[hand.map(x=>({...x})),d.slice(0,10),d.slice(10,20)],talon:disc.map(x=>({...x})),phase:'bid',turn:0,bid:{ci:o.ci,suit:isTrumpC(c)?o.suit:-1,seat:0},passes:0,lastAction:['','',''],log:[],
+         decl:-1,ci:-1,trump:-1,trumpGame:false,trick:[],won:[[],[],[]],tcount:[0,0,0],trickNo:0,leader:-1,marr:[[],[],[]],ultiBroken:false,ultiWon:false,lastWinner:-1,played:[],result:null,revealed:false,talonPts:0,lastTrick:null};
+      endBidding();G.kmult=[{},{},{}];startPlay();
+      let guard=0;while(G.phase==='play'&&guard++<60){if(G.trick.length===3){collectTrick();continue;}playCard(G.turn,botChoose(G.turn));}
+      const ch=G.result?G.result.change[0]:0;sum+=ch;if(ch>0)win++;
+      if(G.result)for(const r of G.result.rows)if(r.k)pc[r.k]=(pc[r.k]||0)+(r.win?1:0);
+    }
+  }finally{G=sG;WHY=sW;}
+  o.p=win/n;o.gv=sum/n/2;o.n=n;o.pc={};for(const k in CONTRACTS[o.ci].comps)o.pc[k]=(pc[k]||0)/n;                       // nyerési esély, várható pont védőnként
+  o.gift=giftPenalty(disc,[...hand,...disc],c.val); // ultiblog: a talon ne erősítse a következő licitálót
+  o.ev=o.gv-o.gift;
+  o.rk=o.ev+RISK_BIAS[RISK]*c.val*(pureDist(c)?0.06:0.03);
+  return o;
+}
+const MIN_DIFF=0.5; // ennél kisebb különbséget nem nevezünk jobbnak
+// összehasonlítás: fél pontnál kisebb várhatópont-különbség döntetlen, ilyenkor a nagyobb nyerési esély dönt
+function cmpOpt(a,b){const d=(b.rk??b.ev)-(a.rk??a.ev);if(Math.abs(d)<MIN_DIFF&&Math.abs(b.p-a.p)>0.02)return b.p-a.p;return d;}
+// adu kiválasztása egy már eldőlt vállaláshoz (a Tipp és az elemzés is ezt használja)
+function chooseTrump(hand,talon,ci){
+  return [1,2,3].filter(s=>!checkReq(hand,ci,s)).map(s=>evalOpt({ci,suit:s,disc:talon,rest:hand},N_FINAL)).sort(cmpOpt);
+}
+// ---- lerakás keresése próbajátékkal ----
+const N_SCREEN=32,N_FINAL=96; // szűrés / végső pontosítás próbajátékainak száma
+const sameD=(a,b)=>a.length===b.length&&a.every(x=>b.some(y=>y.id===x.id));
+function discardCands(h,ci,suit){
+  const c=CONTRACTS[ci],res=[];
+  for(let i=0;i<h.length;i++)for(let j=i+1;j<h.length;j++){
+    const disc=[h[i],h[j]];
+    if(c.kind==='betli'&&disc.some(x=>x.r<=1))continue; // betliben a VII és VIII a legbiztosabb lap
+    const rest=h.filter((_,k)=>k!==i&&k!==j);
+    if(checkReq(rest,ci,suit))continue;
+    res.push({ci,suit,disc,rest,ok:discardAllowed(disc,h,ci),h0:estimate(rest,ci,suit,isTrumpC(c)?disc:null)-giftPenalty(disc,h,c.val)});
+  }
+  return res.sort((a,b)=>b.h0-a.h0);
+}
+// a vállaláshoz a legjobb lerakás: a gyors becslés legjobbjai + színenként a legjobb, próbajátékkal lemérve
+function bestDiscard(h,o,extra){
+  const all=discardCands(h,o.ci,o.suit),cands=all.some(d=>d.ok)?all.filter(d=>d.ok):all,top=cands.slice(0,5);
+  const bySuits={};for(const d of cands){const k=d.disc.map(x=>x.s).sort().join('');if(!bySuits[k]){bySuits[k]=1;if(!top.includes(d))top.push(d);}}
+  for(const d of [o,...(extra||[])])if(d&&d.disc&&!top.some(t=>sameD(t.disc,d.disc))&&(cands===all||discardAllowed(d.disc,h,o.ci)))top.push({ci:o.ci,suit:o.suit,disc:d.disc,rest:h.filter(x=>!d.disc.some(y=>y.id===x.id))});
+  const scr=top.slice(0,9).map(d=>evalOpt({ci:o.ci,suit:o.suit,disc:d.disc,rest:d.rest},N_SCREEN)).sort(cmpOpt);
+  const fin=scr.slice(0,3).map(d=>evalOpt({ci:o.ci,suit:o.suit,disc:d.disc,rest:d.rest},N_FINAL)).sort(cmpOpt);
+  const best=fin[0];best.alt=fin[1]||null;best.searched=true;
+  // ha a szabály miatt kizárt lerakás kártyajátékban érezhetően jobb lenne, azt is megmutatjuk (tanulságnak)
+  const fb=all.filter(d=>!d.ok)[0];
+  if(fb&&cands!==all){const f=evalOpt({ci:o.ci,suit:o.suit,disc:fb.disc,rest:fb.rest},N_FINAL);if(f.ev-best.ev>=MIN_DIFF)best.forbidden=f;}
+  return best;
+}
+const RANKC=new Map();
+function rankOptions(h,minCi){
+  const key=h.map(x=>x.id).sort((a,b)=>a-b).join(',')+'|'+minCi+'|'+RISK;
+  if(RANKC.has(key))return RANKC.get(key);
+  if(RANKC.size>40)RANKC.clear();
+  const o=bidOptions(h,minCi);
+  const grp=x=>{const c=CONTRACTS[x.ci];return (c.comps.betli?'b':pureDist(c)?'d':c.comps.ulti?'u':(c.comps.c40||c.comps.c20)?'h':c.comps.durch?'x':'p')+x.suit;};
+  const pick=new Set(o.slice(0,8)),seen={};
+  for(const x of o){const g=grp(x);if(!seen[g]){seen[g]=1;pick.add(x);}}
+  for(const x of [...pick])for(const y of o)if(family(y)===family(x))pick.add(y);
+  let L=[...pick].map(x=>evalOpt(x));
+  for(const x of L){const c=CONTRACTS[x.ci];if(!c.open)continue;
+    // terítve a védők többet tudnak, így az esély nem lehet nagyobb, mint a zárt változaté
+    const cl=L.find(y=>y.suit===x.suit&&!CONTRACTS[y.ci].open&&family(y)===family(x));
+    let p=x.p;if(cl)p=Math.min(p,cl.p);
+    // a könyv szerint terítetthez hibátlan sorozat kell: óvatos és normál szinten ilyet nem javaslunk, merészen csak csökkentett eséllyel
+    x.bookOk=bookCheck(x.rest,x.ci,x.suit).ok;
+    if(!x.bookOk)p*=RISK===2?0.75:0;
+    if(p!==x.p){x.p=p;x.gv=Math.min(x.gv,c.val*(2*p-1));x.ev=x.gv-x.gift;x.rk=x.ev+RISK_BIAS[RISK]*c.val*(pureDist(c)?0.06:0.03);}
+  }
+  // ha minden mondható vállalás kiesne (pl. csak terített maradt), a szűrés nem érvényes: felvétel után mondani kell valamit
+  {const Lf=L.filter(x=>!(CONTRACTS[x.ci].open&&!x.bookOk&&RISK<2));L=(Lf.length?Lf:L).sort(cmpOpt);}
+  // a legjobb néhány vállaláshoz a lerakást is próbajátékkal keressük, és pontosabban mérjük
+  let done=0;
+  for(let i=0;i<L.length&&done<2;i++){const x=L[i];if(CONTRACTS[x.ci].open)continue;done++;
+    const b=bestDiscard(h,x);b.bookOk=true;L[i]=b;}
+  L.sort(cmpOpt);
+  RANKC.set(key,L);return L;
+}
+// ===== Élénk licit: talonolvasás + gyűjtés =====
+// LIVELY=false: a korábbi licitlogika (csak teszteléshez; a játékban mindig be van kapcsolva).
+let LIVELY=true;
+const P_RETURN=[0.3,0.4,0.5];      // mennyi eséllyel jön vissza a talon egy tartó licit után (óvatos/normál/merész)
+const RISK_COLLECT=[1.0,0.4,0.3];
+// élénk licitnél a felvételi küszöb ennyivel engedékenyebb (óvatos, normál, merész)
+const LIVE_PICK=[0.3,1.0,0.5];
+const pickThreshold=()=>RISK_PICK[RISK]-(LIVELY?LIVE_PICK[RISK]:0);
+// A passz sem ingyenes: aki védő marad, átlagosan a vállalás értékének kb. 0,6-szorosát veszíti védőnként
+// (a botok egymás elleni játékából mérve). A felvételt ehhez mérjük, nem a 0-hoz.
+const PASS_LOSS=0.65;
+const passValue=()=>LIVELY&&G.bid?-PASS_LOSS*CONTRACTS[G.bid.ci].val:0;
+// a vállalás várható értéke védőnként értendő (két védőtől kapod), ezért a passz veszteségét is egy védőre vetítjük
+const passBase=()=>passValue()/2;
+const MIN_PICK_P=0.3;  // a gyűjtésnek ennyivel kell jobbnak lennie az azonnali legjobb lehetőségnél
+// Talonolvasás: az előző licitáló lehetséges kezeit végigpróbálva a botok saját lerakási logikájával
+// (discardCands) kiszámoljuk, mit tehetett a talonba. Pl. ulti után inkább kis mellékszínű lapok, betli után magas lapok.
+function inferTalons(p,n=16){
+  const b=G.bid;if(!b||!LIVELY)return null;
+  const mine=new Set(G.hands[p].map(x=>x.id)),unseen=makeDeck().filter(x=>!mine.has(x.id));
+  const R=rng(G.hands[p].reduce((a,x)=>(Math.imul(a,31)+x.id+1)|0,11)^(b.ci*131+b.seat));
+  const suits=b.suit===-2?[1,2,3]:[b.suit],out=[],loose=[];let tries=0;
+  while(out.length<n&&tries<n*8){tries++;
+    const d=unseen.slice();for(let i=d.length-1;i>0;i--){const j=Math.floor(R()*(i+1));[d[i],d[j]]=[d[j],d[i]];}
+    const h12=d.slice(0,12);let best=null;
+    for(const s of suits){const cs=discardCands(h12,b.ci,s);if(cs.length&&(!best||cs[0].h0>best.h0))best=cs[0];}
+    if(!best)continue;
+    // csak olyan kéz, amellyel ezt a vállalást ésszerűen bemondhatta (különben csak tartaléknak)
+    if(best.h0>=-CONTRACTS[b.ci].val*0.6)out.push(best.disc);else loose.push(best.disc);
+  }
+  while(out.length<n&&loose.length)out.push(loose.shift());
+  return out.length>=4?out:null;
+}
+function talonForecast(talons){
+  const f={};for(const t of talons)for(const x of t)f[x.id]=(f[x.id]||0)+1;
+  return Object.entries(f).map(([id,k])=>({c:makeDeck()[+id],p:k/talons.length})).sort((a,b)=>b.p-a.p);
+}
+// A talonolvasás összefoglalója csoportokban (a konkrét lapot 22 ismeretlen lapból nem lehet megmondani)
+function talonSummary(talons,ci){
+  const c=CONTRACTS[ci],bet=c.kind==='betli',n=talons.length,pc=k=>Math.round(k/n*10)*10;
+  const grp=x=>bet?(x.r>=5?'nagy':x.r<=2?'kis':'közép'):(x.r===7||x.r===3?'érték':x.r<=2?'kis':'figura');
+  let both={},same=0;for(const t of talons){const g=t.map(grp).sort().join('+');both[g]=(both[g]||0)+1;if(t[0].s===t[1].s)same++;}
+  const cnt=g=>Object.entries(both).filter(([k])=>k.split('+').includes(g)).reduce((a,[,v])=>a+v,0);
+  const two=g=>both[g+'+'+g]||0;let txt;
+  if(bet){
+    txt=two('nagy')/n>=0.5?`valószínűleg két nagy lap (felső, király vagy ász) került a talonba (kb. ${pc(two('nagy'))}%)`
+      :cnt('nagy')/n>=0.5?`valószínűleg legalább egy nagy lap (felső, király vagy ász) került a talonba (kb. ${pc(cnt('nagy'))}%)`
+      :'a talonba többnyire közepes lapok kerülhettek';
+  }else{
+    txt=two('kis')/n>=0.5?`valószínűleg két kis lap (VII–IX) került a talonba (kb. ${pc(two('kis'))}%)`
+      :cnt('érték')/n>=0.4?`ász vagy X is kerülhetett a talonba (kb. ${pc(cnt('érték'))}%)`
+      :cnt('kis')/n>=0.5?'valószínűleg kis lapok (VII–IX) és figurák (alsó, felső, király) kerültek a talonba'
+      :'a talonba többnyire figurák (alsó, felső, király) kerülhettek';
+  }
+  if(same/n>=0.5)txt+=', jellemzően egy színből, hogy színhiánya legyen';
+  return txt;
+}
+// Gyűjtés: tartó licit (a legkisebb mondhatók egyike) + a célhoz illő lerakás, abban bízva, hogy a talon visszajön.
+// Ha mindenki passzol, a tartó licitet kell lejátszani: ez a kockázat.
+function collectPlan(h12,minCi){
+  if(!LIVELY||minCi>=CONTRACTS.length)return null;
+  const mine=new Set(h12.map(x=>x.id)),unseen=makeDeck().filter(x=>!mine.has(x.id));
+  const R=rng(h12.reduce((a,x)=>(Math.imul(a,31)+x.id+1)|0,5)^minCi*97);
+  const holds=[];for(let ci=minCi;ci<CONTRACTS.length&&holds.length<2;ci++){if(!CONTRACTS[ci].open)holds.push(ci);}
+  const bi=CONTRACTS.findIndex(c=>c.name==='Betli');
+  const targets=[{name:'betli',ci:bi,suit:-1}];
+  for(const s of [1,2,3,0])targets.push({name:'adus játék',ci:CONTRACTS.findIndex(c=>c.name===(s===0?'Piros 40-100':'40-100')),suit:s});
+  let best=null;
+  for(const T of targets){
+    const cT=CONTRACTS[T.ci],srt=h12.slice().sort((a,b)=>keepScore(a,cT,T.suit,h12)-keepScore(b,cT,T.suit,h12));
+    for(const H of holds){
+      let disc=srt.slice(0,2);
+      if(!discardAllowed(disc,h12,H)){const ok=srt.filter(x=>!isGift(x,h12));if(ok.length<2)continue;disc=ok.slice(0,2);}
+      const keep=h12.filter(x=>!disc.includes(x));
+      let stuck=-1e9,hs=-2;
+      for(const s of suitsFor(CONTRACTS[H])){if(checkReq(keep,H,s))continue;const e=estimate(keep,H,s,isTrumpC(CONTRACTS[H])?disc:null);if(e>stuck){stuck=e;hs=s;}}
+      if(stuck<=-1e8)continue;
+      let sum=0;const K=6;
+      for(let k=0;k<K;k++){const i=Math.floor(R()*unseen.length);let j=Math.floor(R()*unseen.length);if(j===i)j=(j+1)%unseen.length;sum+=greedyBest([...keep,unseen[i],unseen[j]],H+1);}
+      const ret=sum/K,P=P_RETURN[RISK],V=P*Math.max(ret,stuck)+(1-P)*stuck;
+      if(!best||V>best.V)best={V,H,suit:hs,disc,keep,target:T,ret,stuck,P};
+    }
+  }
+  return best;
+}
+// Licitdöntés 12 lappal (botok és Tipp közösen): azonnali legjobb vállalás, vagy gyűjtés tartó licittel.
+function bidDecision(h,minCi){
+  const b=chooseBid(h,minCi);
+  if(!LIVELY||!b)return {b,plan:null};
+  const pl=collectPlan(h,minCi);
+  if(pl){
+    // a beragadás kockázatát próbajátékkal pontosítjuk, ugyanazzal az értékelővel, mint minden mást
+    const so=evalOpt({ci:pl.H,suit:pl.suit,disc:pl.disc,rest:pl.keep},N_SCREEN);
+    pl.stuckOpt=so;pl.stuck=so.ev;pl.V=pl.P*Math.max(pl.ret,pl.stuck)+(1-pl.P)*pl.stuck;
+    if(pl.V>b.ev+RISK_COLLECT[RISK]&&pl.ret>b.ev+0.5)return {b,plan:pl};
+  }
+  return {b,plan:null};
+}
+function evalCurrent(hand,talon,ci,suit){
+  const suits=suit===-2?[1,2,3].filter(s=>!checkReq(hand,ci,s)):[suit];
+  let best=null;for(const s of suits){const o=evalOpt({ci,suit:s,disc:talon,rest:hand},N_FINAL);if(!best||cmpOpt(best,o)>0)best=o;}
+  return best||{ci,suit,disc:talon,rest:hand,p:0,gv:-CONTRACTS[ci].val,gift:0,ev:-CONTRACTS[ci].val};
+}
+// esély részenként (parti, ulti, betli…); a „pluszban” arány a csendes bónuszokkal együtt
+const mainP=o=>{const ks=Object.keys(o.pc||{});return ks.length?Math.min(...ks.map(k=>o.pc[k])):o.p;};
+const pct=o=>{const ks=Object.keys(o.pc||{});if(!ks.length)return `${Math.round(o.p*100)}%`;return ks.map(k=>`${ks.length>1?COMP_NAMES[k]+' ':''}${Math.round(o.pc[k]*100)}%`).join(', ');};
+const evTxt=o=>{const ks=Object.keys(o.pc||{});let t=ks.length>1?`részenként: ${pct(o)}`:`${COMP_NAMES[ks[0]]||'nyerési esély'} kb. ${pct(o)}`;
+  const main=ks.length?Math.min(...ks.map(k=>o.pc[k])):o.p;
+  if(Math.abs(o.p-main)>=0.1)t+=`, a csendes bónuszokkal együtt az esetek ${Math.round(o.p*100)}%-ában vagy pluszban`;
+  return `${t}, várhatóan ${fmt(o.ev)} pont védőnként`;};
+// azonos játékcsalád, más tét (pl. betli / piros betli): az esély ugyanaz, csak a tét más
+function stakeNote(a,b){
+  if(family(a)!==family(b)||CONTRACTS[a.ci].val===CONTRACTS[b.ci].val)return '';
+  const lo=CONTRACTS[a.ci].val<CONTRACTS[b.ci].val?a:b,hi=lo===a?b:a;
+  if(!!CONTRACTS[lo.ci].open!==!!CONTRACTS[hi.ci].open)return '';
+  return `A(z) ${CONTRACTS[lo.ci].name} és a(z) ${CONTRACTS[hi.ci].name} ugyanaz a játék, csak ${CONTRACTS[hi.ci].val/CONTRACTS[lo.ci].val}-szeres tétért, ezért a nyerési esélyük is azonos (${pct(lo)}). A drágább változat csak akkor éri meg, ha az esély 50% fölött van, alatta csak a veszteség nő.`;
+}
+
+// a licitdöntés: ugyanezt használják a botok és a Tipp
+const family=o=>CONTRACTS[o.ci].kind+':'+Object.keys(CONTRACTS[o.ci].comps).sort().join(',')+':'+o.suit;
+function chooseBid(h,minCi){
+  const L=rankOptions(h,minCi);if(!L.length)return null;
+  const best=L[0];
+  // licitlétra: azonos játékcsaládból a legkisebb, még nyerő (pozitív várható) változatot mondja,
+  // a drágábbat csak túllicitálásnál
+  const low=L.filter(x=>family(x)===family(best)&&CONTRACTS[x.ci].val<CONTRACTS[best.ci].val&&x.ev>0&&x.p>=best.p-0.05).sort((a,b)=>CONTRACTS[a.ci].val-CONTRACTS[b.ci].val)[0];
+  if(low)return Object.assign(Object.create(null),low,{ladder:best});
+  return best;
+}
+function bestBid(h,minCi){return chooseBid(h,minCi);}
+function shouldConcede(cur,ci){const v=typeof cur==='number'?cur:cur.ev;return v< -concedeLoss(ci,null,1)-0.5;}
+function ownRaise(p){const min=minBidIndex(),b=min<CONTRACTS.length?chooseBid([...G.hands[p],...G.talon],min):null,cur=evalCurrent(G.hands[p],G.talon,G.bid.ci,G.bid.suit);return {b,cur,yes:!!(b&&b.ev>0.5&&b.ev>cur.ev+RISK_RAISE[RISK])};}
+// parti kontra a védők bemondás-előnye alapján (óvatos, normál, merész): ennyi különbség kell
+const PARTI_MARGIN=[60,40,40];
+function kontraDecision(p,k){
+  if(mustKontra(p,k))return true;
+  const J=kontraJudge(p,k),y=J.yes;
+  if(J.marg)return true;
+  if(p===G.decl)return y;
+  if(RISK===0)return y&&(!G.trumpGame||handFacts(G.hands[p],G.trump).ut>=2);
+  if(RISK===2&&!y&&G.trumpGame&&k!=='durch')return G.hands[p].filter(x=>x.s===G.trump).length>=3;
+  return y;
+}
+function pickupDecision(p){
+  const talons=inferTalons(p);
+  const l=pickupDetailH(G.hands[p],minBidIndex(),16,talons);
+  let col=null;
+  if(LIVELY&&talons){let sum=0,n=0,last=null;for(const t of talons.slice(0,6)){const pl=collectPlan([...G.hands[p],...t],minBidIndex());if(pl){sum+=pl.V;n++;last=pl;}}if(n)col={V:sum/n,target:last.target};}
+  const now=l[0]?l[0].ev:-1e9,colV=col?col.V-RISK_COLLECT[RISK]:-1e9;
+  const base=passBase(),sane=(l[0]&&l[0].p>=MIN_PICK_P)||colV>now;
+  return {list:l,talons,collect:col,useCollect:colV>now,base,passLoss:passValue(),yes:sane&&Math.max(now,colV)>base+pickThreshold()};
+}
+function botWantsPickup(p){
+  if(minBidIndex()>=CONTRACTS.length)return false;
+  return pickupDecision(p).yes;
+}
+function botBidAction(p){
+  if(holding12(p)){const d=bidDecision(G.hands[p],minBidIndex());if(d.plan){(G.collect=G.collect||{})[p]=d.plan;return {type:'bid',ci:d.plan.H,suit:d.plan.suit,disc:d.plan.disc,rest:d.plan.keep,collect:true};}return {type:'bid',...d.b};}
+  if(G.bid&&G.bid.seat===p){
+    if(!canPickUp(p))return {type:'pass'};
+    const r=ownRaise(p);
+    if(r.yes)return {type:'pickup'};
+    return shouldConcede(r.cur,G.bid.ci)?{type:'concede'}:{type:'pass'};
+  }
+  if(canPickUp(p)&&botWantsPickup(p))return {type:'pickup'};
+  return {type:'pass'};
+}
+
+// ---- stratégia: ultiblog.hu (talonozás, felvétel, ulti-elosztások) ----
+const BLOG='Az ultiblog tanácsa';
+let RISK=1; // 0 óvatos, 1 normál, 2 merész
+const RISK_DIST=[0.85,1,1.15];
+const RISK_PICK=[0.45,-0.05,-0.55],RISK_RAISE=[1.5,1,0.5],RISK_BIAS=[-1,0,1];
+// mennyire erősítené a talonba tett lap a következő licitálót (ultiblog: ne tegyél le ászt, X-et, VII-est, királyt, felsőt)
+function giftValue(x,h){
+  let v=0;
+  if(x.r===7)v=1;else if(x.r===3)v=(hasC(h,x.s,7)&&hasC(h,x.s,6))?0.2:0.8;
+  else if(x.r===0)v=0.5;else if(x.r===5||x.r===6)v=0.45;
+  if(x.s===0)v+=v?0.15:0.08; // piros lap: piros játékot erősít
+  return v;
+}
+// ultiblog, talonozás: alacsony licitnél (parti, piros parti) a talonba nem kerül ász, X, VII, király, felső,
+// mert a következő licitáló felveheti, és magasabbat mondhat vele. Kivétel: az X, ha ugyanabból a színből az ász és a király is nálad van.
+// Betliben a magas lapoktól épp meg kell szabadulni, ott ez nem érvényes.
+const LOW_BID=2;
+const isGift=(x,h)=>x.r===7||x.r===0||x.r===5||x.r===6||(x.r===3&&!(hasC(h,x.s,7)&&hasC(h,x.s,6)));
+function discardAllowed(disc,h,ci){const c=CONTRACTS[ci];return c.val>LOW_BID||c.kind==='betli'||!disc.some(x=>isGift(x,h));}
+function safeDisc(srt,h,ci){let d=srt.slice(0,2);if(!discardAllowed(d,h,ci)){const ok=srt.filter(x=>!isGift(x,h));if(ok.length>=2)d=ok.slice(0,2);}return d;}
+function giftPenalty(disc,h,val){
+  const f=val<=1?0.55:val<=2?0.45:val<=5?0.3:val<=10?0.15:0.05;
+  let g=disc.reduce((a,x)=>a+giftValue(x,h),0);
+  for(const x of disc)g-=0.05*Math.max(0,h.filter(y=>y.s===x.s).length-3); // hosszú színből dobni jobb
+  return f*Math.max(0,g);
+}
+// ulti lapelosztás szerint (ultiblog táblázata)
+function ultiFit(h,t){
+  const n=h.filter(x=>x.s===t).length,side=[0,1,2,3].filter(s=>s!==t).map(s=>({s,c:h.filter(x=>x.s===s)})).sort((a,b)=>b.c.length-a.c.length);
+  const L=side.map(x=>x.c.length),A=side.map(x=>hasC(x.c,x.s,7)),strong=x=>hasC(x.c,x.s,7)||(hasC(x.c,x.s,3)&&hasC(x.c,x.s,6));
+  const shape=`${n} adu, ${L.filter(Boolean).join('-')||'0'} mellékszín`;
+  const aces=A.filter(Boolean).length;
+  let ok=false,why='';
+  if(!hasC(h,t,0))return {ok:false,t:'nincs adu VII'};
+  if(n>=6){ok=true;why='6 adu: bukhatatlan, ha minden színből van lapod';}
+  else if(n===5){
+    if(L[1]===0||L[1]===1&&L[2]===0){ok=true;why='szinte biztos';}
+    else if(L[0]===3&&L[1]===2){ok=strong(side[1]);why='csak ha a kétlapos mellékszín erős (ász, X-király)';}
+    else if(L[0]===3){ok=A[0];why='erős hajtószínnel szinte biztos';}
+    else {ok=hasC(h,t,7)||hasC(h,t,3);why='erős aduval, az adu legyen a hajtószín';}
+  }else if(n===4){
+    if(L[0]===6){ok=false;why='veszélyes, csak szerencsés elosztással nyer';}
+    else if(L[0]===5){ok=L[1]===1&&A[1];why='ha az egy mellékszínű lap ász, szinte biztos';}
+    else if(L[0]===4&&L[1]===2){ok=strong(side[1]);why='csak ha a két mellékszínű lap erős';}
+    else if(L[0]===4){ok=true;why='a leggyakoribb, általában nyerő elosztás';}
+    else if(L[0]===3){ok=aces===3;why='csak ha mindhárom mellékszín ásza nálad van';}
+    else {ok=aces===3;why='mindhárom mellékszínből ütnöd kell';}
+  }else if(n===3){ok=aces===3&&L[0]>=4;why='háromlapos ulti: csak mindhárom mellékász és 4-5 lapos hajtószín mellett';}
+  else why='kevés adu';
+  return {ok,t:`${shape}: ${why}`};
+}
+// gyors, mohó lerakás egy vállaláshoz (felvétel becsléséhez)
+function keepScore(x,c,s,h){
+  if(c.kind==='betli')return -x.r;
+  if(c.kind==='durch')return x.r;
+  let v=x.s===s?10+TP[x.r]:TP[x.r]/2;
+  if(x.s!==s&&(x.r===7||x.r===3))v+=4;
+  if(c.comps.ulti&&x.s===s&&x.r===0)v+=20;
+  if((x.r===5||x.r===6)&&hasC(h,x.s,x.r===5?6:5))v+=3;
+  return v;
+}
+function greedyBest(h,minCi){
+  let best=-1e9;
+  for(let ci=minCi;ci<CONTRACTS.length;ci++){const c=CONTRACTS[ci];
+    for(const s of suitsFor(c)){
+      const srt=h.slice().sort((a,b)=>keepScore(a,c,s,h)-keepScore(b,c,s,h)),disc=safeDisc(srt,h,ci),rest=h.filter(x=>!disc.includes(x));
+      if(forcedParts(rest,ci,s).length)continue;
+      const ev=estimate(rest,ci,s,isTrumpC(c)?disc:null)-giftPenalty(disc,h,c.val);
+      if(ev>best)best=ev;
+    }}
+  return best;
+}
+// a talon két ismeretlen lapjának Monte Carlo becslése: mennyit javíthat a lapon?
+function pickupEV(p,samples=10){
+  const mine=new Set(G.hands[p].map(x=>x.id));
+  const unseen=makeDeck().filter(x=>!mine.has(x.id));
+  const w=unseen.map(x=>(x.r===7||x.r===3||x.r===0||x.r>=5)?0.45:1); // a talonba inkább gyenge lap kerül
+  const tot=w.reduce((a,b)=>a+b,0),pick=()=>{let r=Math.random()*tot;for(let i=0;i<unseen.length;i++){r-=w[i];if(r<=0)return i;}return unseen.length-1;};
+  let sum=0;
+  for(let k=0;k<samples;k++){let i=pick(),j=pick();while(j===i)j=pick();sum+=greedyBest([...G.hands[p],unseen[i],unseen[j]],minBidIndex());}
+  return sum/samples;
+}
+// felvétel elemzése vállalásonként: a talon lehetséges lapjaival átlagosan mennyit ér (kényszervállalás nélkül)
+function pickupDetail(p,samples=24){return pickupDetailH(G.hands[p],minBidIndex(),samples);}
+function pickupDetailH(hand,minCi,samples=24,talons=null){
+  const mine=new Set(hand.map(x=>x.id)),unseen=makeDeck().filter(x=>!mine.has(x.id));
+  const w=unseen.map(x=>(x.r===7||x.r===3||x.r===0||x.r>=5)?0.45:1),tot=w.reduce((a,b)=>a+b,0);
+  const pick=()=>{let r=Math.random()*tot;for(let i=0;i<unseen.length;i++){r-=w[i];if(r<=0)return i;}return unseen.length-1;};
+  const acc={},min=minCi;
+  for(let k=0;k<samples;k++){
+    let h;
+    if(talons){h=[...hand,...talons[k%talons.length]];}
+    else{let i=pick(),j=pick();while(j===i)j=pick();h=[...hand,unseen[i],unseen[j]];}
+    for(let ci=min;ci<CONTRACTS.length;ci++){const c=CONTRACTS[ci];
+      for(const s of suitsFor(c)){
+        const srt=h.slice().sort((a,b)=>keepScore(a,c,s,h)-keepScore(b,c,s,h)),disc=safeDisc(srt,h,ci),rest=h.filter(x=>!disc.includes(x));
+        if(checkReq(rest,ci,s)||forcedParts(rest,ci,s).length)continue;
+        const dd=isTrumpC(c)?disc:null,ev=estimate(rest,ci,s,dd)-giftPenalty(disc,h,c.val),key=ci+':'+s;
+        const pen=dd?dd.reduce((a,x)=>a+pts(x),0)/10*0.6:0,pw=Object.keys(c.comps).reduce((a,k)=>a*compP(rest,ci,s,k,pen),1);
+        const A=(acc[key]=acc[key]||{ci,suit:s,sum:0,n:0,ps:0});A.sum+=ev;A.ps+=pw;A.n++;
+      }}
+  }
+  // ahol egy mintában sem teljesült a feltétel, az nem jelölt
+  return Object.values(acc).map(o=>({ci:o.ci,suit:o.suit,ev:o.sum/samples,p:o.ps/samples,ok:o.n/samples})).filter(o=>o.ok>=0.5).sort((a,b)=>b.ev-a.ev);
+}
+function bestSuitEst(h,ci,suit){
+  if(suit!==-2)return estimate(h,ci,suit,null);
+  return Math.max(...[1,2,3].map(s=>estimate(h,ci,s,null)));
+}
+
+// ---- stratégia: Jánoska–Zsigri: A rablóulti szabályai ----
+const BOOK='A szabálykönyv tanácsa';
+function handFacts(h,t){
+  const ofS=s=>h.filter(x=>x.s===s);
+  const tr=t>=0?ofS(t):[];
+  const tp=tr.map(x=>TP[x.r]).sort((a,b)=>b-a);
+  let run=0;while(run<tp.length&&tp[run]===7-run)run++;
+  let ut=0,sideUt=0,sideAces=0,voids=0,longSide=0;
+  for(let s=0;s<4;s++){
+    const cs=ofS(s),A=hasC(cs,s,7),X=hasC(cs,s,3),u=(A?1:0)+(X&&A?1:0);
+    ut+=u;
+    if(s!==t){sideUt+=u;if(A)sideAces++;if(!cs.length)voids++;if(A)longSide=Math.max(longSide,cs.length);}
+  }
+  const marrs=[0,1,2,3].filter(s=>hasC(h,s,6)&&hasC(h,s,5));
+  return {n:tr.length,run,hasA:t>=0&&hasC(h,t,7),hasX:t>=0&&hasC(h,t,3),ut,sideUt,sideAces,voids,longSide,marrs};
+}
+function betliRisk(h,open){let risk=0;for(let s=0;s<4;s++){const rs=h.filter(x=>x.s===s).map(x=>x.r).sort((a,b)=>a-b);rs.forEach((r,i)=>{if(r>(open?Math.max(0,2*i-1):2*i))risk++;});}return risk;}
+// a könyv feltételei egy vállalásrészre: {ok, items:[{ok,t}]}
+function bookComp(h,ci,suit,k){
+  const c=CONTRACTS[ci],I=[],add=(ok,t)=>I.push({ok:!!ok,t});
+  if(k==='betli'){
+    const high=h.filter(x=>x.r>=5).length,risk=betliRisk(h,c.open);
+    add(high<=1,`többségében kis lapok, legfeljebb egy magas induló lap (felső/király/ász: ${high})`);
+    add(!h.some(x=>x.r===7),'ne maradjon nálad ász: az nem üthető alá, induló lapnak a király jobb (ultiblog)');
+    add(risk===0,c.open?'hibátlan, összefüggő színsorozatok (terítettnél kötelező)':'a hiányzó kisebb lapok nem kényszerítenek ütésre');
+    return {ok:I.every(x=>x.ok),items:I};
+  }
+  if(k==='durch'&&!isTrumpC(c)){
+    let closed=true,longest=0;
+    for(let s=0;s<4;s++){const rs=h.filter(x=>x.s===s).map(x=>x.r).sort((a,b)=>b-a);if(!rs.length)continue;let r=0;while(r<rs.length&&rs[r]===7-r)r++;if(r<rs.length)closed=false;longest=Math.max(longest,rs.length);}
+    add(closed,'minden színben felülről zárt, összefüggő sorozat (ász, király, felső…)');
+    add(longest>=4,`4-5 lapos színsorozat (leghosszabb: ${longest})`);
+    return {ok:I.every(x=>x.ok),items:I};
+  }
+  const f=handFacts(h,suit);
+  if(k==='parti'){
+    add(f.n>=4,`legalább 4 adu (van: ${f.n})`);
+    add(f.ut>=2,`2-3 ütőlap, azaz ász vagy ásszal fedett X (van: ${f.ut})`);
+    if(f.marrs.length)add(true,'20 vagy 40 bemondás is segít');
+    return {ok:f.n>=4&&f.ut>=2,items:I};
+  }
+  if(k==='c40'){
+    add(f.n>=4,`4 vagy több adu (van: ${f.n})`);
+    add(f.hasA&&f.hasX,'köztük az adu ász és X');
+    if(!has40(h,suit))add(false,'nincs adu király–felső pár: ez kényszervállalás, a védő kötelezően kontrázza');
+    add(f.sideUt>=2,`2-3 oldalszínű ütőlap (van: ${f.sideUt})`);
+    add(f.voids>=1,'egy színhiány');
+    return {ok:I.every(x=>x.ok),items:I};
+  }
+  if(k==='c20'){
+    const ms=f.marrs.filter(s=>s!==suit);
+    if(!has20(h,suit))add(false,'nincs nem adu király–felső pár: ez kényszervállalás, a védő kötelezően kontrázza');
+    add(f.run>=4,`4-5 biztos ütésű adu, felülről zárt sorban (van: ${f.run})`);
+    add(f.sideAces>=1,'legalább egy oldalász');
+    add(ms.some(s=>hasC(h,s,3)&&hasC(h,s,7)),'a 20 színében ásszal fedett X');
+    return {ok:I.every(x=>x.ok),items:I};
+  }
+  if(k==='ulti'){
+    add(f.n>=4,`4-5 adu (5-6 adu szinte biztos siker; van: ${f.n})`);
+    add(f.ut>=2,`néhány ütőlap (van: ${f.ut})`);
+    if(f.n===3)add(f.longSide>=3&&f.ut>=3,'3 aduval csak erős kísérőlapokkal és 3-4 lapos hajtószínnel');
+    const uf=ultiFit(h,suit);add(uf.ok,'ultiblog, elosztás szerint: '+uf.t);
+    return {ok:uf.ok&&((f.n>=4&&f.ut>=2)||(f.n===3&&f.longSide>=3&&f.ut>=3)||f.n>=5),items:I};
+  }
+  // színes durchmars
+  const st=handFacts(h,suit);
+  add(st.run>=4,`hosszú, felülről zárt adusor (van: ${st.run})`);
+  const rest=bookComp(h.filter(x=>x.s!==suit),CONTRACTS.findIndex(x=>x.kind==='durch'&&!x.red&&!x.open),-1,'durch');
+  add(rest.items[0].ok,'a többi színben is csak biztos ütések');
+  return {ok:I.every(x=>x.ok),items:I};
+}
+function bookCheck(h,ci,suit){
+  const parts=Object.keys(CONTRACTS[ci].comps).map(k=>({k,...bookComp(h,ci,suit,k)}));
+  return {ok:parts.every(p=>p.ok),parts};
+}
+function bookHTML(h,ci,suit,title){
+  const b=bookCheck(h,ci,suit);
+  return `<p class="rule"><b>${title||BOOK}</b> (${optName({ci,suit})}):</p><ul>${b.parts.map(p=>p.items.map(i=>`<li>${i.ok?'✓':'✗'} ${COMP_NAMES[p.k]}: ${i.t}</li>`).join('')).join('')}</ul>`;
+}
+// történet: ki melyik színből fogyott ki (nem adott színt)
+function hist(){return (G.hist||[]).concat(G.trick.length?[G.trick]:[]);}
+function knownVoid(q,s){return hist().some(tr=>tr[0].c.s===s&&tr.some(t=>t.p===q&&t.c.s!==s));}
+function partnerSuits(p){const pa=[0,1,2].find(q=>q!==p&&q!==G.decl);return (G.hist||[]).filter(tr=>tr[0].p===pa).map(tr=>tr[0].c.s);}
+function partnerOf(p){return [0,1,2].find(q=>q!==p&&q!==G.decl);}
+// durchmars védekezés: a lehetséges fogólap (stopper) megtartása
+function stopperSuit(p,s){
+  const mine=G.hands[p].filter(x=>x.s===s);if(!mine.length)return false;
+  const best=Math.max(...mine.map(x=>pow(x,G.trumpGame)));
+  const higher=outstanding(p).filter(x=>x.s===s&&pow(x,G.trumpGame)>best).length;
+  return mine.length>higher;
+}
+
+// ---- bot: kontra ----
+function kontraJudge(p,k){
+  const c=CONTRACTS[G.ci],h=G.hands[p],t=G.trump;
+  if(p===G.decl){
+    const pr=compP(h,G.ci,t,k);
+    let under=null;
+    for(let ci=G.ci+1;ci<CONTRACTS.length&&!under;ci++){const c2=CONTRACTS[ci];if(c2.kind!==c.kind||!!c2.red!==!!c.red||!c2.comps[k])continue;if(!checkReq(h,ci,t)&&bookCheck(h,ci,t).ok&&estimate(h,ci,t,null)>1)under=c2.name;}
+    let yes=pr>0.85||(pr>0.7&&!!under);
+    if(k==='parti'){const sm=q=>G.marr[q].reduce((a,m)=>a+m.v,0),mg=[0,1,2].filter(q=>q!==p).reduce((a,q)=>a+sm(q),0)-sm(p);
+      if(mg>=20&&yes)return {yes:false,why:`Parti: a védők bemondásai ${mg} ponttal többet érnek a tieidnél, így a parti bizonytalan; rekontra nem javasolt.`};}
+    return {yes,why:`${COMP_NAMES[k]}: a becsült esélyed kb. ${Math.round(pr*100)}%. ${under?`${BOOK}: a rekontra leggyakoribb esete, ha a lapod a bemondottnál magasabbra (${under}) is elég lett volna, így a kisebb vállalás könnyen teljesül. `:''}${yes?'Ez elég biztos, a rekontra négyszerezi a tétet.':'Ez nem elég biztos a rekontrához, mert a veszteség is négyszeres lenne.'}`};
+  }
+  if(mustKontra(p,k))return {yes:true,why:`${COMP_NAMES[k]}: a felvevő kényszervállalást tett (${k==='c40'?'a 40':'a 20'} nélkül mondta), és nálad van ${k==='c40'?'az adu király vagy felső':'egy nem adu király vagy felső'}. ${BOOK}: a kényszervállalást annak a védőnek kötelező megkontráznia, akinél a kulcslap van.`};
+  const pa=partnerOf(p);
+  if(isTrumpC(c)&&k!=='durch'){
+    const f=handFacts(h,t),st=trumpStats(h,t);
+    const tops=[f.hasA?'ász':'',f.hasX?'X':''].filter(Boolean);
+    const desc=`${f.n} adud van${tops.length?' ('+tops.join(', ')+')':''}, ${f.ut} ütőlapod`;
+    if(k==='parti'){
+      const pm=G.marr[pa].reduce((a,m)=>a+m.v,0),mm=G.marr[p].reduce((a,m)=>a+m.v,0);
+      const bookY=pm>=20&&mm>=20&&f.ut>=2;
+      // bemondás-előny: a védők 20/40-ei a felvevőéhez képest (mind ismert a kontra előtt)
+      const Am=G.marr[G.decl].reduce((a,m)=>a+m.v,0),mg=pm+mm-Am,need=Math.max(0,Math.ceil((90+Am-pm-mm)/20)*10);
+      const MG_P={'-20':5,0:38,20:43,40:70,60:85},mgP=MG_P[Math.max(-20,Math.min(60,mg))];
+      const margY=mg>=PARTI_MARGIN[RISK];
+      const mtxt=`A védők bemondásai összesen ${pm+mm}, a felvevőé ${Am}: a 90 kártyapontból (ászok, X-ek, utolsó ütés) nektek ${need} is elég. Gépi lejátszások szerint ilyen bemondás-különbségnél a parti az esetek kb. ${mgP}%-ában bukik el.`;
+      const y=margY||bookY||st.S>=3.6||(f.n>=4&&tops.length>=1&&st.aces>=1);
+      if(margY)return {yes:true,marg:true,why:`Parti: ${mtxt} Ezért a parti kontrája megéri, akkor is, ha kevés az ütőlapod (${desc}).`};
+      return {yes:y,why:`Parti: ${desc}. ${mg>=20?mtxt+' ':''}${bookY?`${BOOK}: a társad is bemondott ${pm}-at, nálad is van ${mm}, és van két ütőlapod, így joggal kontrázhatod.`:y?'Ez erős védőlap, a parti elbukhat.':'Ez kevés ahhoz, hogy biztosan megfogjátok.'}`};
+    }
+    if(k==='c40'||k==='c20'){
+      const y=f.n>=4||(f.n>=3&&f.ut>=2)||(f.n>=2&&f.ut>=2&&f.voids>=1);
+      return {yes:y,why:`${COMP_NAMES[k]}: ${desc}${f.voids?', színhiányod is van':''}. ${BOOK}: csak megfelelő laperővel, kellő aduval és ütőlappal, esetleg színhiánnyal érdemes kontrázni. ${y?'Ez megvan.':'Ez most hiányzik.'}`};
+    }
+    if(k==='ulti'){
+      const y=f.n>=4||(f.n===3&&f.ut>=2);
+      return {yes:y,why:`Ulti: ${desc}. ${BOOK}: az ulti kontrája 3-4 aduval és néhány ütőlappal indokolt. ${y?'Ez megvan, jó eséllyel leütitek a VII-est.':'Ehhez kevés a lapod.'}`};
+    }
+  }
+  if(k==='betli'){let low=0;for(let s=0;s<4;s++)if(h.some(x=>x.s===s&&x.r<=1))low++;const y=low>=3;
+    return {yes:y,why:`Betli: ${low} színben van VII-esed vagy VIII-asod. ${y?'Alá tudsz bújni, így a felvevőnek kell ütnie.':'Kevés kis lapod van, könnyen te ütsz helyette.'} ${BOOK}: a betli kontrája egyéni, és itt dönt leginkább a lapelosztás.`};}
+  const y=[0,1,2,3].some(s=>{const cs=h.filter(x=>x.s===s);return cs.length>=3&&cs.some(x=>x.r>=6);});
+  return {yes:y,why:`Durchmars: ${y?'Van egy hosszú színed magas lappal, ebből lehet egy ütésed.':'A durchmars ellen nehéz védekezni, ehhez hosszú, magas lapos szín kellene.'} ${BOOK}: durchmars ellen ritkán van ellenjáték, a fontos lapokat az utolsó ütésekre kell megtartani.`};
+}
+function botKontra(p){return kontraOptions(p).filter(o=>kontraDecision(p,o.k));}
+
+// ---- bot: card play ----
+function outstanding(p){
+  const seen=new Set([...G.hands[p].map(x=>x.id),...G.played.map(x=>x.id)]);
+  if(p===G.decl)G.talon.forEach(x=>seen.add(x.id));
+  return makeDeck().filter(x=>!seen.has(x.id));
+}
+function isTop(card,p){const tg=G.trumpGame;return !outstanding(p).some(x=>x.s===card.s&&pow(x,tg)>pow(card,tg));}
+const friendly=(a,b)=>(a===G.decl)===(b===G.decl);
+function wouldWin(card){const tr=G.trick;if(!tr.length)return true;return beats(card,tr[trickWinnerIdx(tr)].c);}
+// ---- lapszámolás: csak az, amit p a saját szemével tudhat ----
+// Mindenki által ismert lap helye: a bemondott 20/40 királya és felsője a bemondónál van; ulti: az adu VII a felvevőnél;
+// 40-100 (nem kényszervállalás): az adu király és felső a felvevőnél. -1, ha nem ismert vagy már kiment.
+function knownAt(card){
+  if(G.played.some(x=>x.id===card.id))return -1;
+  if(card.r===5||card.r===6)for(let q=0;q<3;q++)if(G.marr[q].some(m=>m.s===card.s))return q;
+  const c=CONTRACTS[G.ci];
+  if(G.trumpGame&&card.s===G.trump){
+    if(c.comps.ulti&&card.r===0)return G.decl;
+    if(c.comps.c40&&!(G.forced&&G.forced.c40)&&(card.r===5||card.r===6))return G.decl;
+  }
+  return -1;
+}
+// p tudása szerint lehet-e a lap q kezében (kiment lapok, saját kéz, talon a felvevőnek, bemondások, ismert színhiány)
+function mayHold(p,q,card){
+  if(q===p)return G.hands[p].some(x=>x.id===card.id);
+  if(G.played.some(x=>x.id===card.id)||G.hands[p].some(x=>x.id===card.id))return false;
+  if(p===G.decl&&G.talon.some(x=>x.id===card.id))return false;
+  const k=knownAt(card);if(k>=0)return k===q;
+  return !knownVoid(q,card.s);
+}
+const oppsOf=p=>p===G.decl?[0,1,2].filter(q=>q!==p):[G.decl];
+// az ellenfeleknél lehetséges aduk (a társnál lévők nem fenyegetnek)
+function oppTrumps(p){return G.trumpGame?outstanding(p).filter(x=>x.s===G.trump&&oppsOf(p).some(q=>mayHold(p,q,x))):[];}
+// a felvevőnél biztosan van-e még lap ebből a színből (bemondásból ismert lap), mert akkor színt kell adnia, nem üthet aduval
+const declMustFollow=s=>makeDeck().some(x=>x.s===s&&knownAt(x)===G.decl);
+// védő szemével: felülütheti-e a felvevő ezt a lapot. strict: ha nem tudjuk, van-e színe, az adut is fenyegetésnek vesszük.
+function declMayBeat(p,card,strict){
+  const d=G.decl,tg=G.trumpGame;
+  if(outstanding(p).some(x=>x.s===card.s&&pow(x,tg)>pow(card,tg)&&mayHold(p,d,x)))return true;
+  if(tg&&card.s!==G.trump&&oppTrumps(p).length&&!declMustFollow(card.s)&&(strict||knownVoid(d,card.s)))return true;
+  return false;
+}
+// ---- felmutatás: ha már biztos, hogy innentől minden ütés egy félé ----
+// side: 'decl' = a felvevő visz mindent, 'betli' = a felvevő egy ütést sem visz, 'def' = a védők visznek mindent.
+// Teljes keresés a valódi lapokkal: a felmutató fél választ, a másik fél bármit tehet (minden szabályos lapot kipróbál).
+function solveClaim(side,p0=G.turn,i0=G.trick.length,budget=60000){
+  const memo=new Map(),ctrl=p=>side==='def'?p!==G.decl:p===G.decl;
+  const ulti=side==='decl'&&CONTRACTS[G.ci].comps.ulti&&!G.ultiBroken;
+  const goal=w=>side==='decl'?w===G.decl:w!==G.decl;
+  function trick(leader){
+    if(!G.hands[leader].length)return true;
+    const key=leader+'|'+G.hands.map(h=>h.map(x=>x.id).sort((a,b)=>a-b).join(',')).join('/');
+    if(memo.has(key))return memo.get(key);
+    const r=play(leader,0);memo.set(key,r);return r;
+  }
+  function play(p,i){
+    if(--budget<0)throw 'budget';
+    if(i===3){const w=G.trick[trickWinnerIdx(G.trick)].p;if(!goal(w))return false;
+      const saved=G.trick;G.trick=[];try{return trick(w);}finally{G.trick=saved;}}
+    const mine=ctrl(p),h=G.hands[p];
+    for(const c of eqReduce(p,legalCards(p))){
+      // ultinál a felmutatás csak úgy érvényes, ha a VII-es az utolsó ütésben megy ki
+      if(ulti&&p===G.decl&&c.s===G.trump&&c.r===0&&h.length>1)continue;
+      const idx=h.indexOf(c);h.splice(idx,1);G.trick.push({p,c});
+      let r;try{r=play(nxt(p),i+1);}finally{G.trick.pop();h.splice(idx,0,c);}
+      if(mine&&r)return true;if(!mine&&!r)return false;
+    }
+    return !mine;
+  }
+  return play(p0,i0);
+}
+// egyenértékű lapok összevonása: azonos színű lapok, amelyek között a többieknél nincs lap, ütésszám szempontjából egyformák
+function eqReduce(p,L){
+  const tg=G.trumpGame,others=[0,1,2].filter(q=>q!==p).flatMap(q=>G.hands[q]),out=[];
+  const bySuit={};for(const c of L)(bySuit[c.s]=bySuit[c.s]||[]).push(c);
+  for(const s in bySuit){
+    const cs=bySuit[s].sort((a,b)=>pow(b,tg)-pow(a,tg));let prev=null;
+    for(const c of cs){
+      const seven=tg&&c.s===G.trump&&c.r===0;
+      if(prev&&!seven&&!others.some(x=>x.s===c.s&&pow(x,tg)<pow(prev,tg)&&pow(x,tg)>pow(c,tg)))continue;
+      out.push(c);prev=c;
+    }
+  }
+  return out;
+}
+function claimTry(side,p0,i0){try{return solveClaim(side,p0,i0);}catch(e){if(e==='budget')return false;throw e;}}
+// az ütés elején egyszer: melyik fél mutathatja fel a lapjait (null: egyik sem)
+function claimCheck(){
+  if(G.phase!=='play'||G.trick.length||G.trickNo>=9)return null;
+  if(G.claimAt&&G.claimAt.n===G.trickNo)return G.claimAt.side;
+  const sides=CONTRACTS[G.ci].kind==='betli'?['betli']:['decl','def'];
+  let side=null;for(const s of sides)if(claimTry(s,G.turn,0)){side=s;break;}
+  G.claimAt={n:G.trickNo,side};return side;
+}
+const claimers=side=>side==='def'?[0,1,2].filter(q=>q!==G.decl):[G.decl];
+const claimHuman=side=>claimers(side).includes(0);
+// „X felmutatja a lapjait” helyes ragozással (múlt idő: past=true)
+function claimVerb(who,past){
+  const names=who.map(q=>NAME[q]).join(' és '),me=who.includes(0),pl=who.length>1;
+  if(me)return pl?`${names} felmutattátok a lapjaitokat`:(past?'Felmutattad a lapjaidat':'Felmutatod a lapjaidat');
+  return pl?`${names} felmutat${past?'ták':'ják'} a lapjaikat`:`${names} felmutat${past?'ta':'ja'} a lapjait`;
+}
+function claimText(side){
+  const d=G.decl;
+  return side==='betli'?`${d===0?'innentől egy ütést sem viszel':NAME[d]+' innentől egy ütést sem visz'}`
+    :side==='decl'?`innentől minden ütés ${d===0?'a tiéd':NAME[d]+'é'}`:`innentől minden ütés a védőké`;
+}
+// a felmutatás után a maradékot a gép lejátssza (a felmutató fél a keresés szerinti lapot teszi), így a pontozás a szokásos
+function resolveClaim(side){
+  const who=claimers(side);
+  G.claimShow={side,who,rest:G.hands.map(h=>h.map(x=>({...x}))),from:G.trickNo};
+  addLog(`${claimVerb(who,false)}: ${claimText(side)}.`);
+  const ctrl=p=>side==='def'?p!==G.decl:p===G.decl;
+  let guard=0;
+  while(G.phase==='play'&&guard++<40){
+    if(G.trick.length===3){collectTrick();continue;}
+    const p=G.turn,i=G.trick.length;let card=null;
+    if(ctrl(p))for(const x of legalCards(p)){
+      const h=G.hands[p],idx=h.indexOf(x);h.splice(idx,1);G.trick.push({p,c:x});
+      let r;try{r=claimTry(side,nxt(p),i+1);}finally{G.trick.pop();h.splice(idx,0,x);}
+      if(r){card=x;break;}
+    }
+    playCard(p,card||botChoose(p));
+  }
+}
+let WHY='';
+function botChoose(p){
+  const c=CONTRACTS[G.ci],tg=G.trumpGame,t=G.trump,decl=p===G.decl;
+  let L=legalCards(p),note='';
+  const R=(card,why)=>{WHY=why+(note?' '+note:'');return card;};
+  if(c.comps.ulti&&decl&&G.trickNo<9){const f=L.filter(x=>!(x.s===t&&x.r===0));if(f.length<L.length&&f.length){L=f;note='Az adu VII-est az utolsó ütésre tartogasd, ez az ulti lényege.';}}
+  if(L.length===1)return R(L[0],'Ez az egyetlen szabályos lapod.');
+  if(tg&&!c.comps.ulti&&G.trickNo<9){
+    const seven=L.find(x=>x.s===t&&x.r===0);
+    if(seven){
+      const myOther=G.hands[p].filter(x=>x.s===t&&x.r!==0).length;
+      const outT=oppTrumps(p).length;
+      if(myOther>=1&&myOther>=outT){L=L.filter(x=>x!==seven);note='Az adu VII-est érdemes megtartani: ha az utolsó ütést viszi, csendes ultit ér.';}
+      else if(G.trickNo>=5)return R(seven,'Most dobd el az adu VII-est: ha az utolsó ütésig nálad marad, és nem viszi el, az csendes ulti bukás, és fizetned kell.');
+    }
+  }
+  if(L.length===1)return R(L[0],'Ez az egyetlen jó lehetőség.');
+  const P=x=>pow(x,tg);
+  const isT=x=>tg&&x.s===t;
+  const cost=x=>pts(x)*3+P(x)+(isT(x)?6:0);
+  const minBy=(a,f)=>a.reduce((m,x)=>f(x)<f(m)?x:m);
+  const maxBy=(a,f)=>a.reduce((m,x)=>f(x)>f(m)?x:m);
+  const tr=G.trick,lead=!tr.length;
+
+  if(c.kind==='betli'){
+    if(decl){
+      if(lead){const out=outstanding(p);
+        const safe=L.filter(x=>out.some(y=>y.s===x.s&&y.r>x.r));
+        if(safe.length)return R(maxBy(safe,P),`${BLOG}: betliben indulj magas lappal (például királlyal), amelyet egy kint lévő nagyobb lap biztosan felülüt, mert aki tartja, köteles felülütni. Így megszabadulsz a veszélyes lapjaidtól.`);
+        return R(minBy(L,x=>P(x)*10-out.filter(y=>y.s===x.s&&y.r<x.r).length),'Betliben kis lapot hívj, amit a védők könnyen felülütnek.');}
+      const lo=L.filter(x=>!wouldWin(x));
+      // ha a hívott színből nincs lapod, a legveszélyesebb (fogható) lapodat dobd el:
+      // egy lap fogható, ha van kint alatta olyan lap, amelyre hívva a felülütési kényszer miatt épp ezt kellene rátenned
+      if(lo.length&&!G.hands[p].some(x=>x.s===tr[0].c.s)){
+        const out=outstanding(p),H=G.hands[p],exp={};
+        for(const y of out){const above=H.filter(x=>x.s===y.s&&x.r>y.r);if(!above.length)continue;
+          const z=above.reduce((m,x)=>x.r<m.r?x:m);(exp[z.id]=exp[z.id]||[]).push(y);}
+        const cand=lo.filter(x=>exp[x.id]);
+        if(cand.length){const x=maxBy(cand,y=>exp[y.id].length*10+y.r),ys=exp[x.id].sort((a,b)=>a.r-b.r);
+          return R(x,`A hívott színből nincs lapod, így most bármit eldobhatsz. A(z) ${cardName(x)} a legveszélyesebb lapod: kint van alatta ${ys.map(cardName).join(', ')}, és ha ${ys.length>1?'valamelyiket':'azt'} hívják, a felülütési kényszer miatt a(z) ${cardName(x)} lapot kellene rátenned. A biztonságos sorozataidat (ahol alulról minden lap nálad van) tartsd meg.`);}
+        return R(maxBy(lo,P),'A hívott színből nincs lapod, és minden lapod biztonságos (alattuk nincs kint lap), így a legmagasabbat dobod el.');
+      }
+      return lo.length?R(maxBy(lo,P),'A legmagasabb olyan lapot dobd, amelyik még nem üt: így szabadulsz meg a veszélyes lapoktól.'):R(minBy(L,P),'Sajnos mindenképp ütsz, ez a betli bukását jelenti.');
+    }
+    if(!lead&&tr[trickWinnerIdx(tr)].p===G.decl){const lo=L.filter(x=>!wouldWin(x));if(lo.length)return R(maxBy(lo,P),'A felvevő viszi az ütést. Maradj alatta, és közben szabadulj meg egy magasabb lappal.');}
+    if(lead&&G.revealed){
+      // terített betli: a felvevő lapjai nyitva. Felülütési kényszer: ha a felvevőnek van a hívottnál nagyobb lapja ebből a színből,
+      // fölé kell tennie (akkor is, ha kisebb is van nála). Olyan lapot hívunk, amelynél a felvevő kényszerlapja fölött
+      // a lehető legkevesebb kint lévő lap van (a társunk azzal felülüthetné, és megmentené a felvevőt).
+      const dh=G.hands[G.decl],mine=new Set(G.hands[p].map(x=>x.id)),gone=new Set(G.played.map(x=>x.id));
+      let bc=null,bs=-1e9,info='';
+      for(const x of L){
+        const hi=dh.filter(y=>y.s===x.s&&y.r>x.r);if(!hi.length)continue;
+        const f=hi.reduce((m,y)=>y.r<m.r?y:m);
+        const above=[0,1,2,3,4,5,6,7].filter(r=>r>f.r&&!dh.some(y=>y.s===x.s&&y.r===r)&&!mine.has(x.s*8+r)&&!gone.has(x.s*8+r)).length;
+        const sc=-above*3-x.r*0.2+(nxt(p)!==G.decl?1:0);
+        if(sc>bs){bs=sc;bc=x;info=`felvevőnek van nagyobb ${SUIT_NAMES[x.s].toLowerCase()} lapja (legalább ${cardName(f)})`;}
+      }
+      if(bc)return R(bc,`Terített betli: a felvevő lapjai nyitva vannak. A ${info}, ezért a felülütési kényszer miatt fölé kell tennie, akkor is, ha kisebb lapja is van, és jó eséllyel ütnie.`);
+    }
+    if(lead){
+      const pa=partnerOf(p);
+      const shed=L.filter(x=>knownVoid(pa,x.s)&&!knownVoid(G.decl,x.s));
+      if(shed.length)return R(maxBy(shed,P),`${BOOK}: a társad már nem tud ebből a színből adni, így most eldobhatja a veszélyes magas lapjait (színtelenítés). Később ezért nem neki kell ütnie a felvevő kis lapja fölé.`);
+      const safe=L.filter(x=>!knownVoid(G.decl,x.s));
+      if(safe.length&&safe.length<L.length)return R(minBy(safe,P),'A felvevő az egyik színből már kifogyott, abban bármit eldobhat. Olyan színt hívj, amiből adnia kell, hogy ütésre kényszerüljön.');
+    }
+    return R(minBy(L,P),'Betli ellen tegyél kicsit, hogy a felvevőnek kelljen ütnie.');
+  }
+  if(c.comps.durch){
+    if(decl){
+      if(lead){const tops=L.filter(x=>isTop(x,p));return R(maxBy(tops.length?tops:L,P),'Durchmarsban a legerősebb, biztosan ütő lapodat hívd.');}
+      const w=L.filter(wouldWin);if(w.length)return R(tr.length===2?minBy(w,P):maxBy(w,P),'Ezzel elviszed az ütést.');
+      return R(minBy(L,P),'Ezt az ütést nem tudod elvinni, a durchmars elbukott.');
+    }
+    if(lead){const tops=L.filter(x=>isTop(x,p));return tops.length?R(tops[0],'Ez a lap biztosan üt. Egyetlen ütés elég, hogy elbukjon a durchmars.'):R(minBy(L,P),'Nincs biztos ütőd, ezért kicsit hívsz.');}
+    const keep=x=>(stopperSuit(p,x.s)?100:0)+P(x);
+    const keepWhy=`${BOOK}: a durchmars leggyakrabban az utolsó ütésekben bukik meg, ezért tartsd meg a színeidet, ahol fogólapod lehet, és onnan dobj, ahol úgysem ütnél.`;
+    if(tr[trickWinnerIdx(tr)].p!==G.decl)return R(minBy(L,keep),'A társad viszi az ütést, elég kicsit tenned. '+keepWhy);
+    const w=L.filter(wouldWin);return w.length?R(minBy(w,P),'Ezzel elviszed az ütést, és elbukik a durchmars!'):R(minBy(L,keep),'Nem tudsz ütni. '+keepWhy);
+  }
+  if(lead){
+    const out=outstanding(p);
+    const outTr=oppTrumps(p);
+    if(decl&&tg&&out.some(x=>x.s===t)&&!outTr.length)note='Számolás: a védők már nem tudnak adut tenni (mindketten színt dobtak adura), ezért nem húzol több adut.';
+    const myTr=L.filter(isT);
+    if(decl&&outTr.length&&myTr.length){const hi=maxBy(myTr,P);if(P(hi)>Math.max(...outTr.map(P)))return R(hi,'A legerősebb kint lévő adu nálad van. Húzd ki az ellenfelek aduit, hogy később ne üssék le a színes lapjaidat.');}
+    if(decl&&c.comps.ulti&&outTr.length){
+      const my=myTr.filter(x=>x.r!==0);
+      if(my.length>outTr.length)return R(maxBy(my,P),`${BOOK}: ultinál gyűjtsd be az ellenfelek aduit. Több adud van, mint nekik összesen, így minden aduhívással fogynak az övéik, és a VII-esed a végén egyedül marad.`);
+    }
+    if(decl&&(c.comps.c40||c.comps.c20)&&outTr.some(x=>x.r===7)){
+      const kf=myTr.filter(x=>x.r===5||x.r===6);
+      if(kf.length)return R(minBy(kf,P),`${BLOG}: ha hiányzik az adu ász, már az elején hajtsd ki adu felsővel vagy királlyal, hogy ne később üsse el a pontos lapjaidat.`);
+    }
+    const dv=s=>!decl&&knownVoid(G.decl,s)&&(!tg||oppTrumps(p).length>0);
+    if(!decl&&c.comps.ulti){
+      const force=L.filter(x=>!isT(x)&&dv(x.s)&&!pts(x));
+      if(force.length)return R(minBy(force,P),`${BOOK}: ultinál a felvevő színhiányát kell megtalálni. Ebből a színből már nincs neki, így adut kell tennie, és fogynak az aduja, amelyek a VII-est védik. Számolás: a felvevőnél legfeljebb ${oppTrumps(p).length} adu lehet még (a VII-essel együtt).`);
+    }
+    // védőként a társnál ismert (bemondott) magasabb lap nem fenyeget; felvevőként az isTop számol
+    const sure=L.filter(x=>!isT(x)&&(decl?isTop(x,p):!declMayBeat(p,x,false))&&!dv(x.s));
+    if(sure.length){const x=maxBy(sure,y=>pts(y)*10+P(y));return R(x,`Ez a legmagasabb kint lévő lap a színében, így valószínűleg elviszi az ütést${pts(x)?', és pontot is hoz':''}.`);}
+    if(decl&&c.comps.ulti&&outTr.length){
+      const by=[0,1,2,3].filter(s=>s!==t).map(s=>L.filter(x=>x.s===s)).filter(a=>a.length>=3).sort((a,b)=>b.length-a.length)[0];
+      if(by)return R(maxBy(by,P),`${BOOK}: hajtószín. A leghosszabb színedből hívj, így ha az ellenfelek kifogynak belőle, adut kell tenniük, és a végén nem marad adujuk a VII-esed ellen.`);
+    }
+    const declLed=new Set((G.hist||[]).filter(tr=>tr[0].p===G.decl).map(tr=>tr[0].c.s));
+    if(!decl){
+      const pal=partnerSuits(p).filter(s=>s!==t&&!dv(s)&&!declLed.has(s));
+      const ps=L.filter(x=>pal.includes(x.s)&&!isT(x));
+      if(ps.length){const np2=ps.filter(x=>!pts(x));return R(minBy(np2.length?np2:ps,P),`${BOOK}: keresd a társad hajtószínét. Ezt a színt ő hívta korábban, valószínűleg erős benne.`);}
+    }
+    const non=L.filter(x=>!isT(x)),pool0=non.length?non:L;
+    let pool=pool0.filter(x=>!dv(x.s)).length?pool0.filter(x=>!dv(x.s)):pool0;
+    if(!decl&&declLed.size&&pool.length&&pool.every(x=>declLed.has(x.s))){
+      // csak a felvevő színéből lenne kis lapom: inkább olyan színt hívok, amiből ő már kifogyott, így adut kell tennie
+      const vd=pool0.filter(x=>!declLed.has(x.s)&&!isT(x));
+      if(vd.length){const np4=vd.filter(x=>!pts(x));return R(minBy(np4.length?np4:vd,P),`${BLOG}: ne a felvevő színével folytasd, abban ő az erős. Inkább olyan színt hívj, amiből már kifogyott: adut kell tennie rá, és ezzel fogynak az aduja.`);}
+    }
+    if(!decl&&declLed.size){const nd=pool.filter(x=>!declLed.has(x.s));if(nd.length&&nd.length<pool.length){const np3=nd.filter(x=>!pts(x));return R(minBy(np3.length?np3:nd,P),`${BLOG}: ne a felvevő színével folytasd. Amit ő hívott, abból valószínűleg hosszú, így abban ő az erős. Próbálj más színt, amelyben a társad lehet erős${c.comps.ulti?', és ultinál adut se hívj':''}.`);}}
+    const np=pool.filter(x=>!pts(x)),pick=minBy(np.length?np:pool,P);
+    // az indoklás a valódi helyzetet írja le, nem egy olyan szabályt, ami itt semmit nem döntött el
+    const allVoid=!decl&&pool.every(x=>dv(x.s))&&tg&&outTr.length>0;
+    let why;
+    if(allVoid)why=`A felvevő ${[...new Set(pool.map(x=>SUIT_NAMES[x.s].toLowerCase()))].join(' és ')} színből már kifogyott (korábban adut tett rá), és van még kint adu, így amit hívsz, valószínűleg leüti.`;
+    else why='Nincs biztos ütőd.';
+    if(!np.length&&pool.length>1)why+=` Minden választható lapod 10 pontos, így a pontok szempontjából mindegy. A kisebb rangút (${cardName(pick)}) hívod, a nagyobbat megtartod, hátha később még üt.`;
+    else if(!np.length)why+=' Csak ez a pontos lap hívható ebből a helyzetből.';
+    else why+=' Egy kis, pont nélküli lapot hívsz, az ászokat és X-eket ne kockáztasd.';
+    return R(pick,why);
+  }
+  const W=tr[trickWinnerIdx(tr)],last=tr.length===2;
+  if(friendly(W.p,p)){
+    const safe=last||friendly(nxt(p),p)||!declMayBeat(p,W.c,true);
+    if(safe){const x=maxBy(L,y=>(isT(y)?0:pts(y)*20)-cost(y));return R(x,pts(x)&&!isT(x)?`A társad viszi az ütést, tegyél bele ászt vagy X-et. ${BOOK}: egy-egy ilyen beadott 10-es dönti el gyakran a partit, a 40-100-at és a 20-100-at.`:'A társad viszi az ütést, nem kell ütnöd, és pontot sem tudsz beletenni.');}
+    return R(minBy(L,cost),'A társad most vezet, de utánad még jön a felvevő, ezért ne tegyél bele pontot.');
+  }
+  const wins=L.filter(wouldWin);
+  if(wins.length){
+    if(last){const x=minBy(wins,y=>P(y)+(isT(y)?6:-pts(y)*1.5));return R(x,`Utolsóként jössz, ezzel olcsón elviszed az ütést${pts(x)?', és még pontot is szerzel':''}.`);}
+    const safeW=wins.filter(x=>isTop(x,p));
+    if(safeW.length)return R(minBy(safeW,P),'Ezt a lapot színben már senki nem tudja felülütni, így jó eséllyel tiéd az ütés.');
+    const tp=tr.reduce((a,x)=>a+pts(x.c),0);
+    if(tp>=10)return R(minBy(wins,P),'Van pont az ütésben, érdemes megpróbálni elvinni.');
+    if(wins.length===L.length)return R(minBy(wins,P),'Kötelező felülütnöd, ezért a legkisebb ütő lapot teszed.');
+  }
+  return R(minBy(L,cost),'Itt nem éri meg ütni. Dobd a legkisebb értékű lapot, az ászokat és X-eket tartsd meg.');
+}
+function legalReason(p){
+  const lock=G.ultiLock&&p===G.decl&&G.hands[p].some(x=>x.s===G.trump&&x.r===0)&&G.hands[p].some(x=>x.s===G.trump&&x.r!==0)?' Az adu VII-est addig nem játszhatod ki, amíg más adud is van.':'';
+  return legalReason0(p)+lock;
+}
+function legalReason0(p){
+  const tr=G.trick;if(!tr.length)return 'Te hívsz, bármelyik lapot kijátszhatod.';
+  const h=G.hands[p],lead=tr[0].c.s,W=tr[trickWinnerIdx(tr)].c,tg=G.trumpGame,L=legalRaw(p);
+  const same=h.filter(x=>x.s===lead);
+  if(same.length){
+    if(L.length<same.length)return `Színt kell adnod (${SUIT_ACC[lead]}), és mivel felül tudod ütni, felül is kell ütnöd.`;
+    if(tg&&W.s!==lead)return `Színt kell adnod (${SUIT_ACC[lead]}). Már aduval ütötték, ezért nem kell felülütnöd.`;
+    return `Színt kell adnod (${SUIT_ACC[lead]}). Felülütni nem tudod, így bármelyik mehet közülük.`;
+  }
+  if(tg&&h.some(x=>x.s===G.trump)){
+    const all=h.filter(x=>x.s===G.trump).length;
+    return `Nincs ${SUIT_NAMES[lead].toLowerCase()} lapod, ezért adut kell adnod${L.length<all?', és a korábbi adut felül kell ütnöd':''}.`;
+  }
+  return `Nincs ${SUIT_NAMES[lead].toLowerCase()} lapod${tg?', és adud sem':''}, ezért bármit dobhatsz.`;
+}
+// ===== ENGINE END =====
+
+// ===== UI =====
+// ---- kártya nagyító ----
+// Egér: a lap fölé víve nagyban mutatja. Érintés: hosszan nyomva (kb. 0,35 mp) mutatja, felengedésre eltűnik,
+// és ilyenkor a lap nem játszódik ki (a sima koppintás továbbra is kijátszik / kijelöl).
+const ZM=document.createElement('div');ZM.id='zoom';ZM.setAttribute('aria-hidden','true');document.body.appendChild(ZM);
+let zTimer=null,zTouch=null,zEat=false;
+function zoomAt(el,x,y,touch){
+  const m=/(?:^|\s)c(\d+)(?:\s|$)/.exec(el.className);if(!m)return;
+  if(!ZM.classList.contains('c'+m[1])){ZM.className='card c'+m[1]+' on';}
+  ZM.style.display='block';
+  const w=ZM.offsetWidth,h=ZM.offsetHeight,vw=innerWidth,vh=innerHeight;
+  let left=touch?x-w/2:x+18,top=touch?y-h-28:y-h/2;
+  if(!touch&&left+w>vw-8)left=x-w-18;
+  if(top<8)top=touch?Math.min(y+28,vh-h-8):8;
+  if(top+h>vh-8)top=vh-h-8;
+  ZM.style.left=Math.max(8,Math.min(left,vw-w-8))+'px';ZM.style.top=Math.max(8,top)+'px';
+}
+function zoomHide(){ZM.style.display='none';ZM.className='';}
+const cardOf=t=>{const el=t&&t.closest?t.closest('.card'):null;return el&&el!==ZM?el:null;};
+document.addEventListener('pointermove',e=>{
+  if(e.pointerType==='mouse'){const el=cardOf(e.target);if(el)zoomAt(el,e.clientX,e.clientY,false);else if(ZM.style.display==='block')zoomHide();return;}
+  if(zTouch&&!zTouch.shown&&Math.hypot(e.clientX-zTouch.x,e.clientY-zTouch.y)>10){clearTimeout(zTimer);zTouch=null;}
+  else if(zTouch&&zTouch.shown){const el=cardOf(document.elementFromPoint(e.clientX,e.clientY));if(el)zoomAt(el,e.clientX,e.clientY,true);}
+},{passive:true});
+document.addEventListener('pointerdown',e=>{
+  zEat=false;if(e.pointerType==='mouse')return;const el=cardOf(e.target);if(!el)return;
+  zTouch={x:e.clientX,y:e.clientY,el,shown:false};clearTimeout(zTimer);
+  zTimer=setTimeout(()=>{if(!zTouch)return;zTouch.shown=true;zEat=true;zoomAt(zTouch.el,zTouch.x,zTouch.y,true);},350);
+},{passive:true});
+const zEnd=()=>{clearTimeout(zTimer);if(zTouch&&zTouch.shown)zoomHide();zTouch=null;};
+document.addEventListener('pointerup',zEnd);document.addEventListener('pointercancel',zEnd);
+// hosszú nyomás után a „click” ne játssza ki a lapot
+document.addEventListener('click',e=>{if(zEat){zEat=false;e.stopPropagation();e.preventDefault();}},true);
+document.addEventListener('contextmenu',e=>{if(cardOf(e.target))e.preventDefault();});
+addEventListener('scroll',()=>{if(ZM.style.display==='block')zoomHide();},{passive:true});
+document.addEventListener('mouseleave',zoomHide);
+const $=id=>document.getElementById(id);
+const STORE='ulti-score-v1',SETS='ulti-settings-v1';
+let SCORE={tot:[0,0,0],n:0,dealer:Math.floor(Math.random()*3)};
+try{const s=JSON.parse(localStorage.getItem(STORE)||'null');if(s&&Array.isArray(s.tot))SCORE=s;}catch(e){}
+function saveScore(){try{localStorage.setItem(STORE,JSON.stringify(SCORE));}catch(e){}}
+let SET={autoHint:false,tutor:false,risk:1,fs:1};
+try{const s=JSON.parse(localStorage.getItem(SETS)||'null');if(s)SET=Object.assign(SET,s);}catch(e){}
+function saveSet(){try{localStorage.setItem(SETS,JSON.stringify(SET));}catch(e){}}
+
+const UI={sel:[],ci:null,suit:null,err:'',warnId:null,kon:new Set(),hint:false,key:'',hc:null};
+let timer=null;
+
+const ico=(s,cls='')=>`<img class="ico s${s} ${cls}" src="cards/suit${s}.webp" alt="" aria-hidden="true">`;
+const cname=c=>`${SUIT_NAMES[c.s].toLowerCase()} ${c.r>=4?RANK_NAMES[c.r].toLowerCase():RANK_NAMES[c.r]}`;
+function cardHTML(c,cls='',attrs=''){
+  const t=G&&G.phase!=='bid'&&G.trumpGame&&c.s===G.trump?' t':'';
+  return `<div class="card c${c.id}${t} ${cls}" ${attrs} ${attrs.includes('role=')?'':'role="img" '}aria-label="${SUIT_NAMES[c.s]} ${RANK_NAMES[c.r]}"></div>`;
+}
+function sortHand(h){
+  const tg=G.phase==='bid'?!UI.betliSort:G.phase==='trump'?true:G.trumpGame;
+  const order=s=>G.phase!=='bid'&&G.phase!=='trump'&&G.trumpGame&&s===G.trump?-1:s;
+  return h.slice().sort((a,b)=>order(a.s)-order(b.s)||pow(b,tg)-pow(a,tg));
+}
+const optName=o=>{const c=CONTRACTS[o.ci];return c.kind==='trump'&&!c.red?`${c.name}, adu: ${SUIT_NAMES[o.suit].toLowerCase()}`:c.name;};
+
+// ---------- hints ----------
+const KIND_TIPS={
+  parti:'Partiban több pontot kell gyűjtened, mint a két védőnek együtt. A könyv szerint 4 aduval, 2-3 ütőlappal, esetleg 20 vagy 40 birtokában már jó eséllyel indulsz. A talonba tett ász és X a védőké, ilyet ne tegyél le.',
+  c40:'A 40-100-nál a védők legfeljebb három 10-es lapot vihetnek el. A könyv szerint 4 vagy több adu kell (köztük ász és X), 2-3 ütőlap és egy színhiány. Ha nem érzed elég erősnek, mondj partit, és próbáld meg csendesen a 100-at.',
+  c20:'A 20-100-nál a védők legfeljebb egy 10-es lapot vihetnek el. A könyv szerint 4-5 biztos ütésű adu kell, egy ász, és a 20 színében ásszal fedett X. Ne feledd: az utolsó ütés is 10 pontot ér.',
+  ulti:'Ultinál az adu VII-esednek kell az utolsó ütést vinnie. A könyv szerint 4-5 adu és néhány ütőlap kell, 5-6 aduval szinte biztos. Három aduval csak erős kísérőlapokkal és hosszú hajtószínnel. Játékban gyűjtsd be az ellenfelek aduit, vagy hajtsd ki őket a hosszú színeddel.',
+  betli:'Betliben egy ütést sem vihetsz. A könyv szerint a lapjaid többsége legyen kis lap (VII, VIII, IX, X, alsó), induló lapnak megtarthatsz egy felsőt vagy királyt. A hiányzó kisebb lapok a veszélyesek, mert azokat át kell ütnöd.',
+  durch:'Durchmarsban minden ütést el kell vinned. A könyv szerint sok ütőlap és 4-5 lapos, felülről összefüggő színsorozat kell. A hiányzó király vagy felső, illetve a lapelosztás dönti el a sorsát.'
+};
+function describeOpt(o){
+  const c=CONTRACTS[o.ci],h=o.rest;
+  if(c.kind==='trump'){
+    const st=trumpStats(h,o.suit),t=o.suit;
+    const tops=[[7,'ász'],[3,'X'],[6,'király'],[5,'felső'],[0,'VII']].filter(([r])=>hasC(h,t,r)).map(x=>x[1]);
+    let s=`${st.n} adud lenne${tops.length?' ('+tops.join(', ')+')':''}, ${st.aces} oldalászod`;
+    if(st.marr)s+=`, bemondásod összesen ${st.marr}`;
+    return s+'.';
+  }
+  if(c.kind==='betli'){
+    const risky=[];
+    for(let s=0;s<4;s++){const rs=h.filter(x=>x.s===s).map(x=>x.r).sort((a,b)=>a-b);
+      rs.forEach((r,i)=>{const miss=[...Array(r).keys()].filter(q=>!rs.includes(q));if(miss.length>i)risky.push(`${cardName({s,r})} (hiányzik alóla: ${miss.map(q=>RANK_NAMES[q]).join(', ')})`);});}
+    return risky.length?`Fogható lapjaid: ${risky.join('; ')}. Ezekre a védők alá tudnak hívni.`:'Minden színben elég kicsi lapod maradna, amivel alá tudsz bújni.';
+  }
+  return 'Minden színben a legmagasabb lapok maradnának nálad.';
+}
+// a lerakás indoklása a megtartott lapok szerkezetéből
+function discardWhy(o){
+  const c=CONTRACTS[o.ci],h=o.rest,n=[];
+  if(c.kind==='betli'){const d=describeOpt(o);return d.startsWith('Fogható')?`A két legveszélyesebb lapodtól szabadulsz meg. ${d}`:'A két legveszélyesebb, felülüthető lapodtól szabadulsz meg.';}
+  if(!isTrumpC(c))return 'Azokat a lapokat teszed le, amelyek nem biztos ütők.';
+  for(let s=0;s<4;s++){if(s===o.suit)continue;const cs=h.filter(x=>x.s===s),N=SUIT_NAMES[s].toLowerCase();
+    if(!cs.length)n.push(`${N}ból színhiányod lesz, abban aduval üthetsz`);
+    else if(cs.length===1&&cs[0].r!==7)n.push(`${N}ból csak egy lapod marad, hamar kifogysz belőle, és aduval üthetsz`);
+    else if(cs.length>=4&&hasC(cs,s,7))n.push(`a ${N} hosszú, ásszal vezetett hajtószín marad (${cs.length} lap): végighívva kifogynak belőle a védők, és adut kell tenniük`);
+  }
+  if(!o.disc.some(x=>pts(x)))n.push('nem kerül ász vagy X a talonba (az a védőké lenne)');
+  return n.length?n.join('; ')+'.':'';
+}
+function chances(o){if(o.p!=null)return evTxt(o);return Object.keys(CONTRACTS[o.ci].comps).map(k=>`${COMP_NAMES[k]} kb. ${Math.round(compP(o.rest,o.ci,o.suit,k)*100)}%`).join(', ');}
+const RISK_NAME=['óvatos','normál','merész'];
+function computeHint(){
+  if(G.phase==='bid'&&holding12(0)){
+    const min=minBidIndex(),L=rankOptions(G.hands[0],min),BD=bidDecision(G.hands[0],min),b=BD.b,c=CONTRACTS[b.ci];
+    if(BD.plan){const pl=BD.plan,H=CONTRACTS[pl.H];
+      let html=`<p>Javaslat: <b>gyűjts</b>. Mondj tartó licitként <b>${optName({ci:pl.H,suit:pl.suit})}</b>-t, a talonba: <b>${cname(pl.disc[0])}</b> és <b>${cname(pl.disc[1])}</b>. A cél: <b>${pl.target.name}</b>${pl.target.suit>=0?` (${SUIT_NAMES[pl.target.suit].toLowerCase()})`:''}.</p>`;
+      html+=`<p>Ha valaki felüllicitál, és a talon újra hozzád kerül, a következő két lappal várhatóan ${fmt(pl.ret)} pontot érne a lapod. Ha viszont mindenki passzol, a(z) ${H.name} marad nálad: ${evTxt(pl.stuckOpt)}. A visszakerülés esélyét ${Math.round(pl.P*100)}%-ra becsüljük (kockázat: ${RISK_NAME[RISK]}), így a gyűjtés várható értéke ${fmt(pl.V)}, szemben az azonnali legjobb játékkal (${optName(b)}: ${fmt(b.ev)}).</p>`;
+      html+=`<p class="rule">Gyűjtés: aki a következő licitre készül, felveszi a talont, és amit nem használ, leteszi. Ha nagyot mondtak előtted, a kis lapjaikat dobálják ki, ezek a betlidhez jók; betli után magas lapok jönnek, ezek a 100-as játékhoz kellenek.</p>`;
+      return {html,cards:new Set(pl.disc.map(x=>x.id)),apply:()=>{UI.sel=pl.disc.slice();UI.ci=pl.H;UI.suit=pl.suit;UI.err='';}};
+    }
+    const kinds=Object.keys(c.comps).filter(k=>KIND_TIPS[k]);
+    let html=`<p>Javaslat: <b>${optName(b)}</b>. A talonba: <b>${cname(b.disc[0])}</b> és <b>${cname(b.disc[1])}</b>.</p>`;
+    html+=`<p>Esély: ${evTxt(b)}. ${describeOpt(b)}</p>`;
+    {const w=discardWhy(b);if(w||b.alt)html+=`<p>Lerakás: ${w}${b.alt?` A második legjobb lerakás (${cards2(b.alt.disc)}) várhatóan ${fmt(b.alt.ev)} pont lenne.`:''}</p>`;}
+    if(b.forbidden)html+=`<p class="rule">Kártyajátékban a(z) ${cards2(b.forbidden.disc)} letétele jobb lenne (várhatóan ${fmt(b.forbidden.ev)}), de ${BLOG} alacsony licitnél nem teszünk a talonba ászt, X-et, VII-est, királyt vagy felsőt: a következő licitáló felveheti, és magasabbat mondhat vele.</p>`;
+    if(b.ladder){const sn=stakeNote(b,b.ladder);html+=`<p>Licitlétra: a(z) <b>${optName(b.ladder)}</b> is szóba jön (${evTxt(b.ladder)}), de elég a kisebbet mondanod. Ha valaki túllicitál, felveheted a talont, és akkor emelhetsz.${sn?' '+sn:''}</p>`;}
+    if(b.ev<0)html+=`<p>Egyik játék sem nyerő ezzel a lappal, ez jár a legkisebb várható veszteséggel. Ha a licit visszajön hozzád, a bedobás is szóba jöhet.</p>`;
+    const others=L.filter(o=>!(o.ci===b.ci&&o.suit===b.suit)&&!(b.ladder&&o.ci===b.ladder.ci&&o.suit===b.ladder.suit)&&!forcedParts(o.rest,o.ci,o.suit).length&&mainP(o)>=0.03).slice(0,3);
+    if(others.length)html+=`<p class="rule">További lehetőségek:</p><ul>${others.map(o=>`<li>${optName(o)}: ${evTxt(o)}</li>`).join('')}</ul>`;
+    html+=bookHTML(b.rest,b.ci,b.suit);
+    if(c.val<=5)html+=`<p class="rule">${BLOG} (talonozás): alacsony licitnél ne tegyél le ászt, X-et, VII-est, királyt vagy felsőt, és a piros lapokkal is vigyázz, mert a következő licitáló felveheti őket, és magasabbat mondhat velük. Inkább a hosszú színedből dobj.</p>`;
+    if(isTrumpC(c)&&!c.red)html+=`<p class="rule">Az adut (${SUIT_NAMES[b.suit].toLowerCase()}) csak akkor kell bemondanod, ha a licited marad.</p>`;
+    html+=`<p class="rule">${kinds.map(k=>KIND_TIPS[k]).join(' ')}</p>`;
+    html+=`<p class="rule">Az esélyek a lapod próbajátékaiból jönnek (a legjobb jelölteknél 96 lejátszás), a többi lap véletlen kiosztásával. A 20/40 bemondások (a védőkéi is) és a talonba kerülő pontok benne vannak.</p>`;
+    return {html,cards:new Set(b.disc.map(x=>x.id)),apply:()=>{UI.sel=b.disc.slice();UI.ci=b.ci;UI.suit=b.suit;UI.err='';}};
+  }
+  if(G.phase==='bid'&&G.bid&&G.bid.seat===0){
+    const R=ownRaise(0),b=R.b,cur=R.cur,cn=CONTRACTS[G.bid.ci].name;
+    let html=`<p>A mostani mondásod (<b>${cn}</b>): ${evTxt(cur)}.</p>`;
+    if(R.yes)html+=`<p>Javaslat: <b>vedd vissza a talont</b>, és mondd ezt: <b>${optName(b)}</b>, a talonba: <b>${cname(b.disc[0])}</b> és <b>${cname(b.disc[1])}</b> (${evTxt(b)}).</p>`;
+    else if(shouldConcede(cur,G.bid.ci))html+=`<p>Javaslat: <b>dobd be a lapjaidat</b>. Lejátszva várhatóan ${fmt(cur.ev)} pont védőnként, a bedobás csak ${fmt(-concedeLoss(G.bid.ci,null,1))}.</p>`;
+    else html+=`<p>Javaslat: <b>maradj</b>. ${b?`A legjobb magasabb játék (${optName(b)}): ${evTxt(b)}, ez nem éri meg a nagyobb kockázatot.${stakeNote(cur,b)?' '+stakeNote(cur,b):''}`:'Magasabbat már nem lehet mondani.'}</p>`;
+    html+=`<p class="rule">A saját talonodat ismered, hiszen te tetted le, így pontosan tudod, mi lenne a 12 lapodban. Ha visszaveszed, magasabbat kell mondanod.</p>`;
+    return {html,cards:new Set()};
+  }
+  if(G.phase==='bid'){
+    if(!canPickUp(0))return {html:'<p>Magasabb játékot már nem lehet mondani, ezért passzolnod kell.</p>',cards:new Set()};
+    const D=pickupDecision(0),list=D.list,top=list[0];
+    const nm=o=>optName(o);
+    let html;
+    if(D.yes&&D.useCollect&&D.collect){
+      html=`<p>Javaslat: <b>vedd fel a talont, és gyűjts</b> (cél: ${D.collect.target.name}). Mondj tartó licitet, a lerakással a célodra dolgozz, és ha valaki felüllicitál, a talon újra hozzád kerülhet. Becsült érték: ${fmt(D.collect.V)}.</p>`;
+    }else if(D.yes){
+      html=`<p>Javaslat: <b>vedd fel a talont</b>. A legígéretesebb: <b>${nm(top)}</b>, a talon valószínű lapjaival átlagosan ${fmt(top.ev)} védőnként, ${Math.round(top.p*100)}% eséllyel.</p>`;
+    }else{
+      html=`<p>Javaslat: <b>passz</b>. ${top?`Még a legígéretesebb játék (<b>${nm(top)}</b>) is átlagosan ${fmt(top.ev)} lenne védőnként a talonnal, ${Math.round(top.p*100)}% eséllyel; ez nem éri meg.`:'Egyik magasabb játék feltételei sem teljesülnek a lapjaidból.'}</p>`;
+    }
+    if(LIVELY&&G.bid){
+      html+=`<p>Ha passzolsz, védőként várhatóan kb. ${fmt(D.passLoss)} pontot veszítesz (egy ${CONTRACTS[G.bid.ci].name} ellen ennyi az átlag). Felvéve viszont mindkét védővel elszámolsz, ezért ez védőnként ${fmt(D.base)} pontnak felel meg: a felvételt ehhez mérjük, nem a nullához.</p>`;
+      if(D.talons){html+=`<p class="rule">Talonolvasás: ${NAME[G.bid.seat]} ${CONTRACTS[G.bid.ci].name} játékot mondott. Ehhez ${talonSummary(D.talons,G.bid.ci)}. A pontos lapokat nem lehet tudni, de a felvétel becslése ezzel a feltevéssel számol.</p>`;}
+    }
+    if(list.length>1)html+=`<p class="rule">Amit a talonnal mondhatnál (átlagos várható érték):</p><ul>${list.slice(0,4).map(o=>`<li>${nm(o)}: ${fmt(o.ev)}</li>`).join('')}</ul>`;
+    // a legerősebb adus szín elemzése a mostani 10 lapon
+    const ts=[1,2,3,0].map(t=>({t,n:G.hands[0].filter(x=>x.s===t).length})).sort((a,b)=>b.n-a.n)[0];
+    if(ts.n>=4&&hasC(G.hands[0],ts.t,0)){
+      const f=handFacts(G.hands[0],ts.t),uf=ultiFit(G.hands[0],ts.t);
+      html+=`<p class="rule">${SUIT_NAMES[ts.t]} ulti? ${ts.n} adud van a VII-essel, ${f.ut} ütőlapod (${f.sideAces} mellékász). ${uf.ok?'Az elosztás alapján vállalható.':`${BLOG}: ${uf.t}. Mellékszínű ász vagy erős lap nélkül a védők könnyen kihajtják az aduidat, és a bukott ulti duplán fizet.`}</p>`;
+    }
+    html+=`<p class="rule">${BLOG}: alacsony licitnél csak akkor vedd fel a talont, ha megéri feláldozni érte két lapot, magasabb licitnél viszont érdemes kockáztatni. A talonba általában gyengébb lapok kerülnek. Ha a licit hamisnak tűnik, passzolj, és kontrával buktasd meg.</p>`;
+    return {html,cards:new Set()};
+  }
+  if(G.phase==='trump'){
+    const h=G.hands[0],ci=G.bid.ci,ev=chooseTrump(h,G.talon,ci).map(o=>({s:o.suit,o,ev:o.ev}));
+    const b=ev[0];
+    let html=`<p>Javaslat: <b>${SUIT_NAMES[b.s].toLowerCase()}</b> adu (${evTxt(b.o)}).</p><ul>${ev.map(x=>`<li>${SUIT_NAMES[x.s]}: ${evTxt(x.o)}${forcedParts(h,ci,x.s).length?' (kényszervállalás)':''}${hasC(h,x.s,0)&&!CONTRACTS[ci].comps.ulti?' (a VII-esed csendes ultit érhet, de el is bukhat)':''}</li>`).join('')}</ul>`;
+    const close=ev.filter(x=>x!==b&&Math.abs(x.ev-b.ev)<MIN_DIFF);
+    if(close.length)html+=`<p class="rule">A várható pontok közti különbség fél pontnál kisebb (${[b,...close].map(x=>SUIT_NAMES[x.s].toLowerCase()).join(', ')}), ezért a nagyobb nyerési esélyű színt javaslom. A várható pontba a csendes bónuszok is beleszámítanak (csendes 100, csendes ulti és annak bukása, mindkét oldalon), ezért térhet el a sorrend az esélyekétől.</p>`;
+    if(b.ev<0)html+=`<p class="rule">Egyik szín sem nyerő: ezzel a lappal mindegyik adu mellett inkább vesztes a parti. Ha a licit a te kezedben marad, a bedobás is szóba jöhet.</p>`;
+    html+=bookHTML(h,ci,b.s);
+    html+=`<p class="rule">${BLOG}: olyan színt válassz, amire az ellenfelek nem számítanak, de az erőd döntsön.</p>`;
+    return {html,cards:new Set(h.filter(x=>x.s===b.s).map(x=>x.id)),apply:()=>{UI.suit=b.s;}};
+  }
+  if(G.phase==='kontra'){
+    const opts=kontraOptions(0),js=opts.map(o=>({o,j:kontraJudge(0,o.k)}));
+    const yes=js.filter(x=>kontraDecision(0,x.o.k));
+    let html=G.decl===0
+      ?`<p>Javaslat: ${yes.length?'<b>rekontra</b>: '+yes.map(x=>`${COMP_NAMES[x.o.k]}`).join(', '):'<b>nincs rekontra</b>'}.</p>`
+      :`<p>Javaslat: ${yes.length?'<b>kontra</b>: '+yes.map(x=>COMP_NAMES[x.o.k]).join(', '):'<b>nincs kontra</b>'}.</p>`;
+    html+=`<ul>${js.map(x=>`<li>${x.j.why}</li>`).join('')}</ul>`;
+    html+=`<p class="rule">${G.decl===0?'A rekontra mindkét kontrázott védővel szemben négyszerezi a tétet.':(kontraCommon()?'Adus játékban a kontra közös, mindkét védő tétjét duplázza, a nyereséget és a veszteséget is.':'Betliben és adu nélküli durchmarsban a kontra egyéni.')+' A bukott ulti kontrázva háromszoros, rekontrázva ötszörös árat fizet.'}</p>`;
+    return {html,cards:new Set(),apply:()=>{UI.kon=new Set(yes.map(x=>x.o.k+':'+x.o.def));}};
+  }
+  if(G.phase==='play'){
+    const card=botChoose(0),cs=G.claimAt&&G.claimAt.n===G.trickNo?G.claimAt.side:null;
+    const cl=cs&&claimHuman(cs)?`<p>Javaslat: <b>mutasd fel a lapjaidat</b> („Felmutatom”). Akárhogy játszanak a többiek, ${claimText(cs)}, ezt végigszámoltam minden szabályos lapjukkal.</p><p class="rule">Ha mégis tovább játszanál:</p>`:'';
+    const html=`${cl}<p>Javaslat: <b>${cname(card)}</b>. ${WHY}</p><p class="rule">Szabály: ${legalReason(0)}</p>`;
+    return {html,cards:new Set([card.id])};
+  }
+  return null;
+}
+const humanTurn=()=>G.turn===0&&(G.phase==='bid'||G.phase==='trump'||G.phase==='kontra'||(G.phase==='play'&&G.trick.length<3));
+function syncHint(){
+  const key=[G.phase,G.turn,G.trickNo,G.trick.length,G.hands[0].length,G.bid?G.bid.ci:'',G.kidx].join('|');
+  if(key!==UI.key){UI.key=key;UI.hc=null;UI.armCon=false;UI.hint=SET.autoHint&&humanTurn();}
+  if(UI.hint&&humanTurn()&&!UI.hc)UI.hc=computeHint();
+}
+// ---------- oktató mód: kör utáni elemzés ----------
+let REV={bids:[],kon:null,plays:[],an:null,show:false};
+const snap=()=>({hands:G.hands.map(h=>h.map(c=>({...c}))),talon:G.talon.map(c=>({...c})),min:minBidIndex(),base:passBase()});
+const fmt=v=>{const r=Math.round(v*10)/10;return (r>0?'+':r<0?'−':'±')+String(Math.abs(r)).replace('.',',');};
+const cards2=d=>d.map(x=>`<b>${cname(x)}</b>`).join(' és ');
+function simulate(rec,ci,suit,disc,kmult){
+  if(suit===-2){const hh=rec.hands[0].length===12?rec.hands[0]:[...rec.hands[0],...rec.talon];suit=[1,2,3].find(x=>!checkReq(hh.filter(y=>!disc.some(d=>d.id===y.id)),ci,x))??1;}
+  const sG=G,sW=WHY;
+  try{
+    const hands=rec.hands.map(h=>h.map(c=>({...c})));
+    if(hands[0].length===10)hands[0].push(...rec.talon.map(c=>({...c})));
+    const ids=new Set(disc.map(x=>x.id));
+    hands[0]=hands[0].filter(x=>!ids.has(x.id));
+    const c=CONTRACTS[ci];
+    G={dealer:sG.dealer,fh:sG.fh,hands,talon:disc.map(x=>({...x})),phase:'bid',turn:0,bid:{ci,suit:isTrumpC(c)?suit:-1,seat:0},passes:0,lastAction:['','',''],log:[],
+       decl:-1,ci:-1,trump:-1,trumpGame:false,trick:[],won:[[],[],[]],tcount:[0,0,0],trickNo:0,leader:-1,marr:[[],[],[]],ultiBroken:false,ultiWon:false,lastWinner:-1,played:[],result:null,revealed:false,talonPts:0,lastTrick:null};
+    endBidding();G.kmult=kmult?JSON.parse(JSON.stringify(kmult)):[{},{},{}];startPlay();
+    let guard=0;
+    while(G.phase==='play'&&guard++<60){if(G.trick.length===3){collectTrick();continue;}playCard(G.turn,botChoose(G.turn));}
+    return G.result?G.result.change[0]:0;
+  }finally{G=sG;WHY=sW;}
+}
+function discardNotes(c,suit,uRest,uDisc,bRest,bDisc){
+  const n=[];
+  {const h=[...uRest,...uDisc],gu=uDisc.reduce((t,x)=>t+giftValue(x,h),0),gb=bDisc.reduce((t,x)=>t+giftValue(x,h),0);if(gu>gb+0.2&&c.val<=10)n.push(`${BLOG}: a talonodba olyan lap került (${uDisc.filter(x=>giftValue(x,h)>0.3).map(cname).join(', ')}), ami a következő licitálót erősítheti.`);}
+  if(c.kind==='trump'){
+    if(uDisc.filter(x=>pts(x)).length>bDisc.filter(x=>pts(x)).length)n.push('Ászt vagy X-et tettél a talonba, ezek pontjai a védőkhöz kerülnek.');
+    if(uDisc.filter(x=>x.s===suit).length>bDisc.filter(x=>x.s===suit).length)n.push('Adut tettél le, ezzel gyengült az aduszíned.');
+    const voids=h=>[0,1,2,3].filter(s=>s!==suit&&!h.some(x=>x.s===s)).length;
+    if(voids(bRest)>voids(uRest))n.push('A jobb lerakással kiürül egy szín, így abban aduval üthetsz.');
+    const marr=h=>[0,1,2,3].filter(s=>hasC(h,s,6)&&hasC(h,s,5)).length;
+    if(marr(uRest)<marr(bRest))n.push('Szétbontottál egy király–felső párt, így elveszett egy bemondás.');
+    if(!n.length)n.push('A jobb lerakással kevesebb gyenge, ütésre esélytelen lap marad nálad.');
+  }else if(c.kind==='betli')n.push(`Így a(z) ${bDisc.map(cname).join(' és ')} kerül a talonba helyette. Ezek a veszélyesebbek, mert kevés kisebb lap védi őket a színükben.`);
+  else n.push('Durchmarsban azokat a lapokat kell letenni, amelyek nem biztos ütők.');
+  return n.join(' ');
+}
+function optTable(rows){
+  const bestEv=Math.max(...rows.map(o=>o.ev)),bestSim=Math.max(...rows.map(o=>o.sim));
+  return `<div class="tw"><table class="an-t"><tr><th>Játék</th><th>Teljesítés esélye</th><th>Várható</th><th>Lapok ismeretében</th></tr>${rows.map(o=>
+    `<tr class="${o.own?'you':''}"><td>${optName(o)}${o.own?' (te)':''}</td><td>${pct(o)}</td><td class="${o.ev===bestEv?'best':''}">${fmt(o.ev)}</td><td class="${o.sim===bestSim?'best':''} ${o.sim>0?'pos':o.sim<0?'neg':''}">${fmt(o.sim)}</td></tr>`).join('')}</table></div>`;
+}
+function analyzeBid(rec,isFinalOwn){
+  if(rec.min>=CONTRACTS.length)return '';
+  const own=rec.type==='bid';
+  const h=own?rec.hands[0]:[...rec.hands[0],...rec.talon];
+  const L=rankOptions(h,rec.min);if(!L.length)return '';
+  const cb=chooseBid(h,rec.min);
+  const sim=o=>{if(o.sim==null)o.sim=simulate(rec,o.ci,o.suit,o.disc);return o.sim;};
+  let html='';const rows=[];
+  const addRow=o=>{const sm=r=>r.ci===o.ci&&r.suit===o.suit;
+    if(o.own){for(let i=rows.length-1;i>=0;i--)if(sm(rows[i]))rows.splice(i,1);sim(o);rows.push(o);}
+    else if(!rows.some(sm)){sim(o);rows.push(o);}};
+  if(own){
+    const ch=rec.choice,c=CONTRACTS[ch.ci];
+    const ids=new Set(ch.disc.map(x=>x.id)),rest=h.filter(x=>!ids.has(x.id));
+    const suit=ch.suit===-2&&G.decl===0&&G.ci===ch.ci?G.trump:ch.suit;
+    const u=suit===-2?evalCurrent(rest,ch.disc,ch.ci,-2):evalOpt({ci:ch.ci,suit,disc:ch.disc,rest},N_FINAL);
+    u.own=true;sim(u);
+    html+=`<p>Ezt mondtad: <b>${optName(u)}</b>, a talonba: ${cards2(ch.disc)}. Esélye a lapjaid alapján: ${evTxt(u)}.</p>`;
+    html+=bookHTML(rest,u.ci,u.suit,'A szabálykönyv feltételei a mondásodhoz');
+    const BD=LIVELY?bidDecision(h,rec.min):{plan:null};
+    if(BD.plan){const pl=BD.plan;
+      html+=pl.H===u.ci?`<p>Ez a gyűjtési tervnek megfelelő tartó licit volt (cél: ${pl.target.name}). Ha a talon visszajön, várhatóan ${fmt(pl.ret)} pontot ér a lapod; ha nem, ${fmt(pl.stuck)}.</p>`
+        :`<p>A Tipp itt gyűjtést javasolt volna: tartó licit <b>${optName({ci:pl.H,suit:pl.suit})}</b>, talonba ${cards2(pl.disc)}, cél: ${pl.target.name} (várható érték ${fmt(pl.V)}).</p>`;}
+    const same=cb.ci===u.ci&&cb.suit===u.suit,diff=cb.ev-u.ev,sn=stakeNote(u,cb);
+    if(same)html+=`<p>Ez volt a javasolt mondás is.</p>`;
+    else if(diff<MIN_DIFF)html+=`<p>A javasolt mondás <b>${optName(cb)}</b> lett volna (${evTxt(cb)}), de ez a tiéddel nagyjából egyenértékű.${sn?' '+sn:''}</p>`;
+    else html+=`<p>Jobb mondás lett volna: <b>${optName(cb)}</b>, a talonba: ${cards2(cb.disc)} (${evTxt(cb)}). ${sn||describeOpt(cb)}</p>`;
+    // lerakás ugyanerre a játékra: ugyanaz a próbajátékos keresés, amit a Tipp használ (a te lerakásod is benne van)
+    const bd=bestDiscard(h,{ci:u.ci,suit:u.suit,disc:ch.disc,rest});
+    let dh=`<p><b>Lerakás erre a játékra:</b> `;
+    const gifts=discardAllowed(ch.disc,h,u.ci)?[]:ch.disc.filter(x=>isGift(x,h));
+    if(gifts.length)dh+=`a talonba ${gifts.map(cname).join(' és ')} került. ${BLOG}: alacsony licitnél ilyet nem teszünk le, mert a következő licitáló felveheti, és magasabbat mondhat vele. A szabálynak megfelelő legjobb lerakás ${cards2(bd.disc)} lett volna (${evTxt(bd)}).`;
+    else if(!sameD(bd.disc,ch.disc)&&bd.ev-u.ev>=MIN_DIFF)dh+=`jobb lett volna ${cards2(bd.disc)} (${evTxt(bd)}, a tiéddel ${fmt(u.ev)}). ${discardWhy(bd)}`;
+    else dh+=sameD(bd.disc,ch.disc)?'a lerakásod volt a legjobb.':'a lerakásod jó volt, a többi lehetőség legfeljebb fél ponttal lett volna jobb.';
+    dh+='</p>';
+    html+=dh;
+    if(isFinalOwn&&G.decl===0&&G.ci===u.ci&&!G.result.conceded){
+      const real=G.result.change[0],devs=REV.plays.filter(x=>x.card.id!==x.sug.id).length;
+      if(devs){const alt=simulate(rec,u.ci,u.suit,ch.disc,G.kmult);
+        if(alt>real)html+=`<p>A javasolt lejátszással (ugyanazokkal a kontrákkal) ${fmt(alt)} lett volna az eredményed a valódi ${fmt(real)} helyett.</p>`;
+        else if(alt<real)html+=`<p>A te lejátszásod jobb volt a javasoltnál: ${fmt(real)} a ${fmt(alt)} helyett.</p>`;}
+    }
+    addRow(u);L.slice(0,4).forEach(addRow);addRow(cb);
+  }else{
+    const prev=rec.cur?CONTRACTS[rec.cur.ci].name:CONTRACTS[rec.min-1].name;
+    if(rec.own){
+      const s0=rec.cur.suit===-2&&G.ci===rec.cur.ci&&G.decl===0?G.trump:rec.cur.suit;
+      const cur=evalCurrent(rec.hands[0],rec.talon,rec.cur.ci,s0);
+      if(rec.conceded){
+        const sm=simulate(rec,cur.ci,cur.suit,rec.talon),cost=2*concedeLoss(rec.cur.ci,null,1);
+        html+=`<p>Bedobtad a(z) <b>${prev}</b> mondásodat, ez ${fmt(-cost)} pontodba került. Lejátszva ${evTxt(cur)} volt, a lapok ismeretében ${fmt(sm)} lett volna. ${sm>-cost?'Megérte volna lejátszani.':'A bedobás jó döntés volt.'}</p>`;
+      }else html+=`<p>Amikor a licit visszajött hozzád, maradtál a(z) <b>${prev}</b> mondásodnál (${evTxt(cur)}).</p>`;
+      const yes=cb.ev>0.5&&cb.ev>cur.ev+RISK_RAISE[RISK],sn=stakeNote(cur,cb);
+      html+=yes?`<p>Érdemes lett volna visszavenni a talont és ezt mondani: <b>${optName(cb)}</b>, a talonba: ${cards2(cb.disc)} (${evTxt(cb)}). Lapok ismeretében ez ${fmt(sim(cb))} pontot hozott volna.</p>`
+        :`<p>Jó döntés volt maradni: a legjobb magasabb játék (<b>${optName(cb)}</b>, ${evTxt(cb)}) nem lett volna jobb.${sn?' '+sn:''}</p>`;
+      return html;
+    }
+    const PD=pickupDetailH(rec.hands[0],rec.min,24),pre=PD[0]?PD[0].ev:-1e9;
+    html+=`<p>Egy korábbi licitkörben passzoltál a(z) <b>${prev}</b> licitre. A talonban ez volt: ${cards2(rec.talon)}.</p>`;
+    sim(cb);
+    if(cb.ev>0)html+=`<p>Felvéve <b>${optName(cb)}</b> lett volna a legjobb mondás, a talonba: ${cards2(cb.disc)} (${evTxt(cb)}). Lapok ismeretében ez ${fmt(cb.sim)} lett volna.</p>`;
+    else html+=`<p>Felvéve sem lett volna nyerő mondás: a legjobb <b>${optName(cb)}</b> (${evTxt(cb)}).</p>`;
+    html+=`<p>Felvétel előtt, a talon ismerete nélkül a legígéretesebb ${PD[0]?`<b>${optName(PD[0])}</b> volt, átlagosan ${fmt(pre)} várható értékkel`:'játék sem volt nyerő'}. ${pre>(rec.base||0)+pickThreshold()?`A Tipp és a botok ${RISK_NAME[RISK]} kockázati szinten ilyenkor felvennék a talont, ezért a passz óvatos döntés volt.`:'Ilyenkor a Tipp és a botok is passzolnak, ezért a passz észszerű döntés volt.'}</p>`;
+    L.slice(0,4).forEach(addRow);addRow(cb);
+  }
+  const bestH=rows.reduce((m,o)=>o.sim>m.sim?o:m,rows[0]);
+  if(bestH&&bestH.sim>0&&!(bestH.ci===cb.ci&&bestH.suit===cb.suit)&&!bestH.own)html+=`<p>Utólag, minden lap ismeretében <b>${optName(bestH)}</b> hozta volna a legtöbbet (${fmt(bestH.sim)}). Ezt licitkor nem tudhattad.</p>`;
+  html+=optTable(rows.filter(o=>o.own||(o.ci===cb.ci&&o.suit===cb.suit)||(!forcedParts(o.rest,o.ci,o.suit).length&&mainP(o)>=0.03)).sort((a,b)=>b.ev-a.ev));
+  return html;
+}
+// miért bukott a saját vállalásod
+function whyLost(){
+  const d=G.decl,c=CONTRACTS[G.ci],H=G.hist||[],r=G.result,out=[];
+  if(d!==0||!r||r.conceded)return '';
+  const lost=r.rows.filter(x=>x.k&&!x.win).map(x=>x.k);if(!lost.length)return '';
+  if(lost.includes('betli')){
+    const k=H.findIndex(tr=>tr[trickWinnerIdx(tr)].p===d);
+    if(k>=0){
+      const tr=H[k],pos=tr.findIndex(t=>t.p===d),my=tr[pos].c,lead=tr[0].c;
+      if(pos===0)out.push(`A(z) ${k+1}. ütésben te hívtál a(z) <b>${cname(my)}</b> lappal, és egyik védőnél sem volt nagyobb ${SUIT_NAMES[my.s].toLowerCase()}, így az ütés nálad maradt.`);
+      else{
+        const hand=[...G.hands[d],my],pre=tr.slice(0,pos),win=pre[trickWinnerIdx(pre)].c;
+        const higher=hand.filter(x=>x.s===lead.s&&x.r>win.r),lower=hand.filter(x=>x.s===lead.s&&x.r<win.r);
+        if(my.s===lead.s&&higher.length)out.push(`A(z) ${k+1}. ütésben ${pre.length>1?`a(z) ${cname(lead)} hívásra ${cname(win)} volt a legnagyobb lap`:`a(z) ${cname(lead)} lapot hívták`}. Volt nálad nagyobb ${SUIT_NAMES[lead.s].toLowerCase()} (${higher.map(cname).join(', ')}), ezért a felülütési kényszer miatt fölé kellett tenned${lower.length?` (a kisebb ${lower.map(cname).join(', ')} nem adható, amíg felül tudsz ütni)`:''}, és utánad senki nem tudott fölé tenni.`);
+        else out.push(`A(z) ${k+1}. ütést a(z) <b>${cname(my)}</b> lapoddal vitted el.`);
+      }
+      out.push('Betliben a hiányzó kisebb lapok a veszélyesek: ha egy színből kevés kis lapod van a nagyobbak alatt, a védők alá tudnak hívni, és a felülütési kényszer miatt neked kell ütnöd.');
+    }
+  }
+  if(lost.includes('durch')){
+    const k=H.findIndex(tr=>tr[trickWinnerIdx(tr)].p!==d);
+    if(k>=0){const tr=H[k],w=tr[trickWinnerIdx(tr)];out.push(`A(z) ${k+1}. ütést ${NAME[w.p]} vitte el a(z) <b>${cname(w.c)}</b> lappal, ezzel elbukott a durchmars.`);}
+  }
+  if(lost.includes('ulti')){
+    if(G.ultiBroken)out.push('Az adu VII-es az utolsó ütés előtt kiment.');
+    else if(G.lastTrick){const w=G.lastTrick[trickWinnerIdx(G.lastTrick)];if(w.p!==d)out.push(`Az utolsó ütést ${NAME[w.p]} vitte el a(z) <b>${cname(w.c)}</b> lappal, ez ütötte a VII-esedet.`);}
+  }
+  if(lost.includes('parti')||lost.includes('c40')||lost.includes('c20')){
+    const dm=[1,2].filter(q=>G.marr[q].length).map(q=>`${NAME[q]}: ${G.marr[q].map(m=>m.v).join('+')}`);
+    out.push(`Pontok: te ${r.declPts}, a védők ${r.defPts} pontot vittek ütésből (a talonba tett ászok és X-ek is a védőké).${dm.length?` A védők bemondása is beszámított (${dm.join(', ')}).`:''}`);
+  }
+  return out.length?`<h4 class="an-h">Miért bukott?</h4><ul>${out.map(x=>`<li>${x}</li>`).join('')}</ul>`:'';
+}
+function analyzeKontra(){
+  const k=REV.kon,out=[];
+  for(const o of k.opts){
+    const row=G.result.rows.find(r=>r.k===o.k);if(!row)continue;
+    const did=k.list.some(x=>x.k===o.k&&x.def===o.def),nm=COMP_NAMES[o.k];
+    if(!k.decl){
+      const m=G.kmult[0][o.k]||1,b1=defGain(row,1),b2=defGain(row,2);
+      if(did)out.push(b1>0?`Kontra (${nm}): bejött, ${fmt(b1)} helyett ${fmt(defGain(row,m))} pontot kaptál.`:`Kontra (${nm}): nem jött be, ${fmt(b1)} helyett ${fmt(defGain(row,m))} pont lett.`);
+      else out.push(b1>0?`${nm}: a felvevő elbukta, kontrával ${fmt(b1)} helyett ${fmt(b2)} pontot kaptál volna.`:`${nm}: jó, hogy nem kontráztál, így ${fmt(b1)} pont lett ${fmt(b2)} helyett.`);
+    }else{
+      const qs=[0,1,2].filter(q=>q!==G.decl&&G.kmult[q][o.k]);
+      const g=m=>-qs.reduce((a)=>a+defGain(row,m),0);
+      if(did)out.push(row.win?`Rekontra (${nm}): bejött, ${fmt(g(2))} helyett ${fmt(g(4))} pont.`:`Rekontra (${nm}): nem jött be, ${fmt(g(2))} helyett ${fmt(g(4))} pont lett.`);
+      else out.push(row.win?`${nm}: rekontrával ${fmt(g(2))} helyett ${fmt(g(4))} pontot kaptál volna.`:`${nm}: jó, hogy nem rekontráztál, így ${fmt(g(2))} pont lett ${fmt(g(4))} helyett.`);
+    }
+  }
+  return out.length?`<ul>${out.map(x=>`<li>${x}</li>`).join('')}</ul>`:'';
+}
+function analyzePlay(){
+  const dev=REV.plays.filter(x=>x.card.id!==x.sug.id);
+  if(!dev.length)return '<p>Minden lapod egyezett a javaslattal.</p>';
+  return `<p>${REV.plays.length} lapodból ${dev.length} tért el a javaslattól. A javaslat nem mindig az egyetlen jó lépés, de érdemes megnézni:</p><ul>${dev.slice(0,6).map(x=>`<li>${x.trick}. ütés: te ${cards2([x.card])}, javaslat ${cards2([x.sug])}. ${x.why}</li>`).join('')}</ul>${dev.length>6?`<p>És még ${dev.length-6} eltérés.</p>`:''}`;
+}
+function buildAnalysis(){
+  let h=`<p><b>Lejátszott játék:</b> ${CONTRACTS[G.ci].name}${G.trumpGame?', adu: '+SUIT_NAMES[G.trump].toLowerCase():''} (felvevő: ${G.decl===0?'te':NAME[G.decl]})</p><h4 class="an-h">Licit</h4>`;
+  const recs=REV.bids.slice(-2);
+  const lastOwn=REV.bids.map(r=>r.type).lastIndexOf('bid');
+  if(!recs.length)h+='<p>Ebben a körben nem kellett licitálnod.</p>';
+  recs.forEach(r=>{h+=analyzeBid(r,REV.bids.indexOf(r)===lastOwn);});
+  h+=whyLost();
+  if(REV.kon&&!G.result.conceded){const k=analyzeKontra();if(k)h+='<h4 class="an-h">Kontra</h4>'+k;}
+  if(REV.plays.length)h+='<h4 class="an-h">Lejátszás</h4>'+analyzePlay();
+  h+='<p class="note">Az „esély” és a „várható” pont a licitkor ismert lapjaidból jön: a gép 32–96-szor lejátssza a vállalást a többi lap véletlen kiosztásával, a 20/40 bemondásokkal együtt, kontra nélkül. A várható pont védőnként értendő, és a talonkockázatot is tartalmazza. A „lapok ismeretében” oszlop a valódi leosztással lejátszott eredmény a két védőtől együtt, kontra nélkül. Fél pontnál kisebb különbséget nem tekintünk jobbnak.</p>';
+  return h;
+}
+
+// ---------- render ----------
+function hintHTML(){
+  if(!humanTurn())return '';
+  let h=`<div class="row hintrow"><button class="btn ghost" id="hintBtn" aria-expanded="${UI.hint}">${UI.hint?'Tipp elrejtése':'Tipp'}</button><label class="auto"><input type="checkbox" id="autoHint"${SET.autoHint?' checked':''}> Mindig mutasd</label></div>`;
+  if(UI.hint&&UI.hc)h+=`<div class="hintbox">${UI.hc.html}<p class="rule">A javaslat ugyanazzal a döntési móddal készül, mint a botok lépései (kockázat: ${RISK_NAME[RISK]}).</p>${UI.hc.apply?'<button class="btn small" id="applyHint">Javaslat átvétele</button>':''}</div>`;
+  return h;
+}
+function bindHint(){
+  const b=$('hintBtn');if(!b)return;
+  b.onclick=()=>{UI.hint=!UI.hint;render();};
+  $('autoHint').onchange=e=>{SET.autoHint=e.target.checked;saveSet();if(SET.autoHint)UI.hint=true;render();};
+  const a=$('applyHint');if(a)a.onclick=()=>{UI.hc.apply();render();};
+}
+function renderScores(){
+  $('scores').innerHTML=[0,1,2].map(p=>{
+    const v=SCORE.tot[p];
+    return `<div class="score"><span>${NAME[p]}${G&&G.dealer===p?' <span class="dl">oszt</span>':''}</span><b class="${v<0?'neg':v>0?'pos':''}">${v>0?'+':''}${v}</b></div>`;
+  }).join('');
+}
+function kontraTag(p){
+  if(!G.kmult||(G.phase==='bid'||G.phase==='trump'))return '';
+  if(p===G.decl)return [0,1,2].some(q=>Object.values(G.kmult[q]).includes(4))?'Rekontra':'';
+  const ks=Object.keys(G.kmult[p]);return ks.length?'Kontra: '+ks.map(k=>COMP_NAMES[k]).join(', '):'';
+}
+function oppHTML(p){
+  let badge='',meta='';
+  if((G.phase==='bid'||G.phase==='trump')){
+    if(G.lastAction[p])badge=`<span class="badge">${G.lastAction[p]}</span>`;
+    if(G.bid&&G.bid.seat===p)meta='Övé a licit';
+  }else{
+    badge=p===G.decl?'<span class="badge decl">Felvevő</span>':'<span class="badge">Védő</span>';
+    const parts=[];
+    if(G.phase==='kontra'){if(G.lastAction[p])parts.push(G.lastAction[p]);}
+    else{parts.push(`Ütés: ${G.tcount[p]}`);const k=kontraTag(p);if(k)parts.push(k);}
+    // az ultiban csak az értéket mondják be (20 vagy 40), a színt nem
+    if(G.marr[p].length)parts.push('Bemondás: '+G.marr[p].map(m=>m.v).join('+'));
+    meta=parts.join(' | ');
+  }
+  const HH=shownHand(p),n=HH.length;
+  const showOpen=(G.revealed&&p===G.decl)||G.phase==='result';
+  const cards=showOpen&&n?`<div class="open">${sortHand(HH).map(c=>cardHTML(c)).join('')}</div>`:`<div class="backs">${'<i></i>'.repeat(n)}</div>`;
+  return `<div class="nm"><span>${NAME[p]}</span>${badge}</div><div class="meta">${meta.replace(/<svg/g,'<svg style="width:13px;height:13px;vertical-align:-2px"')}</div>${cards}`;
+}
+function renderTable(){
+  for(const p of [1,2]){const el=$('opp'+p);el.innerHTML=oppHTML(p);el.classList.toggle('active',G.turn===p&&G.phase!=='result');}
+  let info='';
+  if((G.phase==='bid'||G.phase==='trump')){
+    info=G.bid?`<div class="sub">Licit</div><div class="ct">${CONTRACTS[G.bid.ci].name}</div><div class="sub">${NAME[G.bid.seat]}</div>`:`<div class="sub">Licit</div><div class="ct">Még nincs</div>`;
+  }else{
+    const c=CONTRACTS[G.ci];
+    const st=G.phase==='kontra'?'Kontrák':G.phase==='play'?`${Math.min(G.trickNo+1,10)}. ütés`:'Vége';
+    info=`<div class="ct">${c.name}</div><div class="sub">${G.trumpGame?`Adu: ${ico(G.trump)} ${SUIT_NAMES[G.trump].toLowerCase()}`:'Nincs adu'}</div><div class="sub">${st}</div>`;
+  }
+  const tr=G.trick.length?G.trick:(G.phase==='result'&&G.lastTrick?G.lastTrick:[]);
+  const wi=tr.length===3?trickWinnerIdx(tr):-1;
+  const slots=[0,1,2].map(p=>{const i=tr.findIndex(t=>t.p===p);return `<div class="slot seat${p}">${i>=0?cardHTML(tr[i].c,i===wi?'win':''):''}</div>`;}).join('');
+  $('center').innerHTML=`<div class="info">${info}</div>${slots}`;
+}
+function statusText(){
+  if(G.phase==='bid'||G.phase==='trump'||G.phase==='kontra')return G.turn!==0?`${NAME[G.turn]} gondolkodik…`:'';
+  if(G.phase==='play'){
+    if(G.trick.length===3){const w=G.trick[trickWinnerIdx(G.trick)].p;return w===0?'Te viszed az ütést.':`${NAME[w]} viszi az ütést.`;}
+    if(G.turn===0)return G.trick.length?'Te jössz. A kiemelt lapok közül választhatsz.':'Te hívsz.';
+    return `${NAME[G.turn]} következik…`;
+  }
+  return '';
+}
+function renderPanel(){
+  const el=$('panel');
+  if(G.phase==='result'){
+    const r=G.result,c=CONTRACTS[G.ci],d=G.decl,won=r.change[d]>0;
+    let h=`<p class="status">${d===0?'Te játszottál':NAME[d]+' játszott'}: <b>${c.name}</b>. ${r.conceded?(d===0?'Bedobtad.':'Bedobta.'):won?(d===0?'Megnyerted.':'Megnyerte.'):(d===0?'Elbuktad.':'Elbukta.')}</p>`;
+    // minden sor védőnként, a kontrával együtt; alul az összesítés, hogy a végösszeg követhető legyen
+    const defs=[0,1,2].filter(q=>q!==d),sg=v=>`${v>0?'+':''}${v}`;
+    const per=x=>defs.map(q=>{if(r.conceded)return x.delta;const m=x.k?(G.kmult[q][x.k]||1):1;return -defGain(x,m);});
+    const cell=x=>{const v=per(x),base=x.delta,mm=x.k&&!r.conceded?defs.map(q=>G.kmult[q][x.k]||1):[1,1];
+      const why=mm[0]>1||mm[1]>1?`<br><small>alap ${sg(base)}${x.k==='ulti'&&!x.win?' (bukott ulti)':''}, ${mm[0]===mm[1]?(mm[0]===2?'kontra':'rekontra'):'kontra'} ×${mm[0]===mm[1]?mm[0]:mm.join('/')}</small>`:'';
+      return v[0]===v[1]?`${sg(v[0])}${why}`:defs.map((q,i)=>`${NAME[q]} ${sg(v[i])}`).join('<br>')+why;};
+    if(G.claimShow){const cs=G.claimShow;h+=`<p class="rule">${cs.from+1}. ütéstől: ${claimVerb(cs.who,true)}, ${claimText(cs.side)}.</p>`;}
+    h+=`<div class="tw"><table class="res"><tr><td></td><td class="det"></td><td class="det">védőnként</td></tr>${r.rows.map(x=>`<tr><td><span class="mark ${x.win?'pos':'neg'}">${x.win?'✓':'✗'}</span> ${x.label}</td><td class="det">${x.detail}</td><td class="${x.delta>0?'pos':'neg'}">${cell(x)}</td></tr>`).join('')}</table></div>`;
+    {const tot=defs.map(q=>-r.change[q]);
+     h+=`<p class="status">${d===0?'Neked':({1:'Gellértnek',2:'Samunak'})[d]} védőnként: ${defs.map((q,i)=>`${NAME[q]} ${sg(tot[i])}`).join(', ')}, összesen <b class="${r.change[d]>0?'pos':'neg'}">${sg(r.change[d])}</b>.</p>`;}
+    h+=`<div class="talon">Talon: ${G.talon.map(x=>cardHTML(x)).join('')}</div>`;
+    h+=`<p class="status">Ebben a körben: ${[0,1,2].map(p=>`${NAME[p]} <b class="${r.change[p]>0?'pos':r.change[p]<0?'neg':''}">${r.change[p]>0?'+':''}${r.change[p]}</b>`).join(', ')}</p>`;
+    h+=`<div class="row"><button class="btn" id="nextBtn">Következő osztás</button>${SET.tutor||REV.show?'':'<button class="btn ghost" id="anBtn">Mi lett volna jobb?</button>'}</div>`;
+    if(SET.tutor||REV.show){
+      if(!REV.an)REV.an=buildAnalysis();
+      h+=`<div class="analysis"><h3>Mi lett volna jobb?</h3>${REV.an}<div class="row"><button class="btn" id="nextBtn2">Következő osztás</button></div></div>`;
+    }
+    el.innerHTML=h;$('nextBtn').onclick=nextDeal;
+    if($('nextBtn2'))$('nextBtn2').onclick=nextDeal;
+    if($('anBtn'))$('anBtn').onclick=()=>{REV.show=true;render();};
+    return;
+  }
+  if(G.phase==='bid'&&G.turn===0){
+    if(holding12(0)){
+      const min=minBidIndex();
+      const opts=CONTRACTS.map((c,i)=>i>=min?`<button class="chip${UI.ci===i?' on':''}" data-ci="${i}"><span>${c.name}</span><small>${bidLabel(c)}</small></button>`:'').join('');
+      const c=UI.ci!=null?CONTRACTS[UI.ci]:null;
+      const head=G.bid?`A licit most: <b>${CONTRACTS[G.bid.ci].name}</b> (${NAME[G.bid.seat]}). Tegyél le 2 lapot, és mondj magasabbat.`:'Te kezdesz. Jelölj ki 2 lapot a talonba, és válassz játékot.';
+      let fw='';
+      if(c&&UI.sel.length===2&&isTrumpC(c)){const ids=new Set(UI.sel.map(x=>x.id)),rest=G.hands[0].filter(x=>!ids.has(x.id));const ok=suitsFor(c).filter(s=>!checkReq(rest,UI.ci,s));if(ok.length&&ok.every(s=>forcedParts(rest,UI.ci,s).length))fw=`<p class="err">Kényszervállalás: ehhez a játékhoz nincs meg a ${c.comps.c40?'40':'20'}. Mondhatod, de a bemondás pontja nem számít, és akinél a kulcslap van, kötelezően megkontrázza.</p>`;}
+      const quick=min<CONTRACTS.length?`<button class="btn ghost" id="quickBtn">Passz: ${CONTRACTS[min].name}</button>`:'';
+      el.innerHTML=`<p class="status">${head}</p>${hintHTML()}<p class="lbl2">Talonba jelölve: ${UI.sel.length} / 2</p><div class="chips">${opts}</div>${c&&isTrumpC(c)&&!c.red?'<p class="lbl2">Az adut csak akkor kell megadnod, ha a licited marad.</p>':''}${fw}${UI.err?`<p class="err">${UI.err}</p>`:''}<div class="row" style="margin-top:10px"><button class="btn" id="bidBtn">Licitálok</button>${quick}</div>`;
+      el.querySelectorAll('[data-ci]').forEach(b=>b.onclick=()=>{UI.ci=+b.dataset.ci;UI.err='';render();});
+      $('bidBtn').onclick=humanBid;
+      if($('quickBtn'))$('quickBtn').onclick=()=>{UI.ci=min;if(UI.sel.length===2)humanBid();else{UI.err='Jelölj ki 2 lapot a talonba, aztán nyomd meg újra.';render();}};
+    }else{
+      const can=canPickUp(0),own=G.bid.seat===0;
+      const q=own?`Senki nem licitált a <b>${CONTRACTS[G.bid.ci].name}</b> mondásodra. Visszaveheted a talont, és mondhatsz magasabbat, maradhatsz, és ezzel lezárul a licit, vagy bedobhatod a lapjaidat: ekkor a mondás kontrázott árát fizeted (összesen ${fmt(-2*concedeLoss(G.bid.ci,null,1))} pont).`:`A licit most: <b>${CONTRACTS[G.bid.ci].name}</b> (${NAME[G.bid.seat]}). Felveszed a talont?`;
+      el.innerHTML=`<p class="status">${q}</p><div class="row"><button class="btn" id="pickBtn"${can?'':' disabled'}>${own?'Visszaveszem':'Felveszem'}</button><button class="btn go" id="passBtn">${own?'Maradok':'Passz'}</button>${own?`<button class="btn ghost danger${UI.armCon?' armed':''}" id="conBtn">${UI.armCon?'Biztos? Bedobás':'Bedobás'}</button>`:''}</div>${hintHTML()}`;
+      $('pickBtn').onclick=()=>{doPickUp(0);UI.sel=[];UI.ci=null;UI.suit=null;UI.err='';advance();};
+      $('passBtn').onclick=()=>{REV.bids.push({type:'pass',own:G.bid.seat===0,cur:{...G.bid},...snap()});doPass(0);advance();};
+      if($('conBtn'))$('conBtn').onclick=()=>{if(!UI.armCon){UI.armCon=true;render();return;}UI.armCon=false;REV.bids.push({type:'pass',own:true,conceded:true,cur:{...G.bid},...snap()});doConcede(0);REV.bids.forEach(r=>{if(r.choice&&r.choice.suit===-2)r.choice.suit=G.trump;if(r.cur&&r.cur.suit===-2)r.cur.suit=G.trump;});advance();};
+    }
+    bindHint();return;
+  }
+  if(G.phase==='trump'&&G.turn===0){
+    const c=CONTRACTS[G.bid.ci],h=G.hands[0];
+    const btn=[1,2,3].map(s=>{const e=checkReq(h,G.bid.ci,s),f=forcedParts(h,G.bid.ci,s);return `<button class="chip${UI.suit===s?' on':''}" data-pick="${s}"${e?' disabled':''}>${ico(s)} ${SUIT_NAMES[s]}${f.length?' (kényszer)':''}</button>`;}).join('');
+    el.innerHTML=`<p class="status">A licited maradt: <b>${c.name}</b>. Most mondd be az adut.</p><div class="suits">${btn}</div>${hintHTML()}`;
+    el.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{const su=+b.dataset.pick;const r=[...REV.bids].reverse().find(x=>x.type==='bid');if(r)r.choice.suit=su;UI.suit=null;pickTrump(su);advance();});
+    bindHint();return;
+  }
+  if(G.phase==='kontra'&&G.turn===0){
+    const c=CONTRACTS[G.ci],opts=kontraOptions(0);
+    const head=G.decl===0
+      ?`Kontrát kaptál. Ha biztos vagy a dolgodban, rekontrázhatsz: ez mindkét védővel szemben négyszerezi a tétet.`
+      :`${NAME[G.decl]} játéka: <b>${c.name}</b>${G.trumpGame?`, adu: ${SUIT_NAMES[G.trump].toLowerCase()}`:''}. Mondasz kontrát? ${kontraCommon()?'Adus játékban a kontra közös: mindkét védő tétjét duplázza.':'Adu nélküli játékban a kontra egyéni: csak a te tétedet duplázza.'}`;
+    const chips=opts.map(o=>{const key=o.k+':'+o.def,m=mustKontra(0,o.k);return `<button class="chip${UI.kon.has(key)||m?' on':''}" data-kon="${key}"${m?' disabled':''}><span>${G.decl===0?'Rekontra':'Kontra'}: ${COMP_NAMES[o.k]}${m?' (kötelező)':''}</span></button>`;}).join('');
+    el.innerHTML=`<p class="status">${head}</p><div class="chips">${chips}</div><div class="row" style="margin-top:10px"><button class="btn" id="konBtn">${UI.kon.size?(G.decl===0?'Rekontra':'Kontra'):'Tovább, kontra nélkül'}</button></div>${hintHTML()}`;
+    el.querySelectorAll('[data-kon]').forEach(b=>b.onclick=()=>{const k=b.dataset.kon;UI.kon.has(k)?UI.kon.delete(k):UI.kon.add(k);render();});
+    $('konBtn').onclick=()=>{const list=opts.filter(o=>UI.kon.has(o.k+':'+o.def));UI.kon=new Set();REV.kon={decl:G.decl===0,opts:opts.slice(),list:list.slice()};doKontra(0,list);advance();};
+    bindHint();return;
+  }
+  el.innerHTML=`<p class="status">${statusText()}</p>${UI.err?`<p class="err">${UI.err}</p>`:''}${G.phase==='play'&&G.decl===0?`<div class="row" style="margin-top:8px"><button class="btn ghost danger small${UI.armCon?' armed':''}" id="conBtn">${UI.armCon?`Biztos? Bedobás: ${fmt(-[1,2].reduce((a,q)=>a+concedeLoss(G.ci,G.kmult,q),0))} pont`:'Bedobom a lapjaimat'}</button></div>`:''}${G.phase==='play'&&G.claimAt&&G.claimAt.n===G.trickNo&&G.claimAt.side&&claimHuman(G.claimAt.side)?`<div class="row" style="margin-top:8px"><button class="btn go" id="claimBtn">Felmutatom</button><span class="sub" style="align-self:center">${claimText(G.claimAt.side).replace('innentől','Innentől biztosan')}.</span></div>`:''}${G.phase==='play'?`<div class="row" style="margin-top:8px"><button class="btn ghost small" id="autoBtn">${UI.auto?'Megállítás, játszom tovább':'Játszd le helyettem'}</button></div>`:''}${UI.auto?'':hintHTML()}`;
+  if($('conBtn'))$('conBtn').onclick=()=>{if(!UI.armCon){UI.armCon=true;render();return;}UI.armCon=false;clearTimeout(timer);doConcede(0);advance();};
+  if($('claimBtn'))$('claimBtn').onclick=()=>{clearTimeout(timer);resolveClaim(G.claimAt.side);advance();};
+  if($('autoBtn'))$('autoBtn').onclick=()=>{UI.auto=!UI.auto;UI.warnId=null;UI.err='';advance();};
+  bindHint();
+}
+// a végeredménynél felmutatás után a felmutatáskori lapok látszanak (a gép lejátszotta a maradékot)
+const shownHand=p=>G.phase==='result'&&G.claimShow?G.claimShow.rest[p]:G.hands[p];
+function renderHand(){
+  const h=sortHand(shownHand(0));
+  let legal=null;
+  if(G.phase==='play'&&G.turn===0&&G.trick.length<3)legal=new Set(legalCards(0).map(x=>x.id));
+  const selecting=G.phase==='bid'&&G.turn===0&&holding12(0);
+  const hintIds=UI.hint&&UI.hc?UI.hc.cards:null;
+  $('hand').innerHTML=h.map(c=>{
+    let cls='';
+    if(legal)cls=legal.has(c.id)?'play':'dim';
+    if(selecting)cls='play'+(UI.sel.some(x=>x.id===c.id)?' sel':'');
+    if(hintIds&&hintIds.has(c.id))cls+=' hint';
+    if(UI.warnId===c.id)cls+=' warn';
+    return cardHTML(c,cls,`data-id="${c.id}" ${cls.includes('play')?'tabindex="0" role="button"':''}`);
+  }).join('');
+  $('hand').querySelectorAll('.card.play').forEach(el=>{
+    const act=()=>onCard(+el.dataset.id);
+    el.onclick=act;
+    el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();act();}};
+  });
+  let mine=`<span>A lapjaid (${shownHand(0).length}) <button class="linkbtn" id="seeBtn">Talon és ütések</button></span>`;
+  if(G.phase!=='bid'&&G.phase!=='trump'){
+    const k=kontraTag(0);
+    mine+=`<span>${G.decl===0?'<b>Felvevő</b>':'Védő'} | Ütés: ${G.tcount[0]}${G.marr[0].length?' | '+G.marr[0].map(m=>m.v).join(', '):''}${k?' | '+k:''}</span>`;
+  }
+  if(G.phase==='bid')mine+=`<label class="auto"><input type="checkbox" id="betliSort"${UI.betliSort?' checked':''}> Szín nélküli sorrend</label>`;
+  $('mine').innerHTML=mine;
+  $('seeBtn').onclick=renderSee;
+  if($('betliSort'))$('betliSort').onchange=e=>{UI.betliSort=e.target.checked;render();};
+}
+function renderSee(){
+  const known=G.talonBy===0||G.phase==='result';
+  let h=`<h2>Talon és ütések</h2><h3>Talon</h3>`;
+  h+=G.talon.length?(known?`<div class="trio">${G.talon.map(x=>cardHTML(x)).join('')}</div><p class="small">${G.talonBy===0?'Ezt a két lapot te tetted le.':'A kör vége után látható.'}</p>`:'<p class="small">A talonban lévő lapokat nem te tetted le, ezért nem láthatod.</p>'):'<p class="small">A talon most nálad van.</p>';
+  const all=G.hist||[],showAll=SET.tutor;
+  const H=all.map((tr,i)=>({tr,i})).filter(o=>showAll||o.tr[trickWinnerIdx(o.tr)].p===0);
+  h+=`<h3>${showAll?'Ütések':'Az ütéseid'}</h3>`+(showAll?'':'<p class="small">Csak a saját ütéseidet láthatod. Oktató módban mindenkiét mutatja.</p>')+(H.length?H.map(({tr,i})=>{const w=tr[trickWinnerIdx(tr)].p;return `<div class="trickrow"><span class="tn">${i+1}.</span><div class="trio">${tr.map(t=>`<div class="tc">${cardHTML(t.c,t.p===w?'win':'')}<small>${NAME[t.p]}</small></div>`).join('')}</div><span class="tw2">${NAME[w]}</span></div>`;}).join(''):(showAll?'<p class="small">Még nincs lezárt ütés.</p>':'<p class="small">Még nem vittél ütést.</p>'));
+  h+=`<div class="row" style="margin-top:12px"><button class="btn" id="closeSee">Bezár</button></div>`;
+  $('seeSheet').innerHTML=h;$('closeSee').onclick=()=>$('seeOv').classList.remove('show');
+  $('seeOv').classList.add('show');
+}
+function renderLog(){$('log').innerHTML=G.log.map(t=>`<li>${t}</li>`).join('');}
+function render(){syncHint();renderScores();renderTable();renderPanel();renderHand();renderLog();}
+
+function onCard(id){
+  if(G.phase==='bid'&&G.turn===0&&holding12(0)){
+    const c=G.hands[0].find(x=>x.id===id);
+    const i=UI.sel.findIndex(x=>x.id===id);
+    if(i>=0)UI.sel.splice(i,1);else{if(UI.sel.length>=2)UI.sel.shift();UI.sel.push(c);}
+    UI.err='';render();return;
+  }
+  if(G.phase==='play'&&G.turn===0&&G.trick.length<3){
+    const L=legalCards(0),c=L.find(x=>x.id===id);if(!c)return;
+    const ct=CONTRACTS[G.ci];
+    if(ct.comps.ulti&&G.decl===0&&c.s===G.trump&&c.r===0&&G.trickNo<9&&L.length>1&&UI.warnId!==id){
+      UI.warnId=id;UI.err='Ha most kijátszod az adu VII-est, elbukik az ulti. Koppints rá újra, ha mégis ezt akarod.';render();return;
+    }
+    UI.warnId=null;UI.err='';
+    const sug=botChoose(0);REV.plays.push({trick:G.trickNo+1,card:c,sug,why:WHY});
+    playCard(0,c);advance();
+  }
+}
+function humanBid(){
+  const e=validateBid(0,UI.sel,UI.ci,UI.ci==null?null:!isTrumpC(CONTRACTS[UI.ci])?-1:CONTRACTS[UI.ci].red?0:-2);
+  if(e){UI.err=e;render();return;}
+  const c=CONTRACTS[UI.ci],su=!isTrumpC(c)?-1:c.red?0:-2;
+  REV.bids.push({type:'bid',...snap(),choice:{ci:UI.ci,suit:su,disc:UI.sel.map(x=>({...x}))}});
+  doBid(0,UI.sel,UI.ci,su);
+  UI.sel=[];UI.ci=null;UI.err='';
+  advance();
+}
+function advance(){
+  clearTimeout(timer);
+  if(G.phase==='result'&&!G.scored){
+    G.scored=true;for(let p=0;p<3;p++)SCORE.tot[p]+=G.result.change[p];
+    SCORE.n++;SCORE.dealer=G.dealer;saveScore();
+  }
+  const cl=G.phase==='play'&&!G.trick.length?claimCheck():null;
+  render();
+  if(cl&&(!claimHuman(cl)||UI.auto)){timer=setTimeout(()=>{resolveClaim(cl);advance();},900);return;}
+  if(G.phase==='bid'&&G.turn!==0){
+    timer=setTimeout(()=>{
+      const p=G.turn,a=botBidAction(p);
+      if(a.type==='bid')doBid(p,a.disc,a.ci,a.suit);else if(a.type==='pickup')doPickUp(p);else if(a.type==='concede')doConcede(p);else doPass(p);
+      advance();
+    },850);
+  }else if(G.phase==='kontra'&&G.turn!==0){
+    timer=setTimeout(()=>{const p=G.turn;doKontra(p,botKontra(p));advance();},900);
+  }else if(G.phase==='play'){
+    if(G.trick.length===3)timer=setTimeout(()=>{collectTrick();advance();},1250);
+    else if(G.turn!==0)timer=setTimeout(()=>{playCard(G.turn,botChoose(G.turn));advance();},700);
+    else if(UI.auto)timer=setTimeout(()=>{if(G.phase==='play'&&G.turn===0&&UI.auto){playCard(0,botChoose(0));}advance();},700);
+  }
+}
+function nextDeal(){
+  UI.sel=[];UI.ci=null;UI.suit=null;UI.err='';UI.warnId=null;UI.kon=new Set();UI.armCon=false;UI.auto=false;REV={bids:[],kon:null,plays:[],an:null,show:false};
+  newDeal(G?nxt(G.dealer):nxt(SCORE.dealer));advance();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+let newArm=null;
+$('newBtn').onclick=()=>{
+  const b=$('newBtn');
+  if(!newArm){b.textContent='Biztos? Még egyszer';b.classList.add('on');newArm=setTimeout(()=>{newArm=null;b.textContent='Új játék';b.classList.remove('on');},3500);return;}
+  clearTimeout(newArm);newArm=null;b.textContent='Új játék';b.classList.remove('on');
+  clearTimeout(timer);
+  SCORE={tot:[0,0,0],n:0,dealer:Math.floor(Math.random()*3)};saveScore();G=null;nextDeal();
+};
+$('fsSel').value=String(SET.fs??1);document.documentElement.dataset.fs=String(SET.fs??1);
+$('fsSel').onchange=e=>{SET.fs=+e.target.value;document.documentElement.dataset.fs=String(SET.fs);saveSet();};
+$('riskSel').value=String(SET.risk??1);RISK=+(SET.risk??1);
+$('riskSel').onchange=e=>{SET.risk=+e.target.value;RISK=SET.risk;saveSet();UI.hc=null;if(G)render();};
+function syncTutor(){const b=$('tutorBtn');b.classList.toggle('on',!!SET.tutor);b.setAttribute('aria-pressed',SET.tutor?'true':'false');}
+$('tutorBtn').onclick=()=>{SET.tutor=!SET.tutor;saveSet();syncTutor();if(G)render();};
+syncTutor();
+$('rulesBtn').onclick=()=>$('rules').classList.add('show');
+$('closeRules').onclick=()=>$('rules').classList.remove('show');
+$('seeOv').onclick=e=>{if(e.target.id==='seeOv')$('seeOv').classList.remove('show');};
+$('rules').onclick=e=>{if(e.target.id==='rules')$('rules').classList.remove('show');};
+$('ctable').innerHTML=CONTRACTS.map(c=>`<tr><td>${c.name}</td><td style="text-align:right">${bidLabel(c)}</td></tr>`).join('');
+nextDeal();
+</script>
+</body>
+</html>
