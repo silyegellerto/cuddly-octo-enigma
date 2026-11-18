@@ -343,6 +343,34 @@ img.ico{width:1.2em;height:1.2em;vertical-align:-.25em;object-fit:contain;displa
 #tipBub{z-index:800;outline:2px solid var(--brass)}
 #toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);transform:translateX(-50%);z-index:950;background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:12px;font-size:calc(15px * var(--fs));box-shadow:0 8px 24px rgba(0,0,0,.35);display:none;max-width:calc(100vw - 32px)}
 #toast.show{display:block}
+.loglist{padding-left:22px;font-size:calc(15px * var(--fs));color:var(--muted);line-height:1.5}
+#infoSheet .copy{font-weight:600}
+#infoSheet a:not(.btn){color:var(--ink)}
+#infoSheet a.btn{text-decoration:none;display:inline-block}
+/* Telefon/tablet állva: alkalmazás-nézet. Az oldal nem görög, a képernyőt kitölti;
+   a döntési panel a maradék helyet kapja, és csak a belseje görgethető. Alacsony vagy fekvő
+   képernyőn (és számítógépen) a megszokott görgethető oldal marad. */
+.cnt{display:none}
+@media (max-width:979px) and (min-height:620px){
+  html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+  .wrap{height:100vh;height:100dvh;display:flex;flex-direction:column;padding-top:calc(env(safe-area-inset-top,0px) + 6px);padding-bottom:0}
+  header{flex:none;margin-bottom:6px}
+  .game{flex:1;min-height:0;display:flex;flex-direction:column}
+  .opps{flex:none;margin-bottom:6px}
+  .opp{min-height:0;padding:6px 10px}
+  .opp .backs{display:none}
+  .opp .cnt{display:inline}
+  .opp .open{margin-top:4px}
+  .table{flex:none;padding:8px}
+  .center{height:150px}
+  .table.idle .center,.table.res .center{height:40px}
+  .table.res .slot{display:none}
+  .panel{flex:1;min-height:0;overflow-y:auto;margin:8px 0 6px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+  .panel .stick{position:sticky;bottom:-12px;margin:10px -12px -12px;padding:10px 12px 12px;background:var(--surface);box-shadow:0 -10px 12px -10px rgba(0,0,0,.18);z-index:2}
+  .dock{flex:none;position:static;box-shadow:0 -6px 14px rgba(0,0,0,.06)}
+  details.log,footer.foot{display:none}
+  #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 170px)}
+}
 /* egérrel (számítógépen) a vízszintes húzás kényelmetlen: ott a kéz több sorba törik */
 @media (hover:hover) and (pointer:fine){
   .hand{flex-wrap:wrap;overflow:visible;justify-content:center;row-gap:10px;scroll-snap-type:none}
@@ -410,7 +438,9 @@ img.ico{width:1.2em;height:1.2em;vertical-align:-.25em;object-fit:contain;displa
   <nav class="mlist" aria-label="Oldalak">
     <button id="mRules"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></svg><span>Szabályok</span><i aria-hidden="true">›</i></button>
     <button id="mStats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-6"/></svg><span>Statisztikám</span><i aria-hidden="true">›</i></button>
+    <button id="mLog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg><span>Napló</span><i aria-hidden="true">›</i></button>
     <button id="mTour"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 9l5 3-5 3z"/></svg><span>Bemutató újra</span><i aria-hidden="true">›</i></button>
+    <button id="mAbout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/></svg><span>Névjegy és adatvédelem</span><i aria-hidden="true">›</i></button>
   </nav>
   <h3 class="mcap">Beállítások</h3>
   <div class="mset">
@@ -420,6 +450,7 @@ img.ico{width:1.2em;height:1.2em;vertical-align:-.25em;object-fit:contain;displa
   </div>
   <div class="row" style="margin-top:14px"><button class="btn ghost" id="mA2hs">Kezdőképernyőre</button><a class="btn ghost" href="https://github.com/silyegellerto/cuddly-octo-enigma/issues" target="_blank" rel="noopener noreferrer">Visszajelzés</a></div>
 </div></div>
+<div class="ov" id="infoOv"><div class="sheet" id="infoSheet"></div></div>
 <div class="ov" id="a2hsOv"><div class="sheet" id="a2hsSheet"></div></div>
 <div class="ov" id="statsOv"><div class="sheet" id="statsSheet"></div></div>
 <div id="tour" role="dialog" aria-modal="true" aria-label="Bemutató"><div class="tspot"></div><div class="tbub" id="tourBub"></div></div>
@@ -2088,7 +2119,7 @@ function hintHTML(extra=''){
 function bindHint(){
   const d=$('moreDd');if(d)d.ontoggle=()=>{UI.moreOpen=d.open;};
   const b=$('hintBtn');if(!b)return;
-  b.onclick=()=>{UI.hint=!UI.hint;render();};
+  b.onclick=()=>{UI.hint=!UI.hint;UI.scrollHint=UI.hint;render();};
   $('autoHint').onchange=e=>{SET.autoHint=e.target.checked;saveSet();if(SET.autoHint)UI.hint=true;render();};
   const a=$('applyHint');if(a)a.onclick=()=>{UI.hc.apply();UI.grp=null;render();};
 }
@@ -2114,7 +2145,7 @@ function oppHTML(p){
   const HH=shownHand(p),n=HH.length;
   const showOpen=(G.revealed&&p===G.decl)||G.phase==='result';
   const cards=showOpen&&n?`<div class="open">${sortHand(HH).map(c=>cardHTML(c)).join('')}</div>`:`<div class="backs" aria-label="${n} lap">${'<i></i>'.repeat(n)}</div>`;
-  return `<div class="nm"><span>${NAME[p]}${G.dealer===p?' <span class="dl">oszt</span>':''}</span><span class="pts ${v>0?'pos':v<0?'neg':''}">${sgn(v)}</span></div><div class="meta">${badge}${parts.map(x=>`<span>${x}</span>`).join('')}</div>${cards}`;
+  return `<div class="nm"><span>${NAME[p]}${G.dealer===p?' <span class="dl">oszt</span>':''}</span><span class="pts ${v>0?'pos':v<0?'neg':''}">${sgn(v)}</span></div><div class="meta">${badge}${parts.map(x=>`<span>${x}</span>`).join('')}${showOpen?'':`<span class="cnt">${n} lap</span>`}</div>${cards}`;
 }
 function renderTable(){
   for(const p of [1,2]){const el=$('opp'+p);el.innerHTML=oppHTML(p);el.classList.toggle('active',G.turn===p&&G.phase!=='result');}
@@ -2127,7 +2158,7 @@ function renderTable(){
     bar=`<span><b>${c.name}</b> · ${NAME[G.decl]}</span><span class="ad">${G.trumpGame?`Adu: ${ico(G.trump)} <b>${SUIT_NAMES[G.trump].toLowerCase()}</b>`:'Nincs adu'}</span><span>${st}</span>`;
   }
   $('tbar').innerHTML=bar;
-  document.querySelector('.table').classList.toggle('idle',!(G.phase==='play'||G.phase==='result'));
+  const tb=document.querySelector('.table');tb.classList.toggle('idle',!(G.phase==='play'||G.phase==='result'));tb.classList.toggle('res',G.phase==='result');
   const tr=G.trick.length?G.trick:(G.phase==='result'&&G.lastTrick?G.lastTrick:[]);
   const wi=tr.length===3?trickWinnerIdx(tr):-1;
   const slots=[0,1,2].map(p=>{const i=tr.findIndex(t=>t.p===p);return `<div class="slot seat${p}">${i>=0?cardHTML(tr[i].c,i===wi?'win':''):''}</div>`;}).join('');
@@ -2161,7 +2192,7 @@ function renderPanel(){
      h+=`<p class="status">${d===0?'Neked':({1:'Gellértnek',2:'Samunak'})[d]} védőnként: ${defs.map((q,i)=>`${NAME[q]} ${sg(tot[i])}`).join(', ')}, összesen <b class="${r.change[d]>0?'pos':'neg'}">${sg(r.change[d])}</b>.</p>`;}
     h+=`<div class="talon">Talon: ${G.talon.map(x=>cardHTML(x)).join('')}</div>`;
     h+=`<p class="status">Ebben a körben: ${[0,1,2].map(p=>`${NAME[p]} <b class="${r.change[p]>0?'pos':r.change[p]<0?'neg':''}">${r.change[p]>0?'+':''}${r.change[p]}</b>`).join(', ')}</p>`;
-    h+=`<div class="row"><button class="btn" id="nextBtn">Következő osztás</button>${SET.tutor||REV.show?'':'<button class="btn ghost" id="anBtn">Mi lett volna jobb?</button>'}</div>`;
+    h+=`<div class="row stick"><button class="btn" id="nextBtn">Következő osztás</button>${SET.tutor||REV.show?'':'<button class="btn ghost" id="anBtn">Mi lett volna jobb?</button>'}</div>`;
     if(SET.tutor||REV.show){
       if(!REV.an)REV.an=buildAnalysis();
       h+=`<div class="analysis"><h3>Mi lett volna jobb?</h3>${REV.an}<div class="row"><button class="btn" id="nextBtn2">Következő osztás</button></div></div>`;
@@ -2184,7 +2215,7 @@ function renderPanel(){
       let fw='';
       if(c&&UI.sel.length===2&&isTrumpC(c)){const ids=new Set(UI.sel.map(x=>x.id)),rest=G.hands[0].filter(x=>!ids.has(x.id));const ok=suitsFor(c).filter(s=>!checkReq(rest,UI.ci,s));if(ok.length&&ok.every(s=>forcedParts(rest,UI.ci,s).length))fw=`<p class="err">Kényszervállalás: ehhez a játékhoz nincs meg a ${c.comps.c40?'40':'20'}. Mondhatod, de a bemondás pontja nem számít, és akinél a kulcslap van, kötelezően megkontrázza.</p>`;}
       const quick=min<CONTRACTS.length?`<button class="btn ghost" id="quickBtn">Passz: ${CONTRACTS[min].name}</button>`:'';
-      el.innerHTML=`<p class="status">${head}</p>${hintHTML()}<div class="actrow" style="justify-content:space-between"><p class="lbl2" style="margin:0">Talonba jelölve: ${UI.sel.length} / 2</p><label class="auto"><input type="checkbox" id="betliSort"${UI.betliSort?' checked':''}> Szín nélküli sorrend</label></div>${opts}${c&&isTrumpC(c)&&!c.red?'<p class="lbl2">Az adut csak akkor kell megadnod, ha a licited marad.</p>':''}${fw}${UI.err?`<p class="err">${UI.err}</p>`:''}<div class="row" style="margin-top:10px"><button class="btn" id="bidBtn">${c?`Bemondom: ${c.name}`:'Licitálok'}</button>${quick}</div>`;
+      el.innerHTML=`<p class="status">${head}</p>${hintHTML()}<div class="actrow" style="justify-content:space-between"><p class="lbl2" style="margin:0">Talonba jelölve: ${UI.sel.length} / 2</p><label class="auto"><input type="checkbox" id="betliSort"${UI.betliSort?' checked':''}> Szín nélküli sorrend</label></div>${opts}${c&&isTrumpC(c)&&!c.red?'<p class="lbl2">Az adut csak akkor kell megadnod, ha a licited marad.</p>':''}${fw}${UI.err?`<p class="err">${UI.err}</p>`:''}<div class="row stick" style="margin-top:10px"><button class="btn" id="bidBtn">${c?`Bemondom: ${c.name}`:'Licitálok'}</button>${quick}</div>`;
       el.querySelectorAll('[data-ci]').forEach(b=>b.onclick=()=>{UI.ci=+b.dataset.ci;UI.grp=grpOf(CONTRACTS[UI.ci]);UI.err='';render();});
       el.querySelectorAll('[data-grp]').forEach(b=>b.onclick=()=>{UI.grp=b.dataset.grp;render();});
       $('betliSort').onchange=e=>{UI.betliSort=e.target.checked;render();};
@@ -2193,7 +2224,7 @@ function renderPanel(){
     }else{
       const can=canPickUp(0),own=G.bid.seat===0;
       const q=own?`Senki nem licitált a <b>${CONTRACTS[G.bid.ci].name}</b> mondásodra. Visszaveheted a talont, és mondhatsz magasabbat, maradhatsz, és ezzel lezárul a licit, vagy bedobhatod a lapjaidat: ekkor a mondás kontrázott árát fizeted (összesen ${fmt(-2*concedeLoss(G.bid.ci,null,1))} pont).`:`A licit most: <b>${CONTRACTS[G.bid.ci].name}</b> (${NAME[G.bid.seat]}). Felveszed a talont?`;
-      el.innerHTML=`<p class="status">${q}</p><div class="row"><button class="btn" id="pickBtn"${can?'':' disabled'}>${own?'Visszaveszem':'Felveszem'}</button><button class="btn go" id="passBtn">${own?'Maradok':'Passz'}</button>${own?`<button class="btn ghost danger${UI.armCon?' armed':''}" id="conBtn">${UI.armCon?'Biztos? Bedobás':'Bedobás'}</button>`:''}</div>${hintHTML()}`;
+      el.innerHTML=`<p class="status">${q}</p>${hintHTML()}<div class="row stick" style="margin-top:10px"><button class="btn" id="pickBtn"${can?'':' disabled'}>${own?'Visszaveszem':'Felveszem'}</button><button class="btn go" id="passBtn">${own?'Maradok':'Passz'}</button>${own?`<button class="btn ghost danger${UI.armCon?' armed':''}" id="conBtn">${UI.armCon?'Biztos? Bedobás':'Bedobás'}</button>`:''}</div>`;
       $('pickBtn').onclick=()=>{doPickUp(0);UI.sel=[];UI.ci=null;UI.suit=null;UI.err='';advance();};
       $('passBtn').onclick=()=>{REV.bids.push({type:'pass',own:G.bid.seat===0,cur:{...G.bid},...snap()});doPass(0);advance();};
       if($('conBtn'))$('conBtn').onclick=()=>{if(!UI.armCon){UI.armCon=true;render();return;}UI.armCon=false;REV.bids.push({type:'pass',own:true,conceded:true,cur:{...G.bid},...snap()});doConcede(0);REV.bids.forEach(r=>{if(r.choice&&r.choice.suit===-2)r.choice.suit=G.trump;if(r.cur&&r.cur.suit===-2)r.cur.suit=G.trump;});advance();};
@@ -2213,7 +2244,7 @@ function renderPanel(){
       ?`Kontrát kaptál. Ha biztos vagy a dolgodban, rekontrázhatsz: ez mindkét védővel szemben négyszerezi a tétet.`
       :`${NAME[G.decl]} játéka: <b>${c.name}</b>${G.trumpGame?`, adu: ${SUIT_NAMES[G.trump].toLowerCase()}`:''}. Mondasz kontrát? ${kontraCommon()?'Adus játékban a kontra közös: mindkét védő tétjét duplázza.':'Adu nélküli játékban a kontra egyéni: csak a te tétedet duplázza.'}`;
     const chips=opts.map(o=>{const key=o.k+':'+o.def,m=mustKontra(0,o.k);return `<button class="chip${UI.kon.has(key)||m?' on':''}" data-kon="${key}"${m?' disabled':''}><span>${G.decl===0?'Rekontra':'Kontra'}: ${COMP_NAMES[o.k]}${m?' (kötelező)':''}</span></button>`;}).join('');
-    el.innerHTML=`<p class="status">${head}</p><div class="chips">${chips}</div><div class="row" style="margin-top:10px"><button class="btn" id="konBtn">${UI.kon.size?(G.decl===0?'Rekontra':'Kontra'):'Tovább, kontra nélkül'}</button></div>${hintHTML()}`;
+    el.innerHTML=`<p class="status">${head}</p><div class="chips">${chips}</div>${hintHTML()}<div class="row stick" style="margin-top:10px"><button class="btn" id="konBtn">${UI.kon.size?(G.decl===0?'Rekontra':'Kontra'):'Tovább, kontra nélkül'}</button></div>`;
     el.querySelectorAll('[data-kon]').forEach(b=>b.onclick=()=>{const k=b.dataset.kon;UI.kon.has(k)?UI.kon.delete(k):UI.kon.add(k);render();});
     $('konBtn').onclick=()=>{const list=opts.filter(o=>UI.kon.has(o.k+':'+o.def));UI.kon=new Set();REV.kon={decl:G.decl===0,opts:opts.slice(),list:list.slice()};doKontra(0,list);advance();};
     bindHint();return;
@@ -2274,7 +2305,12 @@ function renderSee(){
   $('seeOv').classList.add('show');
 }
 function renderLog(){$('log').innerHTML=G.log.map(t=>`<li>${t}</li>`).join('');}
-function render(){syncHint();renderTable();renderPanel();renderHand();renderLog();maybeTip();const st=statusText();if($('live').textContent!==st)$('live').textContent=st;}
+function panelScroll(){
+  const el=$('panel'),key=[G.phase,G.turn,G.trickNo,G.trick.length,REV.show].join(':');
+  if(UI.panelKey!==key){UI.panelKey=key;el.scrollTop=0;}
+  if(UI.scrollHint){UI.scrollHint=false;const hb=el.querySelector('.hintbox');if(hb&&el.scrollHeight>el.clientHeight)hb.scrollIntoView({block:'nearest',behavior:'smooth'});}
+}
+function render(){syncHint();renderTable();renderPanel();panelScroll();renderHand();renderLog();maybeTip();const st=statusText();if($('live').textContent!==st)$('live').textContent=st;}
 
 function onCard(id){
   if(G.phase==='bid'&&G.turn===0&&holding12(0)){
@@ -2462,12 +2498,14 @@ function unionRect(sels){
   return r;
 }
 // a buborék a célelem alá (vagy fölé) kerül, a nyíl az elem felé mutat
-function placeBubble(bub,r,pad){
+function placeBubble(bub,r,pad,above=false){
   const vw=innerWidth,vh=innerHeight,w=bub.offsetWidth,h=bub.offsetHeight;
   bub.classList.remove('up','down','mid');
   if(!r){bub.classList.add('mid');bub.style.left=Math.max(12,(vw-w)/2)+'px';bub.style.top=Math.max(12,(vh-h)/2)+'px';return;}
   const cx=(r.left+r.right)/2,left=Math.max(12,Math.min(cx-w/2,vw-w-12));let top;
-  if(r.bottom+pad+12+h<=vh-8){top=r.bottom+pad+12;bub.classList.add('up');}
+  // a helyzeti tipp inkább a gomb fölé kerül, hogy ne takarja a gomb alatti vezérlőket
+  if(above&&r.top-pad-12-h>=8){top=r.top-pad-12-h;bub.classList.add('down');}
+  else if(r.bottom+pad+12+h<=vh-8){top=r.bottom+pad+12;bub.classList.add('up');}
   else if(r.top-pad-12-h>=8){top=r.top-pad-12-h;bub.classList.add('down');}
   else{top=Math.max(8,vh-h-8);bub.classList.add('mid');}
   // ha a cél épp nem látszik (kigörgetett), a buborék a képernyőn marad, nyíl nélkül
@@ -2495,7 +2533,7 @@ function tourDraw(){
 }
 function startTour(){
   TOUR_ON=true;TOUR_I=0;clearTimeout(timer);hideTip();
-  ['rules','statsOv','menuOv','a2hsOv','seeOv'].forEach(id=>$(id).classList.remove('show'));
+  ['rules','statsOv','menuOv','a2hsOv','seeOv','infoOv'].forEach(id=>$(id).classList.remove('show'));
   $('tour').classList.add('show');tourDraw();
 }
 function endTour(){
@@ -2512,6 +2550,11 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='ArrowLeft'&&TOUR_I>0){e.preventDefault();TOUR_I--;tourDraw();}
 });
 $('tourAgain').onclick=()=>{try{localStorage.removeItem(TIPKEY);}catch(e){}TIPS_SEEN=new Set();startTour();};
+// Napló és Névjegy a menüből (alkalmazás-nézetben nincs lábléc és napló az oldalon); a Névjegy a lábléc szövegét mutatja
+function infoSheet(html){$('menuOv').classList.remove('show');$('infoSheet').innerHTML=html+`<div class="row" style="margin-top:14px"><button class="btn" id="closeInfo">Bezár</button></div>`;$('closeInfo').onclick=()=>$('infoOv').classList.remove('show');$('infoOv').classList.add('show');}
+$('mLog').onclick=()=>infoSheet(`<h2>Napló</h2>${G&&G.log.length?`<ol class="loglist">${G.log.map(t=>`<li>${t}</li>`).join('')}</ol>`:'<p class="small">Még üres.</p>'}`);
+$('mAbout').onclick=()=>{const f=document.querySelector('footer.foot');infoSheet(`<h2>Névjegy és adatvédelem</h2>${[...f.querySelectorAll('p')].map(p=>p.outerHTML).join('')}<div class="row" style="margin-top:10px"><a class="btn ghost" href="https://github.com/silyegellerto/cuddly-octo-enigma/issues" target="_blank" rel="noopener noreferrer">Visszajelzés, hibabejelentés</a></div>`);};
+$('infoOv').onclick=e=>{if(e.target.id==='infoOv')$('infoOv').classList.remove('show');};
 $('mTour').onclick=()=>{$('menuOv').classList.remove('show');$('tourAgain').onclick();};
 
 // ---- helyzeti tippek: minden helyzet első előfordulásakor egyszer ----
@@ -2528,7 +2571,7 @@ function hideTip(){const b=$('tipBub');if(b)b.style.display='none';UI.tip=null;}
 function seenTip(k){TIPS_SEEN.add(k);try{localStorage.setItem(TIPKEY,JSON.stringify([...TIPS_SEEN]));}catch(e){}}
 function placeTip(){
   const t=UI.tip&&TIPS.find(x=>x.k===UI.tip),el=t&&document.querySelector(tipSel(t));if(!el)return;
-  const r=el.getBoundingClientRect();placeBubble($('tipBub'),{left:r.left,top:r.top,right:r.right,bottom:r.bottom},4);
+  const r=el.getBoundingClientRect();placeBubble($('tipBub'),{left:r.left,top:r.top,right:r.right,bottom:r.bottom},4,true);
 }
 function maybeTip(){
   if(TOUR_ON||!G){hideTip();return;}
