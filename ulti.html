@@ -2573,7 +2573,7 @@ function nextDeal(){
 let newArm=null;
 $('newBtn').onclick=()=>{
   const b=$('newBtn');
-  if(!newArm){b.textContent='Biztos? Még egyszer';b.classList.add('on');newArm=setTimeout(()=>{newArm=null;b.textContent='Új játék';b.classList.remove('on');},3500);return;}
+  if(!newArm){b.textContent='Biztos?';b.classList.add('on');newArm=setTimeout(()=>{newArm=null;b.textContent='Új játék';b.classList.remove('on');},3500);return;}
   clearTimeout(newArm);newArm=null;b.textContent='Új játék';b.classList.remove('on');
   clearTimeout(timer);
   SCORE={tot:[0,0,0],n:0,dealer:Math.floor(Math.random()*3)};saveScore();G=null;nextDeal();
