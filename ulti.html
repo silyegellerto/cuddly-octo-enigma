@@ -1648,6 +1648,8 @@ function resolveClaim(side){
     if(G.trick.length===3){collectTrick();continue;}
     const p=G.turn,i=G.trick.length;let card=null;
     if(ctrl(p))for(const x of legalCards(p)){
+      // ultinál a felmutatott lejátszásban se menjen ki a VII-es az utolsó ütés előtt (mint a solveClaim-ben)
+      if(side==='decl'&&p===G.decl&&CONTRACTS[G.ci].comps.ulti&&!G.ultiBroken&&x.s===G.trump&&x.r===0&&G.hands[p].length>1)continue;
       const h=G.hands[p],idx=h.indexOf(x);h.splice(idx,1);G.trick.push({p,c:x});
       let r;try{r=claimTry(side,nxt(p),i+1);}finally{G.trick.pop();h.splice(idx,0,x);}
       if(r){card=x;break;}
