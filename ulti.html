@@ -351,6 +351,17 @@ img.ico{width:1.2em;height:1.2em;vertical-align:-.25em;object-fit:contain;displa
 #tipBub{z-index:800;outline:2px solid var(--brass)}
 #toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);transform:translateX(-50%);z-index:950;background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:12px;font-size:calc(15px * var(--fs));box-shadow:0 8px 24px rgba(0,0,0,.35);display:none;max-width:calc(100vw - 32px)}
 #toast.show{display:block}
+.listhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:10px 0 6px}
+.listhead .lbl2{margin:0}
+.expbtn{flex:none;width:44px;height:36px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-size:22px;font-weight:700;line-height:1;display:inline-flex;align-items:center;justify-content:center;padding:0}
+#bidsOv{z-index:40;padding:calc(env(safe-area-inset-top,0px) + 10px) 10px calc(env(safe-area-inset-bottom,0px) + 10px)}
+.sheet.full{max-width:760px;min-height:100%;display:flex;flex-direction:column}
+.sheet.full .chips{margin-top:6px}
+.lshort{display:none}
+@media (max-width:979px) and (min-height:620px) and (max-width:440px){.lfull{display:none}.lshort{display:inline}}
+.warnbtn{flex:none;width:48px;height:48px;border-radius:999px;border:0;background:var(--bad);color:#fff;font-size:24px;font-weight:900;line-height:1;box-shadow:0 0 0 3px rgba(176,48,42,.25);animation:wpulse 1.6s ease-in-out 2}
+@keyframes wpulse{50%{box-shadow:0 0 0 7px rgba(176,48,42,.12)}}
+@media (prefers-reduced-motion:reduce){.warnbtn{animation:none}}
 .loglist{padding-left:22px;font-size:calc(15px * var(--fs));color:var(--muted);line-height:1.5}
 #infoSheet .copy{font-weight:600}
 #infoSheet a:not(.btn){color:var(--ink)}
@@ -376,11 +387,14 @@ img.ico{width:1.2em;height:1.2em;vertical-align:-.25em;object-fit:contain;displa
   .table.idle .center,.table.res .center{height:0;margin:0}
   .table.res .slot{display:none}
   .panel{flex:1;min-height:0;overflow-y:auto;margin:8px 0 6px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
-  .panel.fit{display:flex;flex-direction:column;overflow:hidden}
-  .panel.fit .chips.scroll{flex:1 1 auto;min-height:96px;max-height:none}
+  /* licit: a lista kitölti a helyet; ha nagy betűvel vagy sok szöveggel nem fér ki minden, a panel görgethető,
+     és a gombsor ilyenkor is a panel alján marad (sticky), sosem tűnik el */
+  .panel.fit{display:flex;flex-direction:column;overflow-y:auto}
   .panel.fit>*{flex:none}
-  .panel.fit>.chips.scroll{flex:1 1 auto}
-  .panel.fit .stick{position:static;box-shadow:none;margin:10px 0 0;padding:0;border:0}
+  .panel.fit>.chips.scroll{flex:1 1 auto;min-height:120px;max-height:none}
+  .panel.fit .stick{flex-wrap:nowrap}
+  .panel.fit .stick .btn{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-left:12px;padding-right:12px}
+  .panel.fit .stick #bidBtn{flex:none}
   .panel .stick{position:sticky;bottom:-12px;margin:10px -12px -12px;padding:10px 12px 12px;background:var(--surface);box-shadow:0 -10px 12px -10px rgba(0,0,0,.18);z-index:2}
   .dock{flex:none;position:static;box-shadow:0 -6px 14px rgba(0,0,0,.06)}
   details.log,footer.foot{display:none}
@@ -465,6 +479,7 @@ img.ico{width:1.2em;height:1.2em;vertical-align:-.25em;object-fit:contain;displa
   </div>
   <div class="row" style="margin-top:14px"><button class="btn ghost" id="mA2hs">Kezdőképernyőre</button><a class="btn ghost" href="https://github.com/silyegellerto/cuddly-octo-enigma/issues" target="_blank" rel="noopener noreferrer">Visszajelzés</a></div>
 </div></div>
+<div class="ov" id="bidsOv"></div>
 <div class="ov" id="infoOv"><div class="sheet" id="infoSheet"></div></div>
 <div class="ov" id="a2hsOv"><div class="sheet" id="a2hsSheet"></div></div>
 <div class="ov" id="statsOv"><div class="sheet" id="statsSheet"></div></div>
@@ -2362,10 +2377,22 @@ function renderPanel0(el){
       const c=UI.ci!=null?CONTRACTS[UI.ci]:null;
       const head=G.bid?`A licit most: <b>${CONTRACTS[G.bid.ci].name}</b> (${NAME[G.bid.seat]}). Tegyél le 2 lapot, és mondj magasabbat.`:'Te kezdesz. Jelölj ki 2 lapot a talonba, és válassz játékot.';
       let fw='';
-      if(c&&UI.sel.length===2&&isTrumpC(c)){const ids=new Set(UI.sel.map(x=>x.id)),rest=G.hands[0].filter(x=>!ids.has(x.id));const ok=suitsFor(c).filter(s=>!checkReq(rest,UI.ci,s));if(ok.length&&ok.every(s=>forcedParts(rest,UI.ci,s).length))fw=`<p class="err">Kényszervállalás: ehhez a játékhoz nincs meg a ${c.comps.c40?'40':'20'}. Mondhatod, de a bemondás pontja nem számít, és akinél a kulcslap van, kötelezően megkontrázza.</p>`;}
+      if(c&&UI.sel.length===2&&isTrumpC(c)){const ids=new Set(UI.sel.map(x=>x.id)),rest=G.hands[0].filter(x=>!ids.has(x.id));const ok=suitsFor(c).filter(s=>!checkReq(rest,UI.ci,s));if(ok.length&&ok.every(s=>forcedParts(rest,UI.ci,s).length))fw=`Kényszervállalás: ehhez a játékhoz nincs meg a ${c.comps.c40?'40':'20'}. Mondhatod, de a bemondás pontja nem számít, és akinél a kulcslap van, kötelezően megkontrázza.`;}
       const quick=min<CONTRACTS.length?`<button class="btn ghost" id="quickBtn">Passz: ${CONTRACTS[min].name}</button>`:'';
-      el.innerHTML=`<p class="status">${head}</p>${hintHTML()}<p class="lbl2">Talonba jelölve: ${UI.sel.length} / 2</p>${opts}${c&&isTrumpC(c)&&!c.red?'<p class="lbl2">Az adut csak akkor kell megadnod, ha a licited marad.</p>':''}${fw}${UI.err?`<p class="err">${UI.err}</p>`:''}<div class="row stick" style="margin-top:10px"><button class="btn" id="bidBtn">${c?`Bemondom: ${c.name}`:'Licitálok'}</button>${quick}</div>`;
+      el.innerHTML=`<p class="status">${head}</p>${hintHTML()}<div class="listhead"><p class="lbl2">Talonba jelölve: ${UI.sel.length} / 2</p><button class="expbtn" id="bidsExp" aria-label="Az összes mondás teljes képernyőn" title="Az összes mondás teljes képernyőn">⤢</button></div>${opts}${UI.err?`<p class="err">${UI.err}</p>`:''}<div class="row stick" style="margin-top:10px"><button class="btn" id="bidBtn">${c?`<span class="lfull">Bemondom: ${c.name}</span><span class="lshort">Bemondom</span>`:'Licitálok'}</button>${fw?'<button class="warnbtn" id="fwBtn" aria-label="Figyelmeztetés: kényszervállalás" title="Kényszervállalás">!</button>':''}${quick}</div>`;
       el.querySelectorAll('[data-ci]').forEach(b=>b.onclick=()=>{UI.ci=+b.dataset.ci;UI.err='';render();});
+      // a mondások teljes képernyős ablakban: választás után bezárul, a lista a kiválasztottra gördül
+      $('bidsExp').onclick=()=>{
+        const ov=$('bidsOv');
+        ov.innerHTML=`<div class="sheet full" role="dialog" aria-modal="true" aria-label="Mondások"><div class="mhead"><h2>Válassz játékot</h2><button class="iconbtn round" id="bidsClose" aria-label="Bezár"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><p class="small">${G.bid?`A licit most: <b>${CONTRACTS[G.bid.ci].name}</b>. Csak ennél erősebbet mondhatsz.`:'A mondható játékok, értékükkel.'}</p><div class="chips">${CONTRACTS.map((c2,i)=>i>=min?`<button class="chip${UI.ci===i?' on':''}" data-ci2="${i}"><span>${c2.name}</span><small>${bidLabel(c2)}</small></button>`:'').join('')}</div></div>`;
+        ov.classList.add('show');
+        const close=()=>{ov.classList.remove('show');ov.innerHTML='';};
+        $('bidsClose').onclick=close;ov.onclick=e=>{if(e.target===ov)close();};
+        ov.querySelectorAll('[data-ci2]').forEach(b=>b.onclick=()=>{UI.ci=+b.dataset.ci2;UI.err='';UI.bidScrollTo=true;close();render();});
+        const on=ov.querySelector('.chip.on');if(on)on.scrollIntoView({block:'center'});
+      };
+      // a figyelmeztetés nem tolja ki a gombokat: a piros felkiáltójelre koppintva ablakban jelenik meg
+      if($('fwBtn'))$('fwBtn').onclick=()=>infoSheet(`<h2>Kényszervállalás</h2><p>${fw}</p>`);
       $('bidBtn').onclick=humanBid;
       if($('quickBtn'))$('quickBtn').onclick=()=>{UI.ci=min;if(UI.sel.length===2)humanBid();else{UI.err='Jelölj ki 2 lapot a talonba, aztán nyomd meg újra.';render();}};
     }else{
@@ -2733,7 +2760,7 @@ function tourDraw(){
 }
 function startTour(){
   TOUR_ON=true;TOUR_I=0;clearTimeout(timer);hideTip();
-  ['rules','statsOv','menuOv','a2hsOv','seeOv','infoOv'].forEach(id=>$(id).classList.remove('show'));
+  ['rules','statsOv','menuOv','a2hsOv','seeOv','infoOv','bidsOv'].forEach(id=>$(id).classList.remove('show'));
   $('tour').classList.add('show');tourDraw();
 }
 function endTour(){
