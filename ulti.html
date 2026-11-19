@@ -917,7 +917,10 @@ function pBetli(h,open){
   for(let s=0;s<4;s++){const rs=h.filter(x=>x.s===s).map(x=>x.r).sort((a,b)=>a-b);
     rs.forEach((r,i)=>{const ex=r-2*i;if(ex<=0)return;
       let q=[1,0.45,0.25,0.12,0.06][Math.min(ex,4)];
-      if(voids)q=Math.pow(q,1-0.12*voids);if(open)q=Math.pow(q,1.6);p*=q;});}
+      if(voids)q=Math.pow(q,1-0.12*voids);if(open)q=Math.pow(q,1.6);p*=q;});
+    // ász: csak hosszú színben tartható (7-8 lap biztos; 6 lapnál már nagyon kockázatos, a kint lévő két lap elosztásán múlik).
+    // Rövidebb színben a védők addig hívják a színt, amíg rá nem kell tenni az ászt; csak színhiánnyal lehet idő előtt eldobni.
+    if(rs.includes(7)&&rs.length<7)p*=rs.length===6?0.45:voids?0.3:0.12;}
   return p;
 }
 // durchmars: a felülről zárt sor utáni lapok akkor ütnek, ha a hiányzó nagyobb lapok „leesnek”
@@ -1020,7 +1023,7 @@ function chooseTrump(hand,talon,ci){
   return [1,2,3].filter(s=>!checkReq(hand,ci,s)).map(s=>evalOpt({ci,suit:s,disc:talon,rest:hand},N_FINAL)).sort(cmpOpt);
 }
 // ---- lerakás keresése próbajátékkal ----
-const N_SCREEN=32,N_FINAL=96,N_PRE=16; // szűrés / végső pontosítás próbajátékainak száma
+const N_SCREEN=32,N_FINAL=96,N_PRE=24; // szűrés / végső pontosítás próbajátékainak száma
 const sameD=(a,b)=>a.length===b.length&&a.every(x=>b.some(y=>y.id===x.id));
 function discardCands(h,ci,suit){
   const c=CONTRACTS[ci],res=[];
@@ -1038,7 +1041,7 @@ function bestDiscard(h,o,extra){
   const all=discardCands(h,o.ci,o.suit),cands=all.some(d=>d.ok)?all.filter(d=>d.ok):all;
   // betliben a gyors becslés sokszor félrevezet (pl. egy megtartott ász vagy egy rosszul védett király),
   // ezért ott minden lerakást lemérünk néhány próbajátékkal, és csak a legjobbakat pontosítjuk
-  const top=CONTRACTS[o.ci].kind==='betli'?cands.map(d=>evalOpt({ci:o.ci,suit:o.suit,disc:d.disc,rest:d.rest},N_PRE)).sort(cmpOpt).slice(0,5):cands.slice(0,5);
+  const top=CONTRACTS[o.ci].kind==='betli'?cands.map(d=>evalOpt({ci:o.ci,suit:o.suit,disc:d.disc,rest:d.rest},N_PRE)).sort(cmpOpt).slice(0,6):cands.slice(0,5);
   const bySuits={};for(const d of cands){const k=d.disc.map(x=>x.s).sort().join('');if(!bySuits[k]){bySuits[k]=1;if(!top.includes(d))top.push(d);}}
   for(const d of [o,...(extra||[])])if(d&&d.disc&&!top.some(t=>sameD(t.disc,d.disc))&&(cands===all||discardAllowed(d.disc,h,o.ci)))top.push({ci:o.ci,suit:o.suit,disc:d.disc,rest:h.filter(x=>!d.disc.some(y=>y.id===x.id))});
   const scr=top.slice(0,9).map(d=>evalOpt({ci:o.ci,suit:o.suit,disc:d.disc,rest:d.rest},N_SCREEN)).sort(cmpOpt);
@@ -1382,7 +1385,8 @@ function bookComp(h,ci,suit,k){
   if(k==='betli'){
     const high=h.filter(x=>x.r>=5).length,risk=betliRisk(h,c.open);
     add(high<=1,`többségében kis lapok, legfeljebb egy magas induló lap (felső/király/ász: ${high})`);
-    add(!h.some(x=>x.r===7),'ne maradjon nálad ász: az nem üthető alá, induló lapnak a király jobb (ultiblog)');
+    const aceS=[0,1,2,3].filter(s=>h.some(x=>x.s===s&&x.r===7)).map(s=>h.filter(x=>x.s===s).length);
+    add(aceS.every(n=>n>=7),aceS.length?`ászt csak 7-8 lapos színben tarts meg; 6 lapnál már nagyon kockázatos, rövidebb színben a védők addig hívják, amíg rá nem kell tenned (az ászod színe: ${aceS.join(', ')} lap)`:'ne maradjon nálad ász: az nem üthető alá, induló lapnak a király jobb (ultiblog)');
     add(risk===0,c.open?'hibátlan, összefüggő színsorozatok (terítettnél kötelező)':'a hiányzó kisebb lapok nem kényszerítenek ütésre');
     return {ok:I.every(x=>x.ok),items:I};
   }
@@ -1701,6 +1705,48 @@ function resolveClaim(side){
   }
 }
 let WHY='';
+// betli elleni hívás. A felülütési kényszer mindenkire vonatkozik: a hívott lapra aki tud, köteles fölé tenni,
+// a társad is. A felvevő csak akkor bukik, ha az ütés végén az ő lapja a legmagasabb. Ezért minden lehetséges
+// hívást végigjátszunk a még ismeretlen lapok néhány lehetséges elosztásán (felvevő, társ, talon; a korábbi
+// ütésekből ismert színhiányokkal), és azt hívjuk, amelyiknél a legnagyobb eséllyel a felvevő viszi az ütést.
+// Rögzített véletlenmag: ugyanabban a helyzetben mindig ugyanazt hívja (így a Tipp és a botok is ugyanazt számolják).
+function betliLead(p,L){
+  const pa=partnerOf(p),d=G.decl,out=outstanding(p),nd=G.hands[d].length,np=G.hands[pa].length,nt=Math.max(0,out.length-nd-np);
+  const dv=[0,1,2,3].map(s=>knownVoid(d,s)),pv=[0,1,2,3].map(s=>knownVoid(pa,s));
+  // a betlis felvevő a rövid (gyakran egylapos) színét hívja először, hogy kifogyjon belőle: abban a színben kevés lapja maradhat
+  const dl=[0,1,2,3].map(s=>hist().some(tr=>tr[0].p===d&&tr[0].c.s===s)?0.5:1);
+  let seed=11+p;for(const x of G.played)seed=(Math.imul(seed,31)+x.id+1)|0;for(const x of G.hands[p])seed=(Math.imul(seed,17)+x.id+1)|0;
+  const R=rng(seed),K=24,worlds=[];
+  for(let k=0;k<K;k++){
+    let ok=false,DH,PH;
+    for(let t=0;t<6&&!ok;t++){
+      const u=out.slice();for(let i=u.length-1;i>0;i--){const j=Math.floor(R()*(i+1));[u[i],u[j]]=[u[j],u[i]];}
+      DH=[];PH=[];let tl=0;ok=true;
+      for(const c of u){
+        const wd=!dv[c.s]&&DH.length<nd?(nd-DH.length)*dl[c.s]:0,wp=!pv[c.s]&&PH.length<np?np-PH.length:0,wt=tl<nt?nt-tl:0,sum=wd+wp+wt;
+        if(!sum){ok=t===5;if(!ok)break;continue;}
+        const r=R()*sum;if(r<wd)DH.push(c);else if(r<wd+wp)PH.push(c);else tl++;}
+    }
+    worlds.push({DH,PH});
+  }
+  const order=[nxt(p),nxt(nxt(p))];
+  let best=null,bs=-1;
+  for(const x of L){
+    let caught=0;
+    for(const w of worlds){
+      let hi=x,win=p;
+      for(const q of order){const H=q===d?w.DH:w.PH,same=H.filter(y=>y.s===x.s);if(!same.length)continue;
+        const up=same.filter(y=>y.r>hi.r);if(!up.length)continue;
+        hi=up.reduce((m,y)=>y.r<m.r?y:m);win=q;}
+      if(win===d)caught++;
+    }
+    const sc=caught/K+x.r*0.001;
+    if(sc>bs){bs=sc;best={x,pc:caught/K};}
+  }
+  if(!best)return null;
+  const pc=Math.round(best.pc*100);
+  return {x:best.x,why:pc>0?`Betli ellen olyan lapot hívj, amelyre a felvevőnek fölé kell tennie, és utána már senki sem tud fölé menni. A felülütési kényszer a társadra is vonatkozik: ha ő tesz a felvevő után, és van nagyobb lapja, megmenti. Ezzel a hívással a lehetséges lapelosztások kb. ${pc}%-ában a felvevő viszi az ütést.`:'Most egyik hívás sem kényszeríti ütésre a felvevőt, ezért a legmagasabb lapodtól szabadulsz meg, és a kis lapjaidat a későbbi hívásokra tartod.'};
+}
 function botChoose(p){
   const c=CONTRACTS[G.ci],tg=G.trumpGame,t=G.trump,decl=p===G.decl;
   let L=legalCards(p),note='';
@@ -1747,6 +1793,8 @@ function botChoose(p){
       return lo.length?R(maxBy(lo,P),'A legmagasabb olyan lapot dobd, amelyik még nem üt: így szabadulsz meg a veszélyes lapoktól.'):R(minBy(L,P),'Sajnos mindenképp ütsz, ez a betli bukását jelenti.');
     }
     if(!lead&&tr[trickWinnerIdx(tr)].p===G.decl){const lo=L.filter(x=>!wouldWin(x));if(lo.length)return R(maxBy(lo,P),'A felvevő viszi az ütést. Maradj alatta, és közben szabadulj meg egy magasabb lappal.');}
+    if(!lead&&tr.some(t=>t.p===G.decl))return R(maxBy(L,P),'A felvevő ezt az ütést már nem viszi, így a legmagasabb lapodat dobod el. A kis lapjaidat tartsd meg: később azokkal tudsz a felvevő alá hívni.');
+    if(!lead)return R(minBy(L,P),'A felvevő még ezután tesz. Maradj minél lejjebb, hogy a felülütési kényszer miatt neki kelljen fölé tennie.');
     if(lead&&G.revealed){
       // terített betli: a felvevő lapjai nyitva. Felülütési kényszer: ha a felvevőnek van a hívottnál nagyobb lapja ebből a színből,
       // fölé kell tennie (akkor is, ha kisebb is van nála). Olyan lapot hívunk, amelynél a felvevő kényszerlapja fölött
@@ -1766,8 +1814,8 @@ function botChoose(p){
       const pa=partnerOf(p);
       const shed=L.filter(x=>knownVoid(pa,x.s)&&!knownVoid(G.decl,x.s));
       if(shed.length)return R(maxBy(shed,P),`${BOOK}: a társad már nem tud ebből a színből adni, így most eldobhatja a veszélyes magas lapjait (színtelenítés). Később ezért nem neki kell ütnie a felvevő kis lapja fölé.`);
-      const safe=L.filter(x=>!knownVoid(G.decl,x.s));
-      if(safe.length&&safe.length<L.length)return R(minBy(safe,P),'A felvevő az egyik színből már kifogyott, abban bármit eldobhat. Olyan színt hívj, amiből adnia kell, hogy ütésre kényszerüljön.');
+      const pick=betliLead(p,L);
+      if(pick)return R(pick.x,pick.why);
     }
     return R(minBy(L,P),'Betli ellen tegyél kicsit, hogy a felvevőnek kelljen ütnie.');
   }
