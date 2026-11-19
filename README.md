@@ -40,7 +40,7 @@ Adus erősorrend (`TP` tömb): ász > X > király > felső > alsó > IX > VIII >
 Alap: ultiblog.hu szabálykönyv, kiegészítve Jánoska Levente – Zsigri: *A rablóulti szabályai* könyvvel.
 
 - Kezdő 12 lap, a többiek 10. Licit a talon felvételével, mindig erősebb vállalással (`bidRank`): az ulti és a piros ulti parti-pontja csak döntetlennél számít (ulti 4+1 < betli 5); azonos értéknél az egyszerű vállalás erősebb a kombináltnál, a 20-100 a piros 40-100-nál; az egyforma erősségűek kizárják egymást. A `CONTRACTS` tömb e szerint rendezett.
-- 42 vállalás, összetett vállalásokkal (40-100 / 20-100 / ulti / adus durchmars kombinációk, piros és terített változatok). A könyv táblázatán felül benne maradt a „Piros 20-100” (16).
+- 42 vállalás, összetett vállalásokkal (40-100 / 20-100 / ulti / adus durchmars kombinációk, piros és terített változatok). A könyv táblázatán felül benne maradt a „Piros 20-100” (16). A dupla értékű szín nélküli durchmars neve „Redurchmars” (12), hogy ne keveredjen a piros aduval játszott „Piros durchmars”-sal (12).
 - Kényszervállalás: 40-100 a 40 nélkül, 20-100 a 20 nélkül mondható; a hiányzó bemondás pontja nem számít, a kulcslapot tartó védő kötelezően kontráz.
 - Kontra / rekontra (szubkontra nincs), az első lap előtt.
 - Korai vége (`allDecided`): ha a bemondás minden része eldőlt (betli/durchmars bukott, 100 megvan vagy elérhetetlen, ulti VII idő előtt kiment), a leosztás véget ér. Partis játék a végéig megy; ha a felvevő addig mindent vitt, a csendes durchmars miatt is tovább megy.

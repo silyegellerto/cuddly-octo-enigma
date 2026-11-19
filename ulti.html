@@ -115,7 +115,7 @@ details.more{position:relative}
 details.more>summary{list-style:none;cursor:pointer;width:48px;height:44px;border-radius:12px;border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--ink)}
 details.more>summary::-webkit-details-marker{display:none}
 details.more[open]>summary{background:var(--chip)}
-details.more .pop{position:absolute;right:0;bottom:calc(100% + 6px);z-index:30;min-width:240px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.25);padding:6px;display:flex;flex-direction:column}
+details.more .pop{position:fixed;z-index:60;min-width:240px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.25);padding:6px;display:flex;flex-direction:column}
 details.more .pop button{border:0;background:none;color:var(--ink);font:inherit;font-size:calc(16px * var(--fs));text-align:left;padding:12px;border-radius:10px;font-weight:600}
 details.more .pop button:hover{background:var(--chip)}
 details.more .pop button.danger{color:var(--bad)}
@@ -184,6 +184,10 @@ details.more .pop button.danger.armed{background:var(--bad);color:var(--accent-i
 
 .mine{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font-size:calc(15px * var(--fs));color:var(--muted);margin:0 2px 2px}
 .mine .me b.pts{font-variant-numeric:tabular-nums}
+.mine .mr{display:flex;align-items:center;gap:10px;margin-left:auto;flex:none}
+.mine .me{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:420px){.mine{flex-wrap:nowrap;font-size:calc(14px * var(--fs))}.mine .auto,.mine .linkbtn{font-size:calc(14px * var(--fs))}.mine .auto{gap:5px}.mine .auto input{width:16px;height:16px}}
+.mine .mr .linkbtn{padding-left:0}
 /* a kéz egy sorban, minden lap a saját helyén; ha nem fér ki, jobbra-balra húzható */
 .hand{display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto;overflow-y:hidden;padding:14px 6px 10px;scroll-snap-type:x proximity;scroll-padding:0 6px;-webkit-overflow-scrolling:touch;scrollbar-width:thin;overscroll-behavior-x:contain}
 .hand>.card:first-child{margin-left:auto}.hand>.card:last-child{margin-right:auto}
@@ -481,10 +485,11 @@ img.ico{width:1.2em;height:1.2em;vertical-align:-.25em;object-fit:contain;displa
       <li><b>Ulti:</b> a felvevő adu VII-esének kell az utolsó ütést vinnie. Amíg más adu van nála, a VII-est nem játszhatja ki. Bukott ulti dupla árat fizet. Az ulti mellé partit is játszol.</li>
       <li><b>Betli:</b> egyetlen ütést sem szabad vinni.</li>
       <li><b>Durchmars:</b> minden ütést el kell vinni. Adus változatban (makk, zöld, tök vagy piros) a sorrend ász, X, király…; szín nélküli változatban ász, király, felső, alsó, X… A szín nélküli durchmars kontrája egyéni, az adusé közös.</li>
+      <li><b>Redurchmars</b> (12): szín nélküli durchmars dupla értékkel, adu nélkül. Nem tévesztendő össze a <b>piros durchmarssal</b> (szintén 12), ahol a piros az adu.</li>
       <li><b>Összetett vállalások:</b> a 40-100, a 20-100, az ulti és az adus durchmars kombinálható, például 40-100 ulti durchmars. Minden rész külön számít, az egyenleget fizetik.</li>
       <li><b>Kényszervállalás:</b> 40-100 a 40 nélkül, 20-100 a 20 nélkül is mondható. Ilyenkor a bemondás pontja nem számít, és a kulcslapot tartó védő kötelezően kontrázza.</li>
       <li><b>Licit:</b> csak erősebb vállalással lehet tovább licitálni. Az ulti és a piros ulti esetén a parti pontja csak döntetlennél számít, ezért az ulti (4+1) után betli (5) mondható. Azonos értéknél az egyszerű vállalás erősebb a kombináltnál (pl. a 20-100 a 40-100 ultinál), az egyforma erősségűek kizárják egymást.</li>
-      <li><b>Piros:</b> a piros az adu, és a játék dupla értékű.</li>
+      <li><b>Piros:</b> a piros az adu, és a játék dupla értékű. Szín nélküli játékban a dupla értékű változat neve más: a szín nélküli durchmarsé redurchmars.</li>
       <li><b>Terített:</b> az első ütés után a felvevő lapjai mindenki előtt nyitva vannak.</li>
     </ul>
     <h3>Kontra</h3>
@@ -543,7 +548,7 @@ const CONTRACTS=[
   {name:'Ulti durchmars',val:10,comps:{ulti:4,durch:6},kind:'trump'},
   {name:'Piros betli',val:10,comps:{betli:10},kind:'betli'},
   {name:'20-100 ulti',val:12,comps:{c20:8,ulti:4},kind:'trump'},
-  {name:'Piros szín nélküli durchmars',val:12,comps:{durch:12},kind:'durch'},
+  {name:'Redurchmars',val:12,comps:{durch:12},kind:'durch'},
   {name:'Piros durchmars',val:12,comps:{durch:12},kind:'trump',red:true},
   {name:'Terített durchmars',val:12,comps:{durch:12},kind:'trump',open:true},
   {name:'40-100 ulti durchmars',val:14,comps:{c40:4,ulti:4,durch:6},kind:'trump'},
@@ -2125,7 +2130,11 @@ function hintHTML(extra=''){
   return h;
 }
 function bindHint(){
-  const d=$('moreDd');if(d)d.ontoggle=()=>{UI.moreOpen=d.open;};
+  // a ··· menü rögzített helyzetű, hogy a görgethető panel ne vágja le: a gomb fölé (ha nincs hely, alá) igazítjuk
+  const d=$('moreDd');
+  if(d){const place=()=>{if(!d.open)return;const pop=d.querySelector('.pop'),r=d.querySelector('summary').getBoundingClientRect(),h=pop.offsetHeight,w=pop.offsetWidth;
+      pop.style.left=Math.max(8,Math.min(r.right-w,innerWidth-w-8))+'px';pop.style.top=(r.top-h-6>=8?r.top-h-6:Math.min(r.bottom+6,innerHeight-h-8))+'px';};
+    d.ontoggle=()=>{UI.moreOpen=d.open;place();};place();}
   const b=$('hintBtn');if(!b)return;
   b.onclick=()=>{UI.hint=!UI.hint;UI.scrollHint=UI.hint;render();};
   $('autoHint').onchange=e=>{SET.autoHint=e.target.checked;saveSet();if(SET.autoHint)UI.hint=true;render();};
@@ -2225,9 +2234,8 @@ function renderPanel0(el){
       let fw='';
       if(c&&UI.sel.length===2&&isTrumpC(c)){const ids=new Set(UI.sel.map(x=>x.id)),rest=G.hands[0].filter(x=>!ids.has(x.id));const ok=suitsFor(c).filter(s=>!checkReq(rest,UI.ci,s));if(ok.length&&ok.every(s=>forcedParts(rest,UI.ci,s).length))fw=`<p class="err">Kényszervállalás: ehhez a játékhoz nincs meg a ${c.comps.c40?'40':'20'}. Mondhatod, de a bemondás pontja nem számít, és akinél a kulcslap van, kötelezően megkontrázza.</p>`;}
       const quick=min<CONTRACTS.length?`<button class="btn ghost" id="quickBtn">Passz: ${CONTRACTS[min].name}</button>`:'';
-      el.innerHTML=`<p class="status">${head}</p>${hintHTML()}<div class="actrow" style="justify-content:space-between"><p class="lbl2" style="margin:0">Talonba jelölve: ${UI.sel.length} / 2</p><label class="auto"><input type="checkbox" id="betliSort"${UI.betliSort?' checked':''}> Szín nélküli sorrend</label></div>${opts}${c&&isTrumpC(c)&&!c.red?'<p class="lbl2">Az adut csak akkor kell megadnod, ha a licited marad.</p>':''}${fw}${UI.err?`<p class="err">${UI.err}</p>`:''}<div class="row stick" style="margin-top:10px"><button class="btn" id="bidBtn">${c?`Bemondom: ${c.name}`:'Licitálok'}</button>${quick}</div>`;
+      el.innerHTML=`<p class="status">${head}</p>${hintHTML()}<p class="lbl2">Talonba jelölve: ${UI.sel.length} / 2</p>${opts}${c&&isTrumpC(c)&&!c.red?'<p class="lbl2">Az adut csak akkor kell megadnod, ha a licited marad.</p>':''}${fw}${UI.err?`<p class="err">${UI.err}</p>`:''}<div class="row stick" style="margin-top:10px"><button class="btn" id="bidBtn">${c?`Bemondom: ${c.name}`:'Licitálok'}</button>${quick}</div>`;
       el.querySelectorAll('[data-ci]').forEach(b=>b.onclick=()=>{UI.ci=+b.dataset.ci;UI.err='';render();});
-      $('betliSort').onchange=e=>{UI.betliSort=e.target.checked;render();};
       $('bidBtn').onclick=humanBid;
       if($('quickBtn'))$('quickBtn').onclick=()=>{UI.ci=min;if(UI.sel.length===2)humanBid();else{UI.err='Jelölj ki 2 lapot a talonba, aztán nyomd meg újra.';render();}};
     }else{
@@ -2295,12 +2303,13 @@ function renderHand(){
     const k=kontraTag(0);
     role=`${G.decl===0?'<b>Felvevő</b>':'Védő'} · ütés ${G.tcount[0]}${G.marr[0].length?' · '+G.marr[0].map(m=>m.v).join('+'):''}${k?' · '+k:''}`;
   }
-  let mine=`<span class="me"><b>Te</b> <b class="pts ${v>0?'pos':v<0?'neg':''}">${v>0?'+':''}${v}</b>${G.dealer===0?' <span class="dl">oszt</span>':''} · ${role}</span><button class="linkbtn" id="seeBtn">Talon és ütések</button>`;
+  let mine=`<span class="me"><b>Te</b> <b class="pts ${v>0?'pos':v<0?'neg':''}">${v>0?'+':''}${v}</b>${G.dealer===0?' <span class="dl">oszt</span>':''} · ${role}</span><span class="mr">${G.phase==='bid'?`<label class="auto"><input type="checkbox" id="betliSort"${UI.betliSort?' checked':''}> Szín nélküli sorrend</label>`:''}<button class="linkbtn" id="seeBtn">Talon és ütések</button></span>`;
   $('mine').innerHTML=mine;
   // ha a kijátszható lap nem látszik a sorban, odagörgetjük
   if(legal){const key=G.trickNo+':'+G.trick.length;if(UI.scrollKey!==key){UI.scrollKey=key;const hd=$('hand'),el=hd.querySelector('.card.play');
     if(el&&(el.offsetLeft<hd.scrollLeft||el.offsetLeft+el.offsetWidth>hd.scrollLeft+hd.clientWidth))hd.scrollTo({left:el.offsetLeft-(hd.clientWidth-el.offsetWidth)/2,behavior:'smooth'});}}
   $('seeBtn').onclick=renderSee;
+  if($('betliSort'))$('betliSort').onchange=e=>{UI.betliSort=e.target.checked;render();};
 }
 function renderSee(){
   const known=G.talonBy===0||G.phase==='result';
@@ -2556,7 +2565,9 @@ function endTour(){
   window.scrollTo({top:0,behavior:'instant'});
   if(G)advance();
 }
-addEventListener('resize',()=>{if(TOUR_ON)tourDraw();else if(UI.tip)maybeTip();});
+addEventListener('resize',()=>{if(TOUR_ON)tourDraw();else if(UI.tip)maybeTip();if(UI.moreOpen)render();});
+document.addEventListener('scroll',()=>{const d=$('moreDd');if(d&&d.open){d.open=false;UI.moreOpen=false;}},{passive:true,capture:true});
+document.addEventListener('click',e=>{const d=$('moreDd');if(d&&d.open&&!d.contains(e.target)){d.open=false;UI.moreOpen=false;}});
 document.addEventListener('keydown',e=>{
   if(!TOUR_ON)return;
   if(e.key==='Escape'){e.preventDefault();endTour();}
