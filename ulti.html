@@ -371,6 +371,8 @@ img.ico{width:1.2em;height:1.2em;vertical-align:-.25em;object-fit:contain;displa
 @keyframes flash{30%{transform:scale(1.25)}}
 .tbub.pop{animation:pop .18s ease-out}
 @keyframes pop{from{opacity:0;transform:translateY(6px)}}
+.hand{perspective:700px}
+.mine .opened{color:var(--brass)}
 #toast.show{opacity:1;visibility:visible;transform:translateX(-50%);transition:opacity .2s ease,transform .2s ease}
 .listhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:10px 0 6px}
 .listhead .lbl2{margin:0}
@@ -810,7 +812,7 @@ function collectTrick(){
   }
   (G.hist=G.hist||[]).push(G.trick.slice());
   G.lastTrick=G.trick;G.trick=[];G.trickNo++;G.leader=w;G.turn=w;
-  if(c.open) G.revealed=true;
+  if(c.open&&!G.revealed){G.revealed=true;addLog(G.decl===0?'Terített játék: az első ütés után kiterítetted a lapjaidat, a védők látják őket.':`Terített játék: ${NAME[G.decl]} kiteríti a lapjait.`);}
   const early=allDecided();
   if(early)addLog('Minden bemondás eldőlt, a többi lapot nem kell lejátszani.');
   let end=G.trickNo===10||early;
@@ -1018,7 +1020,7 @@ function chooseTrump(hand,talon,ci){
   return [1,2,3].filter(s=>!checkReq(hand,ci,s)).map(s=>evalOpt({ci,suit:s,disc:talon,rest:hand},N_FINAL)).sort(cmpOpt);
 }
 // ---- lerakás keresése próbajátékkal ----
-const N_SCREEN=32,N_FINAL=96; // szűrés / végső pontosítás próbajátékainak száma
+const N_SCREEN=32,N_FINAL=96,N_PRE=16; // szűrés / végső pontosítás próbajátékainak száma
 const sameD=(a,b)=>a.length===b.length&&a.every(x=>b.some(y=>y.id===x.id));
 function discardCands(h,ci,suit){
   const c=CONTRACTS[ci],res=[];
@@ -1033,7 +1035,10 @@ function discardCands(h,ci,suit){
 }
 // a vállaláshoz a legjobb lerakás: a gyors becslés legjobbjai + színenként a legjobb, próbajátékkal lemérve
 function bestDiscard(h,o,extra){
-  const all=discardCands(h,o.ci,o.suit),cands=all.some(d=>d.ok)?all.filter(d=>d.ok):all,top=cands.slice(0,5);
+  const all=discardCands(h,o.ci,o.suit),cands=all.some(d=>d.ok)?all.filter(d=>d.ok):all;
+  // betliben a gyors becslés sokszor félrevezet (pl. egy megtartott ász vagy egy rosszul védett király),
+  // ezért ott minden lerakást lemérünk néhány próbajátékkal, és csak a legjobbakat pontosítjuk
+  const top=CONTRACTS[o.ci].kind==='betli'?cands.map(d=>evalOpt({ci:o.ci,suit:o.suit,disc:d.disc,rest:d.rest},N_PRE)).sort(cmpOpt).slice(0,5):cands.slice(0,5);
   const bySuits={};for(const d of cands){const k=d.disc.map(x=>x.s).sort().join('');if(!bySuits[k]){bySuits[k]=1;if(!top.includes(d))top.push(d);}}
   for(const d of [o,...(extra||[])])if(d&&d.disc&&!top.some(t=>sameD(t.disc,d.disc))&&(cands===all||discardAllowed(d.disc,h,o.ci)))top.push({ci:o.ci,suit:o.suit,disc:d.disc,rest:h.filter(x=>!d.disc.some(y=>y.id===x.id))});
   const scr=top.slice(0,9).map(d=>evalOpt({ci:o.ci,suit:o.suit,disc:d.disc,rest:d.rest},N_SCREEN)).sort(cmpOpt);
@@ -2509,7 +2514,9 @@ function renderHand(){
     if(selecting)cls='play'+(UI.sel.some(x=>x.id===c.id)?' sel':'');
     if(hintIds&&hintIds.has(c.id))cls+=' hint';
     if(UI.warnId===c.id)cls+=' warn';
-    const a=G.phase==='result'?{cls:'',style:''}:anim('h:'+dk+':'+c.id,'dealin',300,first?i*35:0);
+    // terített játékban a felvevő (te) lapjai az első ütés után felfordulnak: egyszer megfordulnak
+    const rv=G.revealed&&G.decl===0&&G.phase==='play';
+    const a=G.phase==='result'?{cls:'',style:''}:rv?anim('rv:'+dk+':'+c.id,'flipin',340,i*30):anim('h:'+dk+':'+c.id,'dealin',300,first?i*35:0);
     return cardHTML(c,cls+a.cls,`data-id="${c.id}" ${a.style?`style="${a.style}"`:''} ${cls.includes('play')?'tabindex="0" role="button"':''}`);
   }).join('');
   $('hand').querySelectorAll('.card.play').forEach(el=>{
@@ -2521,10 +2528,11 @@ function renderHand(){
   let role=`${n0} lap`;
   if(G.phase!=='bid'&&G.phase!=='trump'){
     const k=kontraTag(0);
-    role=`${G.decl===0?'<b>Felvevő</b>':'Védő'} · ütés ${G.tcount[0]}${G.marr[0].length?' · '+G.marr[0].map(m=>m.v).join('+'):''}${k?' · '+k:''}`;
+    role=`${G.decl===0?'<b>Felvevő</b>':'Védő'}${G.revealed&&G.decl===0?' · <b class="opened">terítve</b>':''} · ütés ${G.tcount[0]}${G.marr[0].length?' · '+G.marr[0].map(m=>m.v).join('+'):''}${k?' · '+k:''}`;
   }
   let mine=`<span class="me"><b>Te</b> <b class="pts ${v>0?'pos':v<0?'neg':''}${G.phase==='result'?anim('sc:'+SCORE.n+':0','flash',700).cls:''}">${v>0?'+':''}${v}</b>${G.dealer===0?' <span class="dl">oszt</span>':''} · ${role}</span><span class="mr">${G.phase==='bid'?`<label class="auto"><input type="checkbox" id="betliSort"${UI.betliSort?' checked':''}> Szín nélküli sorrend</label>`:''}<button class="linkbtn" id="seeBtn">Talon és ütések</button></span>`;
   $('mine').innerHTML=mine;
+  if(G.revealed&&G.decl===0&&G.phase==='play'&&!(('rvt:'+dk) in ANIM)){ANIM['rvt:'+dk]=1;toast('Terített játék: kiterítetted a lapjaidat, a védők látják őket.');}
   // ha a kijátszható lap nem látszik a sorban, odagörgetjük
   if(legal){const key=G.trickNo+':'+G.trick.length;if(UI.scrollKey!==key){UI.scrollKey=key;const hd=$('hand'),el=hd.querySelector('.card.play');
     if(el&&(el.offsetLeft<hd.scrollLeft||el.offsetLeft+el.offsetWidth>hd.scrollLeft+hd.clientWidth))hd.scrollTo({left:el.offsetLeft-(hd.clientWidth-el.offsetWidth)/2,behavior:'smooth'});}}
