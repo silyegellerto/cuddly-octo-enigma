@@ -77,7 +77,10 @@ h1{font-family:Alegreya,Georgia,serif;font-weight:800;font-size:calc(30px * var(
 .table{background:radial-gradient(ellipse at 50% 45%,var(--felt) 0%,var(--felt2) 100%);border-radius:22px;padding:10px;color:var(--felt-ink);box-shadow:inset 0 0 0 4px rgba(0,0,0,.12)}
 .opps{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
 .opp{background:var(--surface);border-radius:14px;padding:8px 10px;border:1.5px solid var(--line);min-height:70px;transition:border-color .2s,box-shadow .2s}
+.opp{position:relative}
 .opp.active{border-color:var(--brass);box-shadow:0 0 0 2px rgba(214,169,61,.3)}
+.opp.active::after{content:"";position:absolute;inset:-3px;border-radius:16px;box-shadow:0 0 0 3px var(--brass);opacity:0;pointer-events:none;animation:breathe 1.6s ease-in-out infinite}
+@keyframes breathe{50%{opacity:.55}}
 .opp .nm{display:flex;justify-content:space-between;align-items:center;gap:6px;font-weight:700}
 .opp .pts{font-variant-numeric:tabular-nums;font-weight:800;font-size:calc(19px * var(--fs))}
 .badge{font-size:calc(14px * var(--fs));font-weight:700;border-radius:999px;padding:2px 8px;background:var(--chip);color:var(--chip-ink);white-space:nowrap}
@@ -99,9 +102,7 @@ h1{font-family:Alegreya,Georgia,serif;font-weight:800;font-size:calc(30px * var(
 .slot.seat2{left:22%;top:6px;transform:translateX(-50%) rotate(-6deg)}
 .slot.seat1{right:22%;top:6px;transform:translateX(50%) rotate(6deg)}
 .slot.seat0{left:50%;bottom:4px;transform:translateX(-50%)}
-.slot .card{animation:drop .22s ease-out}
 .slot .card.win{box-shadow:0 0 0 3px var(--brass),0 6px 16px rgba(0,0,0,.35)}
-@keyframes drop{from{transform:translateY(-10px);opacity:0}to{transform:none;opacity:1}}
 .info{position:absolute;left:50%;top:50%;transform:translate(-50%,-62%);text-align:center;font-size:calc(15px * var(--fs));color:var(--felt-ink);width:48%;line-height:1.3}
 .info .ct{font-family:Alegreya,Georgia,serif;font-weight:800;font-size:calc(20px * var(--fs))}
 .info .sub{color:var(--felt-muted);font-size:calc(15px * var(--fs))}
@@ -121,7 +122,8 @@ details.more .pop button:hover{background:var(--chip)}
 details.more .pop button.danger{color:var(--bad)}
 details.more .pop button.danger.armed{background:var(--bad);color:var(--accent-ink)}
 /* licit: csoport-fülek */
-.chips.scroll{max-height:340px;overflow-y:auto;overscroll-behavior:contain;padding:2px;margin:0 -2px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding-top:8px;padding-bottom:8px}
+/* a mondások listája nem külön görgethető doboz: egyetlen görgethető rész van, a panel (vagy az oldal) */
+.chips.scroll{padding:2px 0}
 .tabs{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
 .tab{flex:none;min-height:40px;padding:0 14px;border-radius:999px;border:1.5px solid var(--line);background:transparent;color:var(--ink);font:inherit;font-size:calc(15px * var(--fs));font-weight:600}
@@ -157,9 +159,9 @@ details.more .pop button.danger.armed{background:var(--bad);color:var(--accent-i
 @media (min-width:980px){
   .wrap{max-width:1240px;padding:8px 24px 32px}
   .navlink{display:inline-block}
-  .game{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,400px);grid-template-areas:"opps panel" "table panel" "dock panel" "sr sr";column-gap:22px;align-items:start}
+  .game{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,400px);grid-template-areas:"opps panel" "table panel" "dock panel" ". panel";grid-template-rows:auto auto auto 1fr;column-gap:22px;align-items:start}
   .opps{grid-area:opps}.table{grid-area:table}.dock{grid-area:dock}
-  .panel{grid-area:panel;margin:0;position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto}
+  .panel{grid-area:panel;margin:0;position:sticky;top:12px;max-height:calc(100vh - 84px);overflow:auto}
 }
 .status{font-weight:500;margin:0 0 8px}
 .status:last-child{margin-bottom:0}
@@ -198,7 +200,7 @@ details.more .pop button.danger.armed{background:var(--bad);color:var(--accent-i
 .hand-wrap{position:relative}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .hand .card.play{cursor:pointer}
-.hand .card.play:hover{transform:translateY(-4px)}
+@media (hover:hover){.hand .card.play:hover{transform:translateY(-4px)}}
 .hand .card.play.legal{box-shadow:0 0 0 2px var(--go),0 4px 10px rgba(0,0,0,.2)}
 .hand .card.dim{filter:brightness(.6) saturate(.5)}
 .hand .card.sel{transform:translateY(-9px);box-shadow:0 0 0 3px var(--accent),0 6px 12px rgba(0,0,0,.25)}
@@ -256,8 +258,11 @@ details.log ol{margin:6px 0 0;padding-left:20px;max-height:220px;overflow:auto}
 .an-t tr.you td{background:var(--hint-bg)}
 .an-t td.best{font-weight:700}
 
-.ov{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;z-index:20;padding:calc(env(safe-area-inset-top,0px) + 16px) 12px calc(env(safe-area-inset-bottom,0px) + 16px);overflow:auto}
-.ov.show{display:block}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.5);display:block;visibility:hidden;opacity:0;pointer-events:none;transition:opacity .18s ease,visibility 0s linear .18s;z-index:20;padding:calc(env(safe-area-inset-top,0px) + 16px) 12px calc(env(safe-area-inset-bottom,0px) + 16px);overflow:auto}
+.ov.show{visibility:visible;opacity:1;pointer-events:auto;transition:opacity .18s ease}
+.ov>.sheet{transform:translateY(18px);transition:transform .24s cubic-bezier(.2,.8,.2,1)}
+.ov.show>.sheet{transform:none}
+@media (min-width:980px){.ov>.sheet{transform:scale(.97)}.ov.show>.sheet{transform:none}}
 .sheet{max-width:620px;margin:0 auto;background:var(--surface);color:var(--ink);border-radius:18px;padding:18px}
 .sheet h2{font-family:Alegreya,Georgia,serif;font-weight:800;margin:0 0 8px;font-size:calc(25px * var(--fs))}
 .sheet h3{font-family:Alegreya,Georgia,serif;margin:16px 0 4px;font-size:calc(19px * var(--fs))}
@@ -349,8 +354,24 @@ img.ico{width:1.2em;height:1.2em;vertical-align:-.25em;object-fit:contain;displa
 .tbub.down::before{bottom:-7px}
 .tbub.mid::before{display:none}
 #tipBub{z-index:800;outline:2px solid var(--brass)}
-#toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);transform:translateX(-50%);z-index:950;background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:12px;font-size:calc(15px * var(--fs));box-shadow:0 8px 24px rgba(0,0,0,.35);display:none;max-width:calc(100vw - 32px)}
-#toast.show{display:block}
+#toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);transform:translateX(-50%);z-index:950;background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:12px;font-size:calc(15px * var(--fs));box-shadow:0 8px 24px rgba(0,0,0,.35);display:block;visibility:hidden;opacity:0;transform:translate(-50%,10px);transition:opacity .2s ease,transform .2s ease,visibility 0s linear .2s;max-width:calc(100vw - 32px)}
+/* ---- animációk: csak transform és opacity (a GPU számolja), rövidek; „Mozgás csökkentése” beállításnál nincsenek ---- */
+.btn,.iconbtn,.chip,.tab,.seg button,.navlink,.mlist button,.expbtn,.warnbtn,.switch,details.more>summary,.pop button{transition:transform .08s ease,background-color .15s ease,border-color .15s ease,color .15s ease,filter .15s ease}
+.btn:active,.iconbtn:active,.chip:active,.seg button:active,.navlink:active,.expbtn:active,.warnbtn:active,details.more>summary:active,.pop button:active{transform:scale(.97);filter:brightness(.93)}
+.mlist button:active{background:var(--chip)}
+@media (hover:hover){.btn:hover:not(:active):not(:disabled){filter:brightness(1.06)}.chip:hover:not(.on){border-color:var(--muted)}}
+.appear{animation:appear .22s cubic-bezier(.2,.8,.2,1) both}
+@keyframes appear{from{opacity:0;transform:translateY(-6px)}}
+.dealin{animation:dealin .3s cubic-bezier(.2,.8,.2,1) both}
+@keyframes dealin{from{opacity:0;transform:translateY(26px) scale(.92)}}
+.open{perspective:500px}
+.flipin{animation:flipin .34s cubic-bezier(.2,.8,.2,1) both}
+@keyframes flipin{from{opacity:.2;transform:rotateY(90deg)}}
+.flash{display:inline-block;animation:flash .7s ease-out both}
+@keyframes flash{30%{transform:scale(1.25)}}
+.tbub.pop{animation:pop .18s ease-out}
+@keyframes pop{from{opacity:0;transform:translateY(6px)}}
+#toast.show{opacity:1;visibility:visible;transform:translateX(-50%);transition:opacity .2s ease,transform .2s ease}
 .listhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:10px 0 6px}
 .listhead .lbl2{margin:0}
 .expbtn{flex:none;width:44px;height:36px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-size:22px;font-weight:700;line-height:1;display:inline-flex;align-items:center;justify-content:center;padding:0}
@@ -391,7 +412,7 @@ img.ico{width:1.2em;height:1.2em;vertical-align:-.25em;object-fit:contain;displa
      és a gombsor ilyenkor is a panel alján marad (sticky), sosem tűnik el */
   .panel.fit{display:flex;flex-direction:column;overflow-y:auto}
   .panel.fit>*{flex:none}
-  .panel.fit>.chips.scroll{flex:1 1 auto;min-height:120px;max-height:none}
+
   .panel.fit .stick{flex-wrap:nowrap}
   .panel.fit .stick .btn{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-left:12px;padding-right:12px}
   .panel.fit .stick #bidBtn{flex:none}
@@ -412,6 +433,8 @@ img.ico{width:1.2em;height:1.2em;vertical-align:-.25em;object-fit:contain;displa
   .table.idle .center{height:120px}
   .slot{--cw:92px}
   .hand .card{--cw:84px}
+  /* a jobb oldali panel görgethető: a fő gombsor itt is az alján marad */
+  .panel .stick{position:sticky;bottom:-12px;margin:10px -12px -12px;padding:10px 12px 12px;background:var(--surface);box-shadow:0 -10px 12px -10px rgba(0,0,0,.18);z-index:2;border-radius:0 0 16px 16px}
 }
 .tbub .tskip{border:0;background:none;color:var(--muted);font:inherit;font-size:calc(14px * var(--fs));text-decoration:underline;padding:4px 2px;margin-right:auto}
 
@@ -1872,8 +1895,8 @@ function legalReason0(p){
 // Egér: a lap fölé víve nagyban mutatja. Érintés: hosszan nyomva (kb. 0,35 mp) mutatja, felengedésre eltűnik,
 // és ilyenkor a lap nem játszódik ki (a sima koppintás továbbra is kijátszik / kijelöl).
 const ZM=document.createElement('div');ZM.id='zoom';ZM.setAttribute('aria-hidden','true');document.body.appendChild(ZM);
-let zTimer=null,zTouch=null,zEat=false;
-function zoomAt(el,x,y,touch){
+let zTimer=null,zTouch=null,zEat=false,zEl=null;
+function zoomAt(el,x,y,touch){zEl=el;
   const m=/(?:^|\s)c(\d+)(?:\s|$)/.exec(el.className);if(!m)return;
   if(!ZM.classList.contains('c'+m[1])){ZM.className='card c'+m[1]+' on';}
   ZM.style.display='block';
@@ -1884,7 +1907,9 @@ function zoomAt(el,x,y,touch){
   if(top+h>vh-8)top=vh-h-8;
   ZM.style.left=Math.max(8,Math.min(left,vw-w-8))+'px';ZM.style.top=Math.max(8,top)+'px';
 }
-function zoomHide(){ZM.style.display='none';ZM.className='';}
+function zoomHide(){ZM.style.display='none';ZM.className='';zEl=null;}
+// ha a nagyított lap eltűnt (kijátszottad, újrarajzolás), a nagyítás se maradjon kint
+function zoomCheck(){if(zEl&&!document.contains(zEl))zoomHide();}
 const cardOf=t=>{const el=t&&t.closest?t.closest('.card'):null;return el&&el!==ZM?el:null;};
 document.addEventListener('pointermove',e=>{
   if(e.pointerType==='mouse'){const el=cardOf(e.target);if(el)zoomAt(el,e.clientX,e.clientY,false);else if(ZM.style.display==='block')zoomHide();return;}
@@ -2269,7 +2294,8 @@ function hintHTML(extra=''){
   if(tip&&UI.hint&&UI.hc){
     const H=UI.hc.html,i=H.indexOf('<!--more-->'),j=i>=0?i:H.indexOf('</p>')+4;
     const sum=H.slice(0,j),more=H.slice(j).replace('<!--more-->','')+`<p class="rule">A javaslat ugyanazzal a döntési móddal készül, mint a botok lépései (kockázat: ${RISK_NAME[RISK]}).</p>`;
-    h+=`<div class="hintbox">${sum}${UI.why?`<div id="whyBox">${more}</div>`:''}<p class="whyrow"><button class="linkbtn why" id="whyBtn" aria-expanded="${!!UI.why}" aria-controls="whyBox">${UI.why?'▴ Kevesebb':'▾ Miért?'}</button></p>${UI.hc.apply?'<button class="btn small" id="applyHint">Javaslat átvétele</button>':''}</div>`;
+    const ha=anim('hint:'+UI.key,'appear',220),wa=anim('why:'+UI.key+':'+(UI.whyAt||0),'appear',220);
+    h+=`<div class="hintbox${ha.cls}" style="${ha.style}">${sum}${UI.why?`<div id="whyBox" class="${wa.cls.trim()}" style="${wa.style}">${more}</div>`:''}<p class="whyrow"><button class="linkbtn why" id="whyBtn" aria-expanded="${!!UI.why}" aria-controls="whyBox">${UI.why?'▴ Kevesebb':'▾ Miért?'}</button></p>${UI.hc.apply?'<button class="btn small" id="applyHint">Javaslat átvétele</button>':''}</div>`;
   }
   return h;
 }
@@ -2283,7 +2309,7 @@ function bindHint(){
   b.onclick=()=>{UI.hint=!UI.hint;UI.scrollHint=UI.hint;render();};
   $('autoHint').onchange=e=>{SET.autoHint=e.target.checked;saveSet();if(SET.autoHint)UI.hint=true;render();};
   const a=$('applyHint');if(a)a.onclick=()=>{UI.hc.apply();UI.bidScrollTo=true;render();};
-  const w=$('whyBtn');if(w)w.onclick=()=>{UI.why=!UI.why;render();};
+  const w=$('whyBtn');if(w)w.onclick=()=>{UI.why=!UI.why;UI.whyAt=performance.now();render();};
 }
 function renderScores(){}
 function kontraTag(p){
@@ -2306,8 +2332,36 @@ function oppHTML(p){
   }
   const HH=shownHand(p),n=HH.length;
   const showOpen=(G.revealed&&p===G.decl)||G.phase==='result';
-  const cards=showOpen&&n?`<div class="open">${sortHand(HH).map(c=>cardHTML(c)).join('')}</div>`:`<div class="backs" aria-label="${n} lap">${'<i></i>'.repeat(n)}</div>`;
-  return `<div class="nm"><span>${NAME[p]}${G.dealer===p?' <span class="dl">oszt</span>':''}</span><span class="pts ${v>0?'pos':v<0?'neg':''}">${sgn(v)}</span></div><div class="meta">${badge}${parts.map(x=>`<span>${x}</span>`).join('')}${showOpen?'':`<span class="cnt">${n} lap</span>`}</div>${cards}`;
+  const ok=(G.phase==='result'?'res':'rev')+':'+SCORE.n+':'+G.dealer+':'+p;
+  const cards=showOpen&&n?`<div class="open">${sortHand(HH).map((c,i)=>{const a=anim(ok+':'+c.id,'flipin',340,i*30);return cardHTML(c,a.cls.trim(),a.style?`style="${a.style}"`:'');}).join('')}</div>`:`<div class="backs" aria-label="${n} lap">${'<i></i>'.repeat(n)}</div>`;
+  return `<div class="nm"><span>${NAME[p]}${G.dealer===p?' <span class="dl">oszt</span>':''}</span><span class="pts ${v>0?'pos':v<0?'neg':''}${G.phase==='result'?anim('sc:'+SCORE.n+':'+p,'flash',700).cls:''}">${sgn(v)}</span></div><div class="meta">${badge}${parts.map(x=>`<span>${x}</span>`).join('')}${showOpen?'':`<span class="cnt">${n} lap</span>`}</div>${cards}`;
+}
+// ---- animációk ----
+// Az oldal minden lépésnél újrarajzol, ezért a „belépő” animációt csak a tényleg új elem kapja. Az ANIM tárolja,
+// mikor jelent meg egy elem először; ha közben újrarajzolunk, negatív késleltetéssel ott folytatódik, ahol tartott.
+const RM=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+let ANIM={};
+function anim(key,cls,dur,startIn=0){
+  const now=performance.now();if(!(key in ANIM))ANIM[key]=now+startIn;
+  const d=ANIM[key]-now;return -d<dur?{cls:' '+cls,style:`animation-delay:${Math.round(d)}ms`}:{cls:'',style:''};
+}
+// egy elem odaúszik a forrás helyéről (FLIP): csak transformot animál
+function flyFrom(el,from){
+  if(RM()||!from||!el.animate)return;
+  const r=el.getBoundingClientRect();if(!r.width)return;
+  const dx=(from.left+from.width/2)-(r.left+r.width/2),dy=(from.top+from.height/2)-(r.top+r.height/2),sc=Math.max(.35,Math.min(1.6,from.width/r.width));
+  el.animate([{transform:`translate(${dx}px,${dy}px) scale(${sc})`,opacity:.9},{transform:'none',opacity:1}],{duration:280,easing:'cubic-bezier(.2,.8,.2,1)'});
+}
+// a kijátszott lap helye a kézben, mielőtt kikerül onnan
+function handRect(id){const el=document.querySelector(`#hand .card[data-id="${id}"]`);return el?el.getBoundingClientRect():null;}
+// ütés vége: a három lap a nyerő felé úszik és elhalványul, utána fut tovább a játék
+function gatherTrick(done){
+  const g=G,cards=[...document.querySelectorAll('#center .slot .card')];
+  if(RM()||!cards.length||G.trick.length<3){done();return;}
+  const w=G.trick[trickWinnerIdx(G.trick)].p,tg=(w===0?$('mine'):$('opp'+w)).getBoundingClientRect();
+  for(const el of cards){const r=el.getBoundingClientRect();
+    el.animate([{transform:'none',opacity:1},{transform:`translate(${tg.left+tg.width/2-(r.left+r.width/2)}px,${tg.top+tg.height/2-(r.top+r.height/2)}px) scale(.45)`,opacity:0}],{duration:260,easing:'cubic-bezier(.4,0,.6,1)',fill:'forwards'});}
+  setTimeout(()=>{if(G===g&&G.phase==='play'&&G.trick.length===3)done();},260);
 }
 function renderTable(){
   for(const p of [1,2]){const el=$('opp'+p);el.innerHTML=oppHTML(p);el.classList.toggle('active',G.turn===p&&G.phase!=='result');}
@@ -2323,8 +2377,14 @@ function renderTable(){
   const tb=document.querySelector('.table');tb.classList.toggle('idle',!(G.phase==='play'||G.phase==='result'));tb.classList.toggle('res',G.phase==='result');
   const tr=G.trick.length?G.trick:(G.phase==='result'&&G.lastTrick?G.lastTrick:[]);
   const wi=tr.length===3?trickWinnerIdx(tr):-1;
-  const slots=[0,1,2].map(p=>{const i=tr.findIndex(t=>t.p===p);return `<div class="slot seat${p}">${i>=0?cardHTML(tr[i].c,i===wi?'win':''):''}</div>`;}).join('');
+  const slots=[0,1,2].map(p=>{const i=tr.findIndex(t=>t.p===p);return `<div class="slot seat${p}">${i>=0?cardHTML(tr[i].c,i===wi?'win':'',`data-id="${tr[i].c.id}"`):''}</div>`;}).join('');
   $('center').innerHTML=slots;
+  const seen=new Set(tr.map(t=>G.trickNo+':'+t.c.id)),prev=UI.slotSeen;UI.slotSeen=seen;
+  if(prev&&G.phase==='play')for(const t of tr){const k=G.trickNo+':'+t.c.id;if(prev.has(k))continue;
+    const el=document.querySelector(`#center .card[data-id="${t.c.id}"]`);
+    const from=UI.flyFrom&&UI.flyFrom.id===t.c.id?UI.flyFrom.rect:(t.p===0?null:$('opp'+t.p).getBoundingClientRect());
+    if(el)flyFrom(el,from||{left:innerWidth/2-20,top:innerHeight-120,width:40,height:60});}
+  UI.flyFrom=null;
 }
 function statusText(){
   if(G.phase==='bid'||G.phase==='trump'||G.phase==='kontra')return G.turn!==0?`${NAME[G.turn]} gondolkodik…`:'';
@@ -2337,11 +2397,12 @@ function statusText(){
 }
 function renderPanel(){
   const el=$('panel');
-  const bl=$('bidList'),blTop=bl?bl.scrollTop:0;
+  const top=el.scrollTop;
   renderPanel0(el);
   const nl=$('bidList');
   el.classList.toggle('fit',!!nl&&!UI.hint);
-  if(nl){nl.scrollTop=blTop;const on=nl.querySelector('.chip.on');if(on&&UI.bidScrollTo){UI.bidScrollTo=false;scrollInside(nl,on,false);}}
+  // újrarajzoláskor (pl. lapkijelölés) a panel görgetési helye megmarad; a Tipp vagy a ⤢ ablak választása a képbe gördül
+  if(nl){el.scrollTop=top;const on=nl.querySelector('.chip.on');if(on&&UI.bidScrollTo){UI.bidScrollTo=false;scrollInside(el,on,false);}}
 }
 function renderPanel0(el){
   if(G.phase==='result'){
@@ -2386,7 +2447,7 @@ function renderPanel0(el){
         const ov=$('bidsOv');
         ov.innerHTML=`<div class="sheet full" role="dialog" aria-modal="true" aria-label="Mondások"><div class="mhead"><h2>Válassz játékot</h2><button class="iconbtn round" id="bidsClose" aria-label="Bezár"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><p class="small">${G.bid?`A licit most: <b>${CONTRACTS[G.bid.ci].name}</b>. Csak ennél erősebbet mondhatsz.`:'A mondható játékok, értékükkel.'}</p><div class="chips">${CONTRACTS.map((c2,i)=>i>=min?`<button class="chip${UI.ci===i?' on':''}" data-ci2="${i}"><span>${c2.name}</span><small>${bidLabel(c2)}</small></button>`:'').join('')}</div></div>`;
         ov.classList.add('show');
-        const close=()=>{ov.classList.remove('show');ov.innerHTML='';};
+        const close=()=>{ov.classList.remove('show');setTimeout(()=>{if(!ov.classList.contains('show'))ov.innerHTML='';},220);};
         $('bidsClose').onclick=close;ov.onclick=e=>{if(e.target===ov)close();};
         ov.querySelectorAll('[data-ci2]').forEach(b=>b.onclick=()=>{UI.ci=+b.dataset.ci2;UI.err='';UI.bidScrollTo=true;close();render();});
         const on=ov.querySelector('.chip.on');if(on)on.scrollIntoView({block:'center'});
@@ -2441,13 +2502,15 @@ function renderHand(){
   if(G.phase==='play'&&G.turn===0&&G.trick.length<3)legal=new Set(legalCards(0).map(x=>x.id));
   const selecting=G.phase==='bid'&&G.turn===0&&holding12(0);
   const hintIds=UI.hint&&UI.hc?UI.hc.cards:null;
-  $('hand').innerHTML=h.map(c=>{
+  const dk=SCORE.n+':'+G.dealer,first=!(('deal:'+dk) in ANIM);anim('deal:'+dk,'',0);
+  $('hand').innerHTML=h.map((c,i)=>{
     let cls='';
     if(legal)cls=legal.has(c.id)?'play legal':'dim';
     if(selecting)cls='play'+(UI.sel.some(x=>x.id===c.id)?' sel':'');
     if(hintIds&&hintIds.has(c.id))cls+=' hint';
     if(UI.warnId===c.id)cls+=' warn';
-    return cardHTML(c,cls,`data-id="${c.id}" ${cls.includes('play')?'tabindex="0" role="button"':''}`);
+    const a=G.phase==='result'?{cls:'',style:''}:anim('h:'+dk+':'+c.id,'dealin',300,first?i*35:0);
+    return cardHTML(c,cls+a.cls,`data-id="${c.id}" ${a.style?`style="${a.style}"`:''} ${cls.includes('play')?'tabindex="0" role="button"':''}`);
   }).join('');
   $('hand').querySelectorAll('.card.play').forEach(el=>{
     const act=()=>onCard(+el.dataset.id);
@@ -2460,7 +2523,7 @@ function renderHand(){
     const k=kontraTag(0);
     role=`${G.decl===0?'<b>Felvevő</b>':'Védő'} · ütés ${G.tcount[0]}${G.marr[0].length?' · '+G.marr[0].map(m=>m.v).join('+'):''}${k?' · '+k:''}`;
   }
-  let mine=`<span class="me"><b>Te</b> <b class="pts ${v>0?'pos':v<0?'neg':''}">${v>0?'+':''}${v}</b>${G.dealer===0?' <span class="dl">oszt</span>':''} · ${role}</span><span class="mr">${G.phase==='bid'?`<label class="auto"><input type="checkbox" id="betliSort"${UI.betliSort?' checked':''}> Szín nélküli sorrend</label>`:''}<button class="linkbtn" id="seeBtn">Talon és ütések</button></span>`;
+  let mine=`<span class="me"><b>Te</b> <b class="pts ${v>0?'pos':v<0?'neg':''}${G.phase==='result'?anim('sc:'+SCORE.n+':0','flash',700).cls:''}">${v>0?'+':''}${v}</b>${G.dealer===0?' <span class="dl">oszt</span>':''} · ${role}</span><span class="mr">${G.phase==='bid'?`<label class="auto"><input type="checkbox" id="betliSort"${UI.betliSort?' checked':''}> Szín nélküli sorrend</label>`:''}<button class="linkbtn" id="seeBtn">Talon és ütések</button></span>`;
   $('mine').innerHTML=mine;
   // ha a kijátszható lap nem látszik a sorban, odagörgetjük
   if(legal){const key=G.trickNo+':'+G.trick.length;if(UI.scrollKey!==key){UI.scrollKey=key;const hd=$('hand'),el=hd.querySelector('.card.play');
@@ -2481,7 +2544,9 @@ function renderSee(){
 }
 function renderLog(){$('log').innerHTML=G.log.map(t=>`<li>${t}</li>`).join('');}
 function scrollInside(box,el,center){
-  const b=box.getBoundingClientRect(),r=el.getBoundingClientRect();
+  const b0=box.getBoundingClientRect(),r=el.getBoundingClientRect(),st=box.querySelector('.stick');
+  // a panel alján ragadó gombsor takarja az alsó részt: azt nem számítjuk látható területnek
+  const sh=st&&getComputedStyle(st).position==='sticky'?st.offsetHeight:0,b={top:b0.top,bottom:b0.bottom-sh,height:b0.height-sh};
   if(center){box.scrollTop+=r.top-b.top-(b.height-r.height)/2;return;}
   if(r.top<b.top)box.scrollTop-=b.top-r.top+8;else if(r.bottom>b.bottom)box.scrollTop+=Math.min(r.bottom-b.bottom+8,r.top-b.top-8);
 }
@@ -2490,7 +2555,7 @@ function panelScroll(){
   if(UI.panelKey!==key){UI.panelKey=key;el.scrollTop=0;}
   if(UI.scrollHint){UI.scrollHint=false;const hb=el.querySelector('.hintbox');if(hb&&el.scrollHeight>el.clientHeight)scrollInside(el,hb,false);}
 }
-function render(){syncHint();renderTable();renderPanel();panelScroll();renderHand();renderLog();maybeTip();const st=statusText();if($('live').textContent!==st)$('live').textContent=st;}
+function render(){syncHint();renderTable();renderPanel();panelScroll();renderHand();renderLog();maybeTip();zoomCheck();const st=statusText();if($('live').textContent!==st)$('live').textContent=st;}
 
 // ---- Tanuló tipp: figyelmeztetés nagy hibánál ----
 // A többi lapot a játékos tudása szerint véletlenül kiosztjuk (bemondásból ismert lapok, ismert színhiányok), és
@@ -2554,7 +2619,7 @@ function onCard(id){
     }
     UI.warnId=null;UI.err='';
     const sug=botChoose(0);REV.plays.push({trick:G.trickNo+1,card:c,sug,why:WHY});
-    playCard(0,c);advance();
+    UI.flyFrom={id:c.id,rect:handRect(c.id)};playCard(0,c);advance();
   }
 }
 function humanBid(){
@@ -2587,12 +2652,13 @@ function advance(){
   }else if(G.phase==='kontra'&&G.turn!==0){
     timer=setTimeout(()=>{const p=G.turn;doKontra(p,botKontra(p));advance();},900);
   }else if(G.phase==='play'){
-    if(G.trick.length===3)timer=setTimeout(()=>{collectTrick();advance();},1250);
+    if(G.trick.length===3)timer=setTimeout(()=>{gatherTrick(()=>{collectTrick();advance();});},990);
     else if(G.turn!==0)timer=setTimeout(()=>{playCard(G.turn,botChoose(G.turn));advance();},700);
-    else if(UI.auto)timer=setTimeout(()=>{if(G.phase==='play'&&G.turn===0&&UI.auto){playCard(0,botChoose(0));}advance();},700);
+    else if(UI.auto)timer=setTimeout(()=>{if(G.phase==='play'&&G.turn===0&&UI.auto){const c=botChoose(0);UI.flyFrom={id:c.id,rect:handRect(c.id)};playCard(0,c);}advance();},700);
   }
 }
 function nextDeal(){
+  ANIM={};UI.slotSeen=null;
   UI.sel=[];UI.ci=null;UI.suit=null;UI.err='';UI.warnId=null;UI.kon=new Set();UI.armCon=false;UI.auto=false;REV={bids:[],kon:null,plays:[],an:null,show:false};
   newDeal(G?nxt(G.dealer):nxt(SCORE.dealer));advance();
   window.scrollTo({top:0,behavior:'smooth'});
@@ -2813,6 +2879,7 @@ function maybeTip(){
   b.innerHTML=`<p>${tip.x}</p><div class="tnav"><button class="btn" id="tipOk">Értem</button></div>`;
   const fresh=b.style.display!=='block'||b.dataset.k!==tip.k;b.dataset.k=tip.k;
   b.style.display='block';
+  if(fresh&&!RM()){b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop');}
   // új tippnél a célelemet a képernyőre görgetjük, hogy a buborék mellette legyen
   if(fresh){const el=document.querySelector(tipSel(tip)),r=el.getBoundingClientRect();if(r.top<0||r.bottom>innerHeight){const box=el.closest('#panel');if(box&&box.scrollHeight>box.clientHeight)scrollInside(box,el,true);else el.scrollIntoView({block:'center',behavior:'instant'});}}
   requestAnimationFrame(placeTip);
