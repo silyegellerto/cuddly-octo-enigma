@@ -50,7 +50,7 @@ for(let g=0;g<60;g++){
   if(!tr.length&&p!==G.decl&&G.trumpGame){
     const dl=new Set((G.hist||[]).filter(t=>t[0].p===G.decl).map(t=>t[0].c.s));
     const alt=legalCards(p).some(x=>x.s!==G.trump&&!dl.has(x.s));
-    if(alt&&dl.has(card.s)&&card.s!==G.trump&&!knownVoid(G.decl,card.s))ok('védő: nem a felvevő színével folytat (ha nem biztos ütés)',isTop(card,p),cardName(card)+' | '+WHY);
+    if(alt&&dl.has(card.s)&&card.s!==G.trump&&!knownVoid(G.decl,card.s))ok('védő: nem a felvevő színével folytat (ha nem biztos ütés)',isTop(card,p)||!declMayBeat(p,card,false),cardName(card)+' | '+WHY);
   }
   // betli: üres színnél a fogható lapot dobja
   if(c.kind==='betli'&&p===G.decl&&tr.length&&!hand.some(x=>x.s===tr[0].c.s)){

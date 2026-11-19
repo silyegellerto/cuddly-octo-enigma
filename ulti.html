@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Rablóulti</title>
-<meta name="description" content="Rablóulti két gépi ellenfél ellen, tippekkel és oktató móddal.">
+<meta name="description" content="Rablóulti két gépi ellenfél ellen, tippekkel és tanuló móddal.">
 <link rel="icon" href="icons/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
@@ -150,6 +150,7 @@ details.more .pop button.danger.armed{background:var(--bad);color:var(--accent-i
 .switch[aria-checked="true"] i{left:23px}
 .seg{display:flex;background:var(--chip);border-radius:10px;padding:3px;gap:2px}
 .seg.wide{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.seg.wide.two{grid-template-columns:repeat(2,minmax(0,1fr))}
 .seg button{min-height:38px;min-width:44px;border:0;border-radius:8px;background:transparent;color:var(--ink);font:inherit;font-size:calc(15px * var(--fs));font-weight:600;padding:0 10px}
 .seg button[aria-checked="true"]{background:var(--surface);font-weight:800;box-shadow:0 1px 3px rgba(0,0,0,.18)}
 /* széles képernyő: két oszlop, a döntés jobbra */
@@ -216,6 +217,8 @@ details.more .pop button.danger.armed{background:var(--bad);color:var(--accent-i
 .talon .card{--cw:34px}
 .tw{overflow-x:auto}
 .linkbtn{border:0;background:none;color:var(--accent);font:inherit;font-size:calc(15px * var(--fs));text-decoration:underline;padding:0 0 0 8px;white-space:nowrap}
+.whyrow{margin:2px 0 8px}
+.linkbtn.why{padding:6px 0;min-height:32px}
 .mine .auto{white-space:nowrap}
 .trio{display:flex;gap:6px;align-items:flex-end}
 .trio .card{--cw:56px}
@@ -441,7 +444,7 @@ img.ico{width:1.2em;height:1.2em;vertical-align:-.25em;object-fit:contain;displa
   <footer class="foot">
     <div class="frow"><button class="btn ghost small" id="a2hsBtn" hidden>Tedd ki a kezdőképernyőre</button><a class="btn ghost small" id="fbLink" href="https://github.com/silyegellerto/cuddly-octo-enigma/issues" target="_blank" rel="noopener noreferrer">Visszajelzés, hibabejelentés</a></div>
     <p><b>Adatvédelem:</b> a játék a pontszámot, a statisztikát, a beállításokat és a félbehagyott leosztást csak a saját böngésződben tárolja. Semmit nem küld el, sütit nem használ.</p>
-    <p><b>Források:</b> a szabályok és a stratégia az <a href="https://ultiblog.hu" target="_blank" rel="noopener noreferrer">ultiblog.hu</a> és Jánoska Levente – Zsigri: <i>A rablóulti szabályai</i> című könyve alapján. Betűk: Atkinson Hyperlegible Next és Alegreya (SIL Open Font License).</p>
+    <p><b>Források:</b> a szabályok és a stratégia az <a href="https://ultiblog.hu" target="_blank" rel="noopener noreferrer">ultiblog.hu</a> és Jánoska Levente – Zsigri: <i>A rablóulti szabályai</i> című könyve alapján. Tanuló tipp beállításnál a Tipp Kovács Endre <i>Ultikodex</i> című könyvének tanácsait is megmutatja (licit, talonletétel, kontra, kijátszás), saját szavainkkal, oldalszámmal; a botok játékát ez nem befolyásolja. Betűk: Atkinson Hyperlegible Next és Alegreya (SIL Open Font License).</p>
     <p class="copy">© 2026 Silye Gellért · <a href="https://github.com/silyegellerto" target="_blank" rel="noopener noreferrer">GitHub</a></p>
   </footer>
 </div>
@@ -456,7 +459,7 @@ img.ico{width:1.2em;height:1.2em;vertical-align:-.25em;object-fit:contain;displa
   </nav>
   <h3 class="mcap">Beállítások</h3>
   <div class="mset">
-    <div class="mrow"><span><b>Oktató mód</b><small>Leosztás után: mi lett volna jobb?</small></span><button class="switch" id="tutorBtn" role="switch" aria-checked="false" aria-label="Oktató mód"><i></i></button></div>
+    <div class="mrow col"><span><b>Tipp</b><small>Tanuló: könyvi tanácsok, figyelmeztetés nagy hibánál, kör végi elemzés.</small></span><div class="seg wide two" role="radiogroup" aria-label="Tipp"><button role="radio" data-tip="0">Normál</button><button role="radio" data-tip="1">Tanuló</button></div></div>
     <div class="mrow"><span><b>Betűméret</b></span><div class="seg" role="radiogroup" aria-label="Betűméret"><button role="radio" data-fs="0">A−</button><button role="radio" data-fs="1">A</button><button role="radio" data-fs="2">A+</button></div></div>
     <div class="mrow col"><span><b>A botok kockázata</b><small>A Tipp is ezen a szinten dönt.</small></span><div class="seg wide" role="radiogroup" aria-label="A botok kockázata"><button role="radio" data-risk="0">Óvatos</button><button role="radio" data-risk="1">Normál</button><button role="radio" data-risk="2">Merész</button></div></div>
   </div>
@@ -511,9 +514,9 @@ img.ico{width:1.2em;height:1.2em;vertical-align:-.25em;object-fit:contain;displa
     <h3>Talonolvasás és gyűjtés</h3>
     <p>A botok és a Tipp „olvassák” a talont: az előző licitáló vállalásából következtetnek arra, mit tehetett le (ulti után inkább kis lapokat, betli után magasakat). A passzt sem tekintik ingyenesnek, hiszen védőként átlagosan veszít az ember, és gyűjthetnek is: tartó licittel a célukra dolgoznak, abban bízva, hogy a talon visszajön.</p>
     <h3>Tipp</h3>
-    <p>Amikor te jössz, a „Tipp” gomb megmutatja, mit lépne egy tapasztalt játékos, és miért. A „Mindig mutasd” bekapcsolásával minden lépésnél automatikusan kapsz tanácsot.</p>
-    <h3>Oktató mód</h3>
-    <p>Bekapcsolva minden kör után elemzést kapsz: mi lett volna a lapjaid alapján a legjobb mondás, mit érdemes lett volna a talonba tenni, megérte-e a kontra, és hol tértél el a javasolt lejátszástól. Azt is megmutatja, mit hozott volna a többi játék a lapok ismeretében. Kikapcsolva a kör végén a „Mi lett volna jobb?” gombbal kérheted.</p>
+    <p>Amikor te jössz, a „Tipp” gomb megmutatja, mit lépne egy tapasztalt játékos, és miért. A „Mindig mutasd” bekapcsolásával minden lépésnél automatikusan kapsz tanácsot. Röviden a javaslatot látod, a „Miért?” feliratra koppintva az indoklást is.</p>
+    <h3>Tanuló tipp</h3>
+    <p>A menüben a Tipp „Tanuló” fokozatra állítható. Ilyenkor a Tipp a Kovács Endre <i>Ultikodex</i> című könyvéből vett tanácsokat is megmutatja, figyelmeztet, ha egy lappal sokat veszítenél, és minden kör után elemzést kapsz: mi lett volna a lapjaid alapján a legjobb mondás, mit érdemes lett volna a talonba tenni, megérte-e a kontra, és hol tértél el a javasolt lejátszástól. Azt is megmutatja, mit hozott volna a többi játék a lapok ismeretében. „Normál” fokozatban a kör végén a „Mi lett volna jobb?” gombbal kérheted.</p>
     <h3>Értékek</h3>
     <div class="tw"><table id="ctable"></table></div>
     <p>Ha a felvevő nyer, mindkét védő kifizeti neki az értéket, ha veszít, ő fizet mindkettőnek. Összetett játékban minden rész külön számít.</p>
@@ -945,14 +948,14 @@ const pureDist=c=>Object.keys(c.comps).every(k=>k==='betli'||k==='durch');
 const famKey=c=>c.kind+':'+Object.keys(c.comps).sort().join(',');
 function evalOpt(o,n=N_SCREEN){
   if(o.p!=null&&(o.n||0)>=n)return o;
-  const c=CONTRACTS[o.ci],sG=G,sW=WHY,hand=o.rest,disc=o.disc||[];
+  const c=CONTRACTS[o.ci],sG=G,sW=WHY,sKV=KV,hand=o.rest,disc=o.disc||[];
   const mine=new Set([...hand,...disc].map(x=>x.id)),rest=makeDeck().filter(x=>!mine.has(x.id));
   let seed=7;
   for(const x of hand.slice().sort((a,b)=>a.id-b.id))seed=(Math.imul(seed,31)+x.id+1)|0;
   for(const x of disc.slice().sort((a,b)=>a.id-b.id))seed=(Math.imul(seed,17)+x.id+3)|0;
   for(const ch of famKey(c)+o.suit)seed=(Math.imul(seed,33)+ch.charCodeAt(0))|0;
   const R=rng(seed);let win=0,sum=0;const pc={};
-  try{
+  try{KV=false; // a próbajátékok a mért, Kovács nélküli botmodellel futnak
     for(let k=0;k<n;k++){
       const d=rest.slice();for(let i=d.length-1;i>0;i--){const j=Math.floor(R()*(i+1));[d[i],d[j]]=[d[j],d[i]];}
       G={dealer:2,fh:0,hands:[hand.map(x=>({...x})),d.slice(0,10),d.slice(10,20)],talon:disc.map(x=>({...x})),phase:'bid',turn:0,bid:{ci:o.ci,suit:isTrumpC(c)?o.suit:-1,seat:0},passes:0,lastAction:['','',''],log:[],
@@ -962,7 +965,7 @@ function evalOpt(o,n=N_SCREEN){
       const ch=G.result?G.result.change[0]:0;sum+=ch;if(ch>0)win++;
       if(G.result)for(const r of G.result.rows)if(r.k)pc[r.k]=(pc[r.k]||0)+(r.win?1:0);
     }
-  }finally{G=sG;WHY=sW;}
+  }finally{G=sG;WHY=sW;KV=sKV;}
   o.p=win/n;o.gv=sum/n/2;o.n=n;o.pc={};for(const k in CONTRACTS[o.ci].comps)o.pc[k]=(pc[k]||0)/n;                       // nyerési esély, várható pont védőnként
   o.gift=giftPenalty(disc,[...hand,...disc],c.val); // ultiblog: a talon ne erősítse a következő licitálót
   o.ev=o.gv-o.gift;
@@ -1182,7 +1185,10 @@ function pickupDecision(p){
   if(LIVELY&&talons){let sum=0,n=0,last=null;for(const t of talons.slice(0,6)){const pl=collectPlan([...G.hands[p],...t],minBidIndex());if(pl){sum+=pl.V;n++;last=pl;}}if(n)col={V:sum/n,target:last.target};}
   const now=l[0]?l[0].ev:-1e9,colV=col?col.V-RISK_COLLECT[RISK]:-1e9;
   const base=passBase(),sane=(l[0]&&l[0].p>=MIN_PICK_P)||colV>now;
-  return {list:l,talons,collect:col,useCollect:colV>now,base,passLoss:passValue(),yes:sane&&Math.max(now,colV)>base+pickThreshold()};
+  // Kovács: többszörös rablásnál ne erőltesd a további rablást; a passz piros kedvéért rabolni helytelen (103-114. o.)
+  // (tájékoztató: a döntést nem módosítja, mert a mérésen a rablási küszöb emelése rontott)
+  const rc=robCount(),kn=rc>=2?kov('109-114',`többszörös rablásnál (eddig ${rc} felvétel) ne erőltesd a további rablást`):'';
+  return {list:l,talons,collect:col,useCollect:colV>now,base,passLoss:passValue(),kovNote:kn,yes:sane&&Math.max(now,colV)>base+pickThreshold()};
 }
 function botWantsPickup(p){
   if(minBidIndex()>=CONTRACTS.length)return false;
@@ -1389,6 +1395,69 @@ function bookHTML(h,ci,suit,title){
   const b=bookCheck(h,ci,suit);
   return `<p class="rule"><b>${title||BOOK}</b> (${optName({ci,suit})}):</p><ul>${b.parts.map(p=>p.items.map(i=>`<li>${i.ok?'✓':'✗'} ${COMP_NAMES[p.k]}: ${i.t}</li>`).join('')).join('')}</ul>`;
 }
+// ---- Kovács Endre: Ultikodex (a könyvből kinyert tanácsok, saját szavainkkal, oldalszámmal) ----
+// KV: a Kovács-tanácsok be vannak-e kapcsolva. A botok mindig nélkülük döntenek (KV=false);
+// Tanuló tipp beállításnál a Tipp egy második, „Kovács szerint” véleményhez rövid időre bekapcsolja.
+var KV=false;
+// fn lefuttatása bekapcsolt Kovács-tanácsokkal (csak a Tipphez), utána minden visszaáll
+function withKov(fn){const k=KV,w=WHY;KV=true;try{return fn();}finally{KV=k;WHY=w;}}
+const KOV='Kovács Endre: Ultikodex';
+const kov=(pg,t)=>`${KOV} (${pg}. o.): ${t}`;
+// „nagy” (ütőértékű) adu: ász, X, király
+const bigTrumps=(h,t)=>h.filter(x=>x.s===t&&(x.r===7||x.r===3||x.r===6)).length;
+const suitCount=h=>new Set(h.map(x=>x.s)).size;
+// a könyv licitfeltételei vállalásrészenként (csak tájékoztató lista a Tippben; a bot esélybecslését nem írja felül)
+function kovComp(h,ci,suit,k){
+  const c=CONTRACTS[ci],I=[],add=(ok,t,pg)=>I.push({ok:!!ok,t,pg});
+  if(k==='betli'){
+    const low=h.filter(x=>x.r<=4).length;
+    let seq=0;for(let s=0;s<4;s++){const rs=h.filter(x=>x.s===s).map(x=>x.r).sort((a,b)=>a-b);if(rs.length>=2&&rs[0]<=1&&rs.every((r,i)=>i===0||r-rs[i-1]<=2))seq++;}
+    add(low>=8,`alacsony ütőértékű lapok (VII–alsó: ${low} a 10-ből)`, '20-25');
+    add(seq>=1,'lehetőleg sorozatban, alulról induló színekkel','32-37');
+    return I;
+  }
+  if(k==='durch'&&!isTrumpC(c)){
+    let sure=0;for(let s=0;s<4;s++){const rs=h.filter(x=>x.s===s).map(x=>x.r).sort((a,b)=>b-a);let r=0;while(r<rs.length&&rs[r]===7-r)r++;sure+=r;}
+    add(sure>=10,`10 biztos ütés kell, legalább 90%-os biztonsággal (biztos: ${sure})`,'97-99');
+    return I;
+  }
+  const f=handFacts(h,suit),n=f.n;
+  if(k==='ulti'){
+    add(hasC(h,suit,0)&&n>=4,`legalább 4 adu a VII-essel (van: ${n})`,'20-25');
+    add(n>=5||(n===4&&f.ut>=2),`5 adu az igazán biztos; 4 adunál kellő ütőlap is kell (ütőlap: ${f.ut})`,'32-37');
+    if(n===4)add(true,'4 adus ultinál aduval indulj','32-37');
+    return I;
+  }
+  if(k==='c40'||k==='c20'){
+    add(n>=4&&f.hasA,`jó aduelosztás (${n} adu${f.hasA?', ásszal':', ász nélkül'})`,'20-25');
+    add(f.voids>=1||f.longSide>=4,'jó színelosztás: színhiány vagy hosszú, ásszal vezetett szín','20-25');
+    if(k==='c20')add(f.ut>=3,`20-100-nál még nagyobb óvatosság kell: legalább 3 ütőlap (van: ${f.ut})`,'32-37');
+    return I;
+  }
+  if(k==='durch'){
+    add(f.run>=5,`5-6 biztos ütés az aduban (felülről zárt adusor: ${f.run})`,'20-25');
+    return I;
+  }
+  if(k==='parti'){
+    add(f.ut>=2||f.marrs.length>0,'bemondás nélküli sima partit inkább ne játssz: legyen 20/40 vagy erős ütőlap','91-96');
+    return I;
+  }
+  return I;
+}
+function kovHTML(h,ci,suit){
+  const ks=Object.keys(CONTRACTS[ci].comps),rows=ks.flatMap(k=>kovComp(h,ci,suit,k).map(i=>({k,...i})));
+  if(!rows.length)return '';
+  return `<p class="rule"><b>${KOV}</b> (${optName({ci,suit})}):</p><ul>${rows.map(i=>`<li>${i.ok?'✓':'✗'} ${COMP_NAMES[i.k]}: ${i.t} (${i.pg}. o.)</li>`).join('')}</ul>`;
+}
+// talonletétel a könyv szerint: mit tegyünk le, mit ne (tájékoztató szöveg a Tipphez)
+function kovTalonNote(c){
+  if(c.kind==='betli')return kov('109-114','betlinél a legkisebb értékű, nélkülözhető lapok mennek a talonba; ne tarts meg olyan királyt vagy felsőt, amelynek a színéből a nagyobb lapot letetted (94-96. o.)');
+  if(c.comps.durch)return kov('109-114','durchmarsnál a legmagasabb értékű, de nélkülözhető lapokat tedd le');
+  return kov('85-90, 109-114','törekedj rá, hogy minél kevesebb színed maradjon. Az alsó, a IX-es és a VIII-as a legjobb talonlap; ászt, X-et, VII-est, királyt, felsőt és piros lapot lehetőleg ne tegyél le, mert a rabló ezekkel javít. A kézben maradó X-et királlyal vagy felsővel fedezd; a gyengén fedezett X a VII-essel, VIII-assal együtt mehet a talonba');
+}
+// hány felvétel (rablás) történt eddig a licitben
+const robCount=()=>G.log.filter(t=>/felvette a talont/.test(t)).length;
+
 // történet: ki melyik színből fogyott ki (nem adott színt)
 function hist(){return (G.hist||[]).concat(G.trick.length?[G.trick]:[]);}
 function knownVoid(q,s){return hist().some(tr=>tr[0].c.s===s&&tr.some(t=>t.p===q&&t.c.s!==s));}
@@ -1410,6 +1479,10 @@ function kontraJudge(p,k){
     let under=null;
     for(let ci=G.ci+1;ci<CONTRACTS.length&&!under;ci++){const c2=CONTRACTS[ci];if(c2.kind!==c.kind||!!c2.red!==!!c.red||!c2.comps[k])continue;if(!checkReq(h,ci,t)&&bookCheck(h,ci,t).ok&&estimate(h,ci,t,null)>1)under=c2.name;}
     let yes=pr>0.85||(pr>0.7&&!!under);
+    // Kovács: ultinál, betlinél és durchmarsnál csak egészen biztos lapra rekontrázz
+    if(KV&&(k==='ulti'||k==='betli'||k==='durch')&&!(pr>0.92)){
+      if(yes)return {yes:false,why:`${COMP_NAMES[k]}: a becsült esélyed kb. ${Math.round(pr*100)}%. ${kov('32-37',`${COMP_NAMES[k].toLowerCase()} kontrájára csak egészen biztos lappal rekontrázz, mert a veszteség is négyszeres${k==='ulti'?' (bukott ultinál ötszörös)':''}`)}. Ez még nem elég biztos.`};
+    }
     if(k==='parti'){const sm=q=>G.marr[q].reduce((a,m)=>a+m.v,0),mg=[0,1,2].filter(q=>q!==p).reduce((a,q)=>a+sm(q),0)-sm(p);
       if(mg>=20&&yes)return {yes:false,why:`Parti: a védők bemondásai ${mg} ponttal többet érnek a tieidnél, így a parti bizonytalan; rekontra nem javasolt.`};}
     return {yes,why:`${COMP_NAMES[k]}: a becsült esélyed kb. ${Math.round(pr*100)}%. ${under?`${BOOK}: a rekontra leggyakoribb esete, ha a lapod a bemondottnál magasabbra (${under}) is elég lett volna, így a kisebb vállalás könnyen teljesül. `:''}${yes?'Ez elég biztos, a rekontra négyszerezi a tétet.':'Ez nem elég biztos a rekontrához, mert a veszteség is négyszeres lenne.'}`};
@@ -1433,15 +1506,24 @@ function kontraJudge(p,k){
       return {yes:y,why:`Parti: ${desc}. ${mg>=20?mtxt+' ':''}${bookY?`${BOOK}: a társad is bemondott ${pm}-at, nálad is van ${mm}, és van két ütőlapod, így joggal kontrázhatod.`:y?'Ez erős védőlap, a parti elbukhat.':'Ez kevés ahhoz, hogy biztosan megfogjátok.'}`};
     }
     if(k==='c40'||k==='c20'){
-      const y=f.n>=4||(f.n>=3&&f.ut>=2)||(f.n>=2&&f.ut>=2&&f.voids>=1);
+      let y=f.n>=4||(f.n>=3&&f.ut>=2)||(f.n>=2&&f.ut>=2&&f.voids>=1);
+      if(KV){
+        const two=suitCount(h)<=2;
+        // Kovács: kétszínű lap vagy sok adu, mellette ütőlap; 20-100-nál legalább két X/ász hazavitele kell
+        if(!y&&two&&f.ut>=1&&f.n>=2)return {yes:true,why:`${COMP_NAMES[k]}: ${desc}, és csak két színed van. ${kov('115-120','a vállalás kontrája indokolt, ha a védőnek kétszínű lapja vagy sok aduja van, mellette ütőlappal')}.`};
+        if(y&&k==='c20'&&f.ut<2)return {yes:false,why:`${COMP_NAMES[k]}: ${desc}. ${kov('85-90','a 20-100-at csak akkor kontrázd, ha a lapod alapján legalább két 10-est biztosan hazaviszel')}. Ehhez kevés az ütőlapod.`};
+      }
       return {yes:y,why:`${COMP_NAMES[k]}: ${desc}${f.voids?', színhiányod is van':''}. ${BOOK}: csak megfelelő laperővel, kellő aduval és ütőlappal, esetleg színhiánnyal érdemes kontrázni. ${y?'Ez megvan.':'Ez most hiányzik.'}`};
     }
     if(k==='ulti'){
       const y=f.n>=4||(f.n===3&&f.ut>=2);
+      if(KV&&y){const big=bigTrumps(h,t);
+        if(big<2&&f.n<5)return {yes:false,why:`Ulti: ${desc}. ${kov('115-120','az ultimó kontrája akkor indokolt, ha legalább három nagy ütőértékű adud (ász, X, király) és ütőlapod van; támpont nélkül a kontrázó is könnyen rajtaveszt (61-66. o.)')}. Neked ${big} ilyen adud van, ez kevés.`};}
       return {yes:y,why:`Ulti: ${desc}. ${BOOK}: az ulti kontrája 3-4 aduval és néhány ütőlappal indokolt. ${y?'Ez megvan, jó eséllyel leütitek a VII-est.':'Ehhez kevés a lapod.'}`};
     }
   }
   if(k==='betli'){let low=0;for(let s=0;s<4;s++)if(h.some(x=>x.s===s&&x.r<=1))low++;const y=low>=3;
+    if(KV&&!y&&low>=2&&suitCount(h)<=3)return {yes:true,why:`Betli: ${low} színben van VII-esed vagy VIII-asod, és színhiányod is van. ${kov('115-120','a betlit kétszínű lappal, aránytalan színelosztással vagy színhiánnyal érdemes kontrázni: a hiányzó színben eldobhatod a veszélyes lapjaidat')}.`};
     return {yes:y,why:`Betli: ${low} színben van VII-esed vagy VIII-asod. ${y?'Alá tudsz bújni, így a felvevőnek kell ütnie.':'Kevés kis lapod van, könnyen te ütsz helyette.'} ${BOOK}: a betli kontrája egyéni, és itt dönt leginkább a lapelosztás.`};}
   const y=[0,1,2,3].some(s=>{const cs=h.filter(x=>x.s===s);return cs.length>=3&&cs.some(x=>x.r>=6);});
   return {yes:y,why:`Durchmars: ${y?'Van egy hosszú színed magas lappal, ebből lehet egy ütésed.':'A durchmars ellen nehéz védekezni, ehhez hosszú, magas lapos szín kellene.'} ${BOOK}: durchmars ellen ritkán van ellenjáték, a fontos lapokat az utolsó ütésekre kell megtartani.`};
@@ -1601,6 +1683,8 @@ function botChoose(p){
     if(decl){
       if(lead){const out=outstanding(p);
         const safe=L.filter(x=>out.some(y=>y.s===x.s&&y.r>x.r));
+        if(safe.length&&KV){const one=safe.filter(x=>G.hands[p].filter(y=>y.s===x.s).length===1);
+          if(one.length)return R(maxBy(one,P),`${kov('109-114','betliben abból a színből indulj, amelyből csak egy lapod van, és ami a legkevesebb alapot ad a kontrára')}. Ezt a lapot egy kint lévő nagyobb biztosan felülüti, utána ebből a színből bármit eldobhatsz.`);}
         if(safe.length)return R(maxBy(safe,P),`${BLOG}: betliben indulj magas lappal (például királlyal), amelyet egy kint lévő nagyobb lap biztosan felülüt, mert aki tartja, köteles felülütni. Így megszabadulsz a veszélyes lapjaidtól.`);
         return R(minBy(L,x=>P(x)*10-out.filter(y=>y.s===x.s&&y.r<x.r).length),'Betliben kis lapot hívj, amit a védők könnyen felülütnek.');}
       const lo=L.filter(x=>!wouldWin(x));
@@ -1668,6 +1752,15 @@ function botChoose(p){
       const kf=myTr.filter(x=>x.r===5||x.r===6);
       if(kf.length)return R(minBy(kf,P),`${BLOG}: ha hiányzik az adu ász, már az elején hajtsd ki adu felsővel vagy királlyal, hogy ne később üsse el a pontos lapjaidat.`);
     }
+    // Kovács: a felvevő első hívása aduval (40-100, 20-100). Az ultis aduindulást a mérés alapján kihagytuk: a botod hajtószínes játéka jobban teljesített.
+    if(KV&&decl&&tg&&outTr.length&&G.trickNo===0&&!c.comps.ulti&&(c.comps.c40||c.comps.c20)){
+      const ts=myTr.filter(x=>x.r!==0).sort((a,b)=>P(a)-P(b));
+      if(ts.length){
+        const n=G.hands[p].filter(isT).length;
+        const x=n>=5?maxBy(ts.filter(y=>y.r!==6&&y.r!==5).length?ts.filter(y=>y.r!==6&&y.r!==5):ts,P):ts[0];
+        return R(x,`${kov('73-78','40-100-nál és 20-100-nál aduval indulj, hogy tisztán lásd az aduk elosztását')}. ${kov('44-49','a nem adus indulás alapot adhat a kontrára')}.`);
+      }
+    }
     const dv=s=>!decl&&knownVoid(G.decl,s)&&(!tg||oppTrumps(p).length>0);
     if(!decl&&c.comps.ulti){
       const force=L.filter(x=>!isT(x)&&dv(x.s)&&!pts(x));
@@ -1676,6 +1769,9 @@ function botChoose(p){
     // védőként a társnál ismert (bemondott) magasabb lap nem fenyeget; felvevőként az isTop számol
     const sure=L.filter(x=>!isT(x)&&(decl?isTop(x,p):!declMayBeat(p,x,false))&&!dv(x.s));
     if(sure.length){const x=maxBy(sure,y=>pts(y)*10+P(y));return R(x,`Ez a legmagasabb kint lévő lap a színében, így valószínűleg elviszi az ütést${pts(x)?', és pontot is hoz':''}.`);}
+    // Kovács: az egy aduval rendelkező védő ütésbe kerülve kijátssza az aduját, hogy később kenhessen
+    if(KV&&!decl&&tg&&!c.comps.ulti&&!c.comps.durch&&outTr.length&&myTr.length===1&&G.hands[p].filter(isT).length===1&&myTr[0].r!==0&&G.hands[p].some(x=>!isT(x)&&pts(x)))
+      return R(myTr[0],`${kov('32-37','egyetlen aduval, ha ütésbe kerülsz, játszd ki az adudat')}: utána a felvevő adujára már nem kell adut tenned, és a társad ütéseibe ászt vagy X-et kenhetsz. Ugyanezt tanácsolja a könyv általában is a kevés aduval védekezőnek (115-120. o.).`);
     if(decl&&c.comps.ulti&&outTr.length){
       const by=[0,1,2,3].filter(s=>s!==t).map(s=>L.filter(x=>x.s===s)).filter(a=>a.length>=3).sort((a,b)=>b.length-a.length)[0];
       if(by)return R(maxBy(by,P),`${BOOK}: hajtószín. A leghosszabb színedből hívj, így ha az ellenfelek kifogynak belőle, adut kell tenniük, és a végén nem marad adujuk a VII-esed ellen.`);
@@ -1694,6 +1790,12 @@ function botChoose(p){
       if(vd.length){const np4=vd.filter(x=>!pts(x));return R(minBy(np4.length?np4:vd,P),`${BLOG}: ne a felvevő színével folytasd, abban ő az erős. Inkább olyan színt hívj, amiből már kifogyott: adut kell tennie rá, és ezzel fogynak az aduja.`);}
     }
     if(!decl&&declLed.size){const nd=pool.filter(x=>!declLed.has(x.s));if(nd.length&&nd.length<pool.length){const np3=nd.filter(x=>!pts(x));return R(minBy(np3.length?np3:nd,P),`${BLOG}: ne a felvevő színével folytasd. Amit ő hívott, abból valószínűleg hosszú, így abban ő az erős. Próbálj más színt, amelyben a társad lehet erős${c.comps.ulti?', és ultinál adut se hívj':''}.`);}}
+    {const H=G.hands[p],len=s=>H.filter(x=>x.s===s).length,cand=pool.filter(x=>!pts(x)&&!isT(x));
+      if(KV&&cand.length>1){
+        // védő adu nélkül: a rövid színét hívja (Kovács 109-114)
+        if(!decl&&tg&&!H.some(isT)&&!c.comps.ulti){const x=minBy(cand,y=>len(y.s)*10+P(y));
+          if(len(x.s)<Math.max(...cand.map(y=>len(y.s))))return R(x,`${kov('109-114','ha nincs adud, a rövid színedet hívd')}: hamar kifogysz belőle, és utána a társad ütéseibe ászt vagy X-et kenhetsz.`);}
+      }}
     const np=pool.filter(x=>!pts(x)),pick=minBy(np.length?np:pool,P);
     // az indoklás a valódi helyzetet írja le, nem egy olyan szabályt, ami itt semmit nem döntött el
     const allVoid=!decl&&pool.every(x=>dv(x.s))&&tg&&outTr.length>0;
@@ -1708,7 +1810,12 @@ function botChoose(p){
   const W=tr[trickWinnerIdx(tr)],last=tr.length===2;
   if(friendly(W.p,p)){
     const safe=last||friendly(nxt(p),p)||!declMayBeat(p,W.c,true);
-    if(safe){const x=maxBy(L,y=>(isT(y)?0:pts(y)*20)-cost(y));return R(x,pts(x)&&!isT(x)?`A társad viszi az ütést, tegyél bele ászt vagy X-et. ${BOOK}: egy-egy ilyen beadott 10-es dönti el gyakran a partit, a 40-100-at és a 20-100-at.`:'A társad viszi az ütést, nem kell ütnöd, és pontot sem tudsz beletenni.');}
+    if(safe){let x=maxBy(L,y=>(isT(y)?0:pts(y)*20)-cost(y));
+      // Kovács: amíg az X-et nem láttad, az ászt ne kend el (az X-szel együtt, vagy ha már kiment, mehet)
+      if(KV&&tg&&!isT(x)&&x.r===7&&!last){const xOut=!G.played.some(y=>y.s===x.s&&y.r===3)&&!hasC(G.hands[p],x.s,3);
+        const alt=L.filter(y=>y!==x&&!isT(y)&&!(y.r===7&&y.s===x.s));
+        if(xOut&&alt.length){const y=maxBy(alt,z=>pts(z)*20-cost(z));return R(y,`A társad viszi az ütést. ${kov('32-37, 56-60','olyan ászt, amelynek az X-ét még nem láttad, ne kenj el: később ő üt, és az X-et is begyűjtheti')}.${pts(y)?' Helyette ezt a 10 pontos lapot adod.':''}`);}}
+      return R(x,pts(x)&&!isT(x)?`A társad viszi az ütést, tegyél bele ászt vagy X-et. ${BOOK}: egy-egy ilyen beadott 10-es dönti el gyakran a partit, a 40-100-at és a 20-100-at.`:'A társad viszi az ütést, nem kell ütnöd, és pontot sem tudsz beletenni.');}
     return R(minBy(L,cost),'A társad most vezet, de utánad még jön a felvevő, ezért ne tegyél bele pontot.');
   }
   const wins=L.filter(wouldWin);
@@ -1784,8 +1891,10 @@ const STORE='ulti-score-v1',SETS='ulti-settings-v1';
 let SCORE={tot:[0,0,0],n:0,dealer:Math.floor(Math.random()*3)};
 try{const s=JSON.parse(localStorage.getItem(STORE)||'null');if(s&&Array.isArray(s.tot))SCORE=s;}catch(e){}
 function saveScore(){try{localStorage.setItem(STORE,JSON.stringify(SCORE));}catch(e){}}
-let SET={autoHint:false,tutor:false,risk:1,fs:1};
-try{const s=JSON.parse(localStorage.getItem(SETS)||'null');if(s)SET=Object.assign(SET,s);}catch(e){}
+let SET={autoHint:false,tip:0,risk:1,fs:1};
+try{const s=JSON.parse(localStorage.getItem(SETS)||'null');if(s){if(s.tip==null&&s.tutor)s.tip=1;delete s.tutor;SET=Object.assign(SET,s);}}catch(e){}
+// Tanuló tipp: könyvi (Kovács) tanácsok, figyelmeztetés nagy hibánál, kör végi elemzés, teljes ütéstörténet
+const LEARN=()=>SET.tip===1;
 function saveSet(){try{localStorage.setItem(SETS,JSON.stringify(SET));}catch(e){}}
 
 const UI={sel:[],ci:null,suit:null,err:'',warnId:null,kon:new Set(),hint:false,key:'',hc:null};
@@ -1864,6 +1973,7 @@ function computeHint(){
     const others=L.filter(o=>!(o.ci===b.ci&&o.suit===b.suit)&&!(b.ladder&&o.ci===b.ladder.ci&&o.suit===b.ladder.suit)&&!forcedParts(o.rest,o.ci,o.suit).length&&mainP(o)>=0.03).slice(0,3);
     if(others.length)html+=`<p class="rule">További lehetőségek:</p><ul>${others.map(o=>`<li>${optName(o)}: ${evTxt(o)}</li>`).join('')}</ul>`;
     html+=bookHTML(b.rest,b.ci,b.suit);
+    if(LEARN()){html+=kovHTML(b.rest,b.ci,b.suit);html+=`<p class="rule">${kovTalonNote(c)}.</p>`;}
     if(c.val<=5)html+=`<p class="rule">${BLOG} (talonozás): alacsony licitnél ne tegyél le ászt, X-et, VII-est, királyt vagy felsőt, és a piros lapokkal is vigyázz, mert a következő licitáló felveheti őket, és magasabbat mondhat velük. Inkább a hosszú színedből dobj.</p>`;
     if(isTrumpC(c)&&!c.red)html+=`<p class="rule">Az adut (${SUIT_NAMES[b.suit].toLowerCase()}) csak akkor kell bemondanod, ha a licited marad.</p>`;
     html+=`<p class="rule">${kinds.map(k=>KIND_TIPS[k]).join(' ')}</p>`;
@@ -1872,10 +1982,11 @@ function computeHint(){
   }
   if(G.phase==='bid'&&G.bid&&G.bid.seat===0){
     const R=ownRaise(0),b=R.b,cur=R.cur,cn=CONTRACTS[G.bid.ci].name;
-    let html=`<p>A mostani mondásod (<b>${cn}</b>): ${evTxt(cur)}.</p>`;
+    let html='',now=`<p>A mostani mondásod (<b>${cn}</b>): ${evTxt(cur)}.</p>`;
     if(R.yes)html+=`<p>Javaslat: <b>vedd vissza a talont</b>, és mondd ezt: <b>${optName(b)}</b>, a talonba: <b>${cname(b.disc[0])}</b> és <b>${cname(b.disc[1])}</b> (${evTxt(b)}).</p>`;
     else if(shouldConcede(cur,G.bid.ci))html+=`<p>Javaslat: <b>dobd be a lapjaidat</b>. Lejátszva várhatóan ${fmt(cur.ev)} pont védőnként, a bedobás csak ${fmt(-concedeLoss(G.bid.ci,null,1))}.</p>`;
     else html+=`<p>Javaslat: <b>maradj</b>. ${b?`A legjobb magasabb játék (${optName(b)}): ${evTxt(b)}, ez nem éri meg a nagyobb kockázatot.${stakeNote(cur,b)?' '+stakeNote(cur,b):''}`:'Magasabbat már nem lehet mondani.'}</p>`;
+    html=html.replace('</p>','</p><!--more-->'+now);
     html+=`<p class="rule">A saját talonodat ismered, hiszen te tetted le, így pontosan tudod, mi lenne a 12 lapodban. Ha visszaveszed, magasabbat kell mondanod.</p>`;
     return {html,cards:new Set()};
   }
@@ -1895,6 +2006,7 @@ function computeHint(){
       html+=`<p>Ha passzolsz, védőként várhatóan kb. ${fmt(D.passLoss)} pontot veszítesz (egy ${CONTRACTS[G.bid.ci].name} ellen ennyi az átlag). Felvéve viszont mindkét védővel elszámolsz, ezért ez védőnként ${fmt(D.base)} pontnak felel meg: a felvételt ehhez mérjük, nem a nullához.</p>`;
       if(D.talons){html+=`<p class="rule">Talonolvasás: ${NAME[G.bid.seat]} ${CONTRACTS[G.bid.ci].name} játékot mondott. Ehhez ${talonSummary(D.talons,G.bid.ci)}. A pontos lapokat nem lehet tudni, de a felvétel becslése ezzel a feltevéssel számol.</p>`;}
     }
+    if(LEARN()&&D.kovNote)html+=`<p class="rule">${D.kovNote}.</p>`;
     if(list.length>1)html+=`<p class="rule">Amit a talonnal mondhatnál (átlagos várható érték):</p><ul>${list.slice(0,4).map(o=>`<li>${nm(o)}: ${fmt(o.ev)}</li>`).join('')}</ul>`;
     // a legerősebb adus szín elemzése a mostani 10 lapon
     const ts=[1,2,3,0].map(t=>({t,n:G.hands[0].filter(x=>x.s===t).length})).sort((a,b)=>b.n-a.n)[0];
@@ -1913,6 +2025,8 @@ function computeHint(){
     if(close.length)html+=`<p class="rule">A várható pontok közti különbség fél pontnál kisebb (${[b,...close].map(x=>SUIT_NAMES[x.s].toLowerCase()).join(', ')}), ezért a nagyobb nyerési esélyű színt javaslom. A várható pontba a csendes bónuszok is beleszámítanak (csendes 100, csendes ulti és annak bukása, mindkét oldalon), ezért térhet el a sorrend az esélyekétől.</p>`;
     if(b.ev<0)html+=`<p class="rule">Egyik szín sem nyerő: ezzel a lappal mindegyik adu mellett inkább vesztes a parti. Ha a licit a te kezedben marad, a bedobás is szóba jöhet.</p>`;
     html+=bookHTML(h,ci,b.s);
+    if(LEARN())html+=kovHTML(h,ci,b.s);
+    if(LEARN()&&[1,2,3].some(s=>hasC(h,s,0)))html+=`<p class="rule">${kov('38-43','az adut elsősorban abból a színből válaszd, amelyből a VII-es nálad van')}.</p>`;
     html+=`<p class="rule">${BLOG}: olyan színt válassz, amire az ellenfelek nem számítanak, de az erőd döntsön.</p>`;
     return {html,cards:new Set(h.filter(x=>x.s===b.s).map(x=>x.id)),apply:()=>{UI.suit=b.s;}};
   }
@@ -1923,13 +2037,22 @@ function computeHint(){
       ?`<p>Javaslat: ${yes.length?'<b>rekontra</b>: '+yes.map(x=>`${COMP_NAMES[x.o.k]}`).join(', '):'<b>nincs rekontra</b>'}.</p>`
       :`<p>Javaslat: ${yes.length?'<b>kontra</b>: '+yes.map(x=>COMP_NAMES[x.o.k]).join(', '):'<b>nincs kontra</b>'}.</p>`;
     html+=`<ul>${js.map(x=>`<li>${x.j.why}</li>`).join('')}</ul>`;
+    if(LEARN()){
+      const kv=withKov(()=>opts.map(o=>({o,j:kontraJudge(0,o.k),y:kontraDecision(0,o.k)}))),act=G.decl===0?'rekontra':'kontra';
+      const rows=kv.map((x,i)=>{if(!/Kovács/.test(x.j.why))return '';const same=x.y===kontraDecision(0,opts[i].k);
+        return `<li>${same?'A könyv is ezt mondja':`Kovács szerint ${x.y?'érdemes':'nem érdemes'} ${act}t mondani`} (${COMP_NAMES[x.o.k]}): ${x.j.why}</li>`;}).filter(Boolean);
+      if(rows.length)html+=`<p class="rule"><b>${KOV}</b>:</p><ul>${rows.join('')}</ul>`;
+    }
     html+=`<p class="rule">${G.decl===0?'A rekontra mindkét kontrázott védővel szemben négyszerezi a tétet.':(kontraCommon()?'Adus játékban a kontra közös, mindkét védő tétjét duplázza, a nyereséget és a veszteséget is.':'Betliben és adu nélküli durchmarsban a kontra egyéni.')+' A bukott ulti kontrázva háromszoros, rekontrázva ötszörös árat fizet.'}</p>`;
     return {html,cards:new Set(),apply:()=>{UI.kon=new Set(yes.map(x=>x.o.k+':'+x.o.def));}};
   }
   if(G.phase==='play'){
     const card=botChoose(0),cs=G.claimAt&&G.claimAt.n===G.trickNo?G.claimAt.side:null;
     const cl=cs&&claimHuman(cs)?`<p>Javaslat: <b>mutasd fel a lapjaidat</b> („Felmutatom”). Akárhogy játszanak a többiek, ${claimText(cs)}, ezt végigszámoltam minden szabályos lapjukkal.</p><p class="rule">Ha mégis tovább játszanál:</p>`:'';
-    const html=`${cl}<p>Javaslat: <b>${cname(card)}</b>. ${WHY}</p><p class="rule">Szabály: ${legalReason(0)}</p>`;
+    const why=WHY;let kh='';
+    if(LEARN()){const k=withKov(()=>{const c2=botChoose(0);return {c2,w:WHY};});
+      if(/Kovács/.test(k.w))kh=k.c2.id===card.id?`<p class="rule">A könyv is ezt javasolja. ${k.w}</p>`:`<p class="rule"><b>Kovács szerint: ${cname(k.c2)}.</b> ${k.w}</p>`;}
+    const html=`${cl}<p>Javaslat: <b>${cname(card)}</b>.</p><!--more--><p>${why}</p>${kh}<p class="rule">Szabály: ${legalReason(0)}</p>`;
     return {html,cards:new Set([card.id])};
   }
   return null;
@@ -1940,7 +2063,7 @@ function syncHint(){
   if(key!==UI.key){UI.key=key;UI.hc=null;UI.armCon=false;UI.hint=SET.autoHint&&humanTurn();}
   if(UI.hint&&humanTurn()&&!UI.hc)UI.hc=computeHint();
 }
-// ---------- oktató mód: kör utáni elemzés ----------
+// ---------- kör utáni elemzés (Tanuló tipp beállításnál magától) ----------
 let REV={bids:[],kon:null,plays:[],an:null,show:false};
 const snap=()=>({hands:G.hands.map(h=>h.map(c=>({...c}))),talon:G.talon.map(c=>({...c})),min:minBidIndex(),base:passBase()});
 const fmt=v=>{const r=Math.round(v*10)/10;return (r>0?'+':r<0?'−':'±')+String(Math.abs(r)).replace('.',',');};
@@ -2126,7 +2249,11 @@ function hintHTML(extra=''){
   const tip=humanTurn()?`<button class="btn ghost" id="hintBtn" aria-expanded="${UI.hint}">${UI.hint?'Tipp elrejtése':'Tipp'}</button><label class="auto"><input type="checkbox" id="autoHint"${SET.autoHint?' checked':''}> Mindig mutasd</label>`:'';
   if(!tip&&!extra)return '';
   let h=`<div class="actrow">${tip}${extra?`<span class="grow">${extra}</span>`:''}</div>`;
-  if(tip&&UI.hint&&UI.hc)h+=`<div class="hintbox">${UI.hc.html}<p class="rule">A javaslat ugyanazzal a döntési móddal készül, mint a botok lépései (kockázat: ${RISK_NAME[RISK]}).</p>${UI.hc.apply?'<button class="btn small" id="applyHint">Javaslat átvétele</button>':''}</div>`;
+  if(tip&&UI.hint&&UI.hc){
+    const H=UI.hc.html,i=H.indexOf('<!--more-->'),j=i>=0?i:H.indexOf('</p>')+4;
+    const sum=H.slice(0,j),more=H.slice(j).replace('<!--more-->','')+`<p class="rule">A javaslat ugyanazzal a döntési móddal készül, mint a botok lépései (kockázat: ${RISK_NAME[RISK]}).</p>`;
+    h+=`<div class="hintbox">${sum}${UI.why?`<div id="whyBox">${more}</div>`:''}<p class="whyrow"><button class="linkbtn why" id="whyBtn" aria-expanded="${!!UI.why}" aria-controls="whyBox">${UI.why?'▴ Kevesebb':'▾ Miért?'}</button></p>${UI.hc.apply?'<button class="btn small" id="applyHint">Javaslat átvétele</button>':''}</div>`;
+  }
   return h;
 }
 function bindHint(){
@@ -2139,6 +2266,7 @@ function bindHint(){
   b.onclick=()=>{UI.hint=!UI.hint;UI.scrollHint=UI.hint;render();};
   $('autoHint').onchange=e=>{SET.autoHint=e.target.checked;saveSet();if(SET.autoHint)UI.hint=true;render();};
   const a=$('applyHint');if(a)a.onclick=()=>{UI.hc.apply();UI.bidScrollTo=true;render();};
+  const w=$('whyBtn');if(w)w.onclick=()=>{UI.why=!UI.why;render();};
 }
 function renderScores(){}
 function kontraTag(p){
@@ -2214,8 +2342,8 @@ function renderPanel0(el){
      h+=`<p class="status">${d===0?'Neked':({1:'Gellértnek',2:'Samunak'})[d]} védőnként: ${defs.map((q,i)=>`${NAME[q]} ${sg(tot[i])}`).join(', ')}, összesen <b class="${r.change[d]>0?'pos':'neg'}">${sg(r.change[d])}</b>.</p>`;}
     h+=`<div class="talon">Talon: ${G.talon.map(x=>cardHTML(x)).join('')}</div>`;
     h+=`<p class="status">Ebben a körben: ${[0,1,2].map(p=>`${NAME[p]} <b class="${r.change[p]>0?'pos':r.change[p]<0?'neg':''}">${r.change[p]>0?'+':''}${r.change[p]}</b>`).join(', ')}</p>`;
-    h+=`<div class="row stick"><button class="btn" id="nextBtn">Következő osztás</button>${SET.tutor||REV.show?'':'<button class="btn ghost" id="anBtn">Mi lett volna jobb?</button>'}</div>`;
-    if(SET.tutor||REV.show){
+    h+=`<div class="row stick"><button class="btn" id="nextBtn">Következő osztás</button>${LEARN()||REV.show?'':'<button class="btn ghost" id="anBtn">Mi lett volna jobb?</button>'}</div>`;
+    if(LEARN()||REV.show){
       if(!REV.an)REV.an=buildAnalysis();
       h+=`<div class="analysis"><h3>Mi lett volna jobb?</h3>${REV.an}<div class="row"><button class="btn" id="nextBtn2">Következő osztás</button></div></div>`;
     }
@@ -2315,9 +2443,9 @@ function renderSee(){
   const known=G.talonBy===0||G.phase==='result';
   let h=`<h2>Talon és ütések</h2><h3>Talon</h3>`;
   h+=G.talon.length?(known?`<div class="trio">${G.talon.map(x=>cardHTML(x)).join('')}</div><p class="small">${G.talonBy===0?'Ezt a két lapot te tetted le.':'A kör vége után látható.'}</p>`:'<p class="small">A talonban lévő lapokat nem te tetted le, ezért nem láthatod.</p>'):'<p class="small">A talon most nálad van.</p>';
-  const all=G.hist||[],showAll=SET.tutor;
+  const all=G.hist||[],showAll=LEARN();
   const H=all.map((tr,i)=>({tr,i})).filter(o=>showAll||o.tr[trickWinnerIdx(o.tr)].p===0);
-  h+=`<h3>${showAll?'Ütések':'Az ütéseid'}</h3>`+(showAll?'':'<p class="small">Csak a saját ütéseidet láthatod. Oktató módban mindenkiét mutatja.</p>')+(H.length?H.map(({tr,i})=>{const w=tr[trickWinnerIdx(tr)].p;return `<div class="trickrow"><span class="tn">${i+1}.</span><div class="trio">${tr.map(t=>`<div class="tc">${cardHTML(t.c,t.p===w?'win':'')}<small>${NAME[t.p]}</small></div>`).join('')}</div><span class="tw2">${NAME[w]}</span></div>`;}).join(''):(showAll?'<p class="small">Még nincs lezárt ütés.</p>':'<p class="small">Még nem vittél ütést.</p>'));
+  h+=`<h3>${showAll?'Ütések':'Az ütéseid'}</h3>`+(showAll?'':'<p class="small">Csak a saját ütéseidet láthatod. Tanuló tipp beállításnál mindenkiét mutatja.</p>')+(H.length?H.map(({tr,i})=>{const w=tr[trickWinnerIdx(tr)].p;return `<div class="trickrow"><span class="tn">${i+1}.</span><div class="trio">${tr.map(t=>`<div class="tc">${cardHTML(t.c,t.p===w?'win':'')}<small>${NAME[t.p]}</small></div>`).join('')}</div><span class="tw2">${NAME[w]}</span></div>`;}).join(''):(showAll?'<p class="small">Még nincs lezárt ütés.</p>':'<p class="small">Még nem vittél ütést.</p>'));
   h+=`<div class="row" style="margin-top:12px"><button class="btn" id="closeSee">Bezár</button></div>`;
   $('seeSheet').innerHTML=h;$('closeSee').onclick=()=>$('seeOv').classList.remove('show');
   $('seeOv').classList.add('show');
@@ -2335,6 +2463,48 @@ function panelScroll(){
 }
 function render(){syncHint();renderTable();renderPanel();panelScroll();renderHand();renderLog();maybeTip();const st=statusText();if($('live').textContent!==st)$('live').textContent=st;}
 
+// ---- Tanuló tipp: figyelmeztetés nagy hibánál ----
+// A többi lapot a játékos tudása szerint véletlenül kiosztjuk (bemondásból ismert lapok, ismert színhiányok), és
+// ugyanazokon a világokon végigjátsszuk a választott és a javasolt lapot. Akkor szólunk, ha a javaslat átlagosan
+// legalább 2 ponttal jobb, és ez nem a véletlen műve (az átlag a hibahatár fölött van).
+function sampleWorld(R){
+  const me=0,unk=outstanding(me),holders=[1,2].map(q=>({q,n:G.hands[q].length,cards:[]}));
+  const tal={q:-1,n:me===G.decl?0:G.talon.length,cards:[]};
+  for(let tries=0;tries<30;tries++){
+    holders.forEach(h=>h.cards=[]);tal.cards=[];
+    const d=unk.slice();for(let i=d.length-1;i>0;i--){const j=Math.floor(R()*(i+1));[d[i],d[j]]=[d[j],d[i]];}
+    const loose=tries>=20;let ok=true;
+    // ismert helyű lapok először
+    const fixed=d.filter(c=>{const k=knownAt(c);return k>0;}),rest=d.filter(c=>!(knownAt(c)>0));
+    for(const c of fixed){const h=holders.find(x=>x.q===knownAt(c));if(h.cards.length<h.n)h.cards.push(c);else{ok=false;break;}}
+    if(!ok)continue;
+    for(const c of rest){
+      const cand=holders.filter(h=>h.cards.length<h.n&&(loose||!knownVoid(h.q,c.s)));
+      if(cand.length){cand[Math.floor(R()*cand.length)].cards.push(c);}
+      else if(tal.cards.length<tal.n)tal.cards.push(c);
+      else{ok=false;break;}
+    }
+    if(ok&&holders.every(h=>h.cards.length===h.n))return {hands:[G.hands[0],holders[0].cards,holders[1].cards],talon:me===G.decl?G.talon:tal.cards};
+  }
+  return null;
+}
+function playOut(world,first){
+  const sG=G,sW=WHY,sKV=KV;
+  try{
+    G=JSON.parse(JSON.stringify(sG));KV=false;
+    G.hands=world.hands.map(h=>h.map(c=>({...c})));G.talon=world.talon.map(c=>({...c}));G.log=[];
+    playCard(0,first);let g=0;
+    while(G.phase==='play'&&g++<60){if(G.trick.length===3){collectTrick();continue;}playCard(G.turn,botChoose(G.turn));}
+    return G.result?G.result.change[0]:0;
+  }finally{G=sG;WHY=sW;KV=sKV;}
+}
+function playLoss(card,sug,n=24){
+  const R=rng(G.trickNo*977+card.id*31+sug.id*7+G.hands[0].length),d=[];
+  for(let k=0;k<n;k++){const w=sampleWorld(R);if(!w)continue;d.push(playOut(w,sug)-playOut(w,card));}
+  if(d.length<8)return null;
+  const m=d.reduce((a,b)=>a+b,0)/d.length,sd=Math.sqrt(d.reduce((a,b)=>a+(b-m)**2,0)/(d.length-1)),se=sd/Math.sqrt(d.length);
+  return {m,se,n:d.length};
+}
 function onCard(id){
   if(G.phase==='bid'&&G.turn===0&&holding12(0)){
     const c=G.hands[0].find(x=>x.id===id);
@@ -2347,6 +2517,11 @@ function onCard(id){
     const ct=CONTRACTS[G.ci];
     if(ct.comps.ulti&&G.decl===0&&c.s===G.trump&&c.r===0&&G.trickNo<9&&L.length>1&&UI.warnId!==id){
       UI.warnId=id;UI.err='Ha most kijátszod az adu VII-est, elbukik az ulti. Koppints rá újra, ha mégis ezt akarod.';render();return;
+    }
+    if(LEARN()&&UI.warnId!==id&&L.length>1){
+      const sug=botChoose(0);
+      if(sug.id!==c.id){const r=playLoss(c,sug);
+        if(r&&r.m>=2&&r.m-2*r.se>0){UI.warnId=id;UI.err=`Biztos? A Tipp szerint a(z) ${cname(sug)} jobb: a gépi lejátszások alapján ezzel a lappal átlagosan kb. ${Math.round(r.m)} ponttal rosszabbul jársz. Koppints rá újra, ha mégis ezt akarod.`;render();return;}}
     }
     UI.warnId=null;UI.err='';
     const sug=botChoose(0);REV.plays.push({trick:G.trickNo+1,card:c,sug,why:WHY});
@@ -2409,7 +2584,7 @@ function syncSeg(){
 document.querySelectorAll('[data-fs]').forEach(b=>b.onclick=()=>{SET.fs=+b.dataset.fs;document.documentElement.dataset.fs=String(SET.fs);saveSet();syncSeg();});
 document.querySelectorAll('[data-risk]').forEach(b=>b.onclick=()=>{SET.risk=+b.dataset.risk;RISK=SET.risk;saveSet();syncSeg();UI.hc=null;if(G)render();});
 syncSeg();
-function syncTutor(){$('tutorBtn').setAttribute('aria-checked',SET.tutor?'true':'false');}
+function syncTutor(){document.querySelectorAll('[data-tip]').forEach(b=>b.setAttribute('aria-checked',String(+b.dataset.tip===(SET.tip??0))));}
 const openMenu=()=>{$('menuOv').classList.add('show');$('mA2hs').hidden=standalone();setTimeout(()=>$('menuClose').focus(),30);};
 const closeMenu=()=>{$('menuOv').classList.remove('show');$('menuBtn').focus();};
 $('menuBtn').onclick=openMenu;$('menuClose').onclick=closeMenu;
@@ -2417,7 +2592,7 @@ $('menuOv').onclick=e=>{if(e.target.id==='menuOv')closeMenu();};
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('menuOv').classList.contains('show'))closeMenu();});
 const openRules=()=>{$('menuOv').classList.remove('show');$('rules').classList.add('show');};
 $('navRules').onclick=openRules;$('mRules').onclick=openRules;
-$('tutorBtn').onclick=()=>{SET.tutor=!SET.tutor;saveSet();syncTutor();if(G)render();};
+document.querySelectorAll('[data-tip]').forEach(b=>b.onclick=()=>{SET.tip=+b.dataset.tip;saveSet();syncTutor();UI.hc=null;if(G)render();});
 syncTutor();
 $('closeRules').onclick=()=>$('rules').classList.remove('show');
 $('seeOv').onclick=e=>{if(e.target.id==='seeOv')$('seeOv').classList.remove('show');};
@@ -2508,7 +2683,7 @@ const TOUR=[
   {sel:['.table'],t:'Az asztal',x:'A felső sávban a játék, az adu és hogy hányadik ütésnél tartotok. Középre kerülnek a kijátszott lapok.'},
   {sel:['#dock'],t:'A lapjaid',x:'Mindig itt vannak, egy sorban. Ha nem fér ki mind, húzd jobbra-balra. Koppintással jelölsz ki vagy játszol ki egy lapot, hosszan nyomva nagyban mutatja. Fölötte a saját pontod és a „Talon és ütések”.'},
   {sel:['#panel'],t:'Itt döntesz',x:'Licit (a mondható játékok listája fel-le görgethető), talonfelvétel, kontra és a „Felmutatom”. A „Tipp” megmondja, mit lépne egy tapasztalt játékos, és miért. A ··· gomb mögött van a „Játszd le helyettem” és a bedobás.'},
-  {sel:['#menuBtn'],t:'Menü',x:'Itt találod a Szabályokat, a Statisztikádat és ezt a bemutatót, valamint a beállításokat: oktató mód, betűméret és a botok kockázata.'},
+  {sel:['#menuBtn'],t:'Menü',x:'Itt találod a Szabályokat, a Statisztikádat és ezt a bemutatót, valamint a beállításokat: a Tipp részletessége (Normál vagy Tanuló), betűméret és a botok kockázata.'},
   {t:'Jó játékot!',x:'Ha elakadsz, nyomd meg a Tippet. Játék közben egy-egy rövid tipp még felugrik, amikor először kerülsz új helyzetbe.'}
 ];
 function unionRect(sels){
@@ -2589,7 +2764,7 @@ const TIPS=[
   {k:'kontra',when:()=>G.phase==='kontra'&&G.turn===0&&G.decl!==0&&!!$('konBtn'),sel:'#panel .chips',x:'Most mondhatsz kontrát: ha szerinted a felvevő elbukik, duplázod a tétet. Adus játékban a kontra a két védőé közös.'},
   {k:'marr',when:()=>(G.phase==='play'||G.phase==='kontra')&&[1,2].some(q=>G.marr[q]&&G.marr[q].length),sel:()=>'#opp'+[1,2].find(q=>G.marr[q]&&G.marr[q].length),x:'„Bemondás: 20”: a király és a felső egy színből 20 pontot ér (adu színben 40). Partiban a fél pontjaihoz adódik, ha vitt ászt, X-et vagy az utolsó ütést.'},
   {k:'claim',when:()=>!!$('claimBtn'),sel:'#claimBtn',x:'Ha már biztos, hogy innentől minden ütés a tiéd, felmutathatod a lapjaidat, és a leosztás véget ér. Nem kötelező, tovább is játszhatsz.'},
-  {k:'result',when:()=>G.phase==='result'&&!REV.show,sel:'#panel .res',x:'A leosztás elszámolása: soronként és védőnként látod, mi mennyit ért. Oktató módban a „Mi lett volna jobb?” elmagyarázza a döntéseidet.'}
+  {k:'result',when:()=>G.phase==='result'&&!REV.show,sel:'#panel .res',x:'A leosztás elszámolása: soronként és védőnként látod, mi mennyit ért. A „Mi lett volna jobb?” elmagyarázza a döntéseidet; Tanuló tipp beállításnál magától megjelenik.'}
 ];
 const tipSel=t=>typeof t.sel==='function'?t.sel():t.sel;
 function hideTip(){const b=$('tipBub');if(b)b.style.display='none';UI.tip=null;}

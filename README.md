@@ -1,6 +1,6 @@
 # Rablóulti
 
-Böngészős, egyszemélyes magyar ulti (rablóulti) játék: a játékos két bot (Gellért, Samu) ellen játszik. Tipp rendszerrel és oktató móddal, magyar kártyaképekkel.
+Böngészős, egyszemélyes magyar ulti (rablóulti) játék: a játékos két bot (Gellért, Samu) ellen játszik. Tipp rendszerrel (Normál és Tanuló fokozat), magyar kártyaképekkel.
 
 ## Fájlok
 
@@ -33,7 +33,7 @@ Adus erősorrend (`TP` tömb): ász > X > király > felső > alsó > IX > VIII >
 | stratégia | `handFacts`, `bookComp`, `bookCheck`, `bookHTML` (a könyv licitfeltételei pipálható listaként), `knownVoid`, `partnerSuits`, `stopperSuit`. |
 | bot kontra | `kontraJudge` (a könyv kontratanácsai, rekontra alullicitálásnál), `botKontra`. |
 | bot kijátszás | `botChoose` – minden döntés indoklást ír a `WHY` változóba, ezt mutatja a Tipp. |
-| UI | `render*` függvények, `computeHint` (Tipp), `buildAnalysis` / `analyzeBid` / `simulate` (oktató mód: kör utáni elemzés, a lehetséges vállalások gépi lejátszása a valódi leosztással). |
+| UI | `render*` függvények, `computeHint` (Tipp), `buildAnalysis` / `analyzeBid` / `simulate` (kör utáni elemzés, Tanuló fokozatban magától; a lehetséges vállalások gépi lejátszása a valódi leosztással). |
 
 ## Szabályok (döntések)
 
@@ -54,7 +54,7 @@ Alap: ultiblog.hu szabálykönyv, kiegészítve Jánoska Levente – Zsigri: *A 
 
 ## Fejlesztési elv: a Tipp és a botok ugyanazt döntik
 
-A Tipp, az oktató mód elemzése és a botok mindig ugyanazokat a döntési függvényeket használják, a kockázati szinttől (`RISK`: óvatos / normál / merész) függően:
+A Tipp, a kör utáni elemzés és a botok mindig ugyanazokat a döntési függvényeket használják, a kockázati szinttől (`RISK`: óvatos / normál / merész) függően:
 `chooseBid` (licit, licitlétrával), `pickupDecision` (talon felvétele), `ownRaise` és `shouldConcede` (saját talon, bedobás), `kontraDecision` (kontra), `botChoose` (kijátszás). Minden vállalás esélyét és várható pontját az `evalOpt` számolja: 32 próbajáték a többi lap véletlen kiosztásával (20/40 bemondásokkal, csendes bónuszokkal), rögzített véletlenmaggal, így ugyanarra a lapra mindig ugyanaz az eredmény. A heurisztikus `estimate`/`compP` csak előszűrésre (`bidOptions`, `rankOptions`) és a talon-felvétel becslésére (`pickupDetail`) szolgál. A kiírt számoknak mindig abból kell jönniük, amiből a döntés született. Új stratégiát mindig ezekbe a függvényekbe kell tenni, ne külön a Tippbe.
 
 ## Élénk licit
@@ -70,7 +70,7 @@ Visszaállítás: a `backup/ulti_v34_elenk_licit_elott.html` fájl.
 
 ## Bemutató, statisztika, mentés (UI)
 
-- **Elrendezés:** a fejlécben csak a cím, az „Új játék” és a menü (☰; széles képernyőn mellette Szabályok és Statisztikám). A menüben: Szabályok, Statisztikám, Bemutató újra, és a beállítások (oktató mód kapcsoló, betűméret, a botok kockázata). A pontok az ellenfelek dobozában és a saját sávodban vannak. Az asztal tetején egy sáv mutatja a játékot, az adut és az ütés számát; a közép csak a lapoké. A kéz mobilon alul rögzítve, egy sorban, jobbra-balra húzható (a kijátszható lap a képbe gördül). Licitnél a mondható vállalások egy listában, csak ez a lista görgethető. Lapjátéknál a ritka műveletek (Játszd le helyettem, Bedobás) a ··· menü mögött. 980 px fölött két oszlop: balra asztal és kéz, jobbra a döntési panel. Állapotváltozások képernyőolvasónak (`aria-live`).
+- **Elrendezés:** a fejlécben csak a cím, az „Új játék” és a menü (☰; széles képernyőn mellette Szabályok és Statisztikám). A menüben: Szabályok, Statisztikám, Bemutató újra, és a beállítások (Tipp: Normál/Tanuló, betűméret, a botok kockázata). A pontok az ellenfelek dobozában és a saját sávodban vannak. Az asztal tetején egy sáv mutatja a játékot, az adut és az ütés számát; a közép csak a lapoké. A kéz mobilon alul rögzítve, egy sorban, jobbra-balra húzható (a kijátszható lap a képbe gördül). Licitnél a mondható vállalások egy listában, csak ez a lista görgethető. Lapjátéknál a ritka műveletek (Játszd le helyettem, Bedobás) a ··· menü mögött. 980 px fölött két oszlop: balra asztal és kéz, jobbra a döntési panel. Állapotváltozások képernyőolvasónak (`aria-live`).
 - **Alkalmazás-nézet (telefon, tablet állva, 980 px alatt és legalább 620 px magas képernyőn):** az oldal nem görög, a képernyőt kitölti: fejléc, ellenfelek (lapszám szövegként), asztal (licit közben és az eredménynél összecsukva), döntési panel (csak a belseje görög, a fő gombok az alján maradnak, új helyzetben a tetejére ugrik, a kinyitott Tipp a képbe gördül) és alul a lapjaid. A napló és a lábléc tartalma ilyenkor a menüben van („Napló”, „Névjegy és adatvédelem”). Fekvő vagy alacsony képernyőn a görgethető oldal marad.
 - **Bemutató:** első látogatáskor 7 lépéses körbevezetés (sötétített háttér, kiemelt elem, buborék nyíllal; Tovább/Vissza/Kihagyom, billentyűzettel is). Utána helyzeti tippek egyszer-egyszer: talonfelvétel, kontra, 20/40 bemondás, felmutatás, elszámolás. A Szabályokból („Bemutató újra”) újraindítható, ez a tippeket is visszaállítja.
 - **Statisztika** (fejléc „Statisztika” gomb): leosztások, felvevőként és védőként elért eredmény, vállalás-típusonként, kontrák és rekontrák sikere, felmutatás, bedobás, legjobb/legrosszabb leosztás, és hogy a saját lapjátékod hány százalékban egyezett a Tippel. Törölhető.
@@ -78,6 +78,13 @@ Visszaállítás: a `backup/ulti_v34_elenk_licit_elott.html` fájl.
 - Minden adat csak a böngésző localStorage-ában van (`ulti-score-v1`, `ulti-settings-v1`, `ulti-stats-v1`, `ulti-game-v1`, `ulti-tour-v1`, `ulti-tips-v1`). Süti nincs, szerverre semmi nem megy.
 - **Ikon és kezdőképernyő:** `icons/` mappa: favicon (ico, 16, 32 px, az ágacskák nélkül, átlátszó háttérrel), `apple-touch-icon.png` (180 px), 192/512 px és maszkolható 512 px ikon, `manifest.webmanifest` (standalone mód, `start_url: ../`). A láblécben a „Tedd ki a kezdőképernyőre” gomb Chrome/Edge/Androidon a böngésző telepítő ablakát nyitja, iPhone-on lépésenkénti útmutatót mutat; a már telepített (önálló) futásban rejtve van.
 - **Lábléc:** visszajelzés (GitHub issues), adatvédelmi sor, források, licencek, készítő.
+
+## Tipp: Normál és Tanuló fokozat, Kovács-tudás
+
+- A Tipp alapból csak a javaslatot mutatja; a „▾ Miért?” link (a `computeHint` HTML-jében a `<!--more-->` jelölő után, ha nincs, az első bekezdés után) nyitja az indoklást. A nyitott állapot (`UI.why`) megmarad.
+- A menüben a Tipp „Normál” vagy „Tanuló” (`SET.tip`, `LEARN()`); a régi `tutor:true` beállítás Tanulóra fordul.
+- Tanuló fokozatban: Kovács Endre *Ultikodex* tanácsai a „Miért?” alatt (licit: `kovHTML`, `kovTalonNote`, többszörös rablásnál `kovNote`; aduválasztás; kontra; kijátszás „Kovács szerint”), figyelmeztetés nagy hibánál (`sampleWorld`, `playOut`, `playLoss`: 24 a játékos tudásával összhangban lévő világ, ha a javaslat átlagosan legalább 2 ponttal jobb és ez a hibahatáron túl van), kör végén magától az elemzés, és a „Talon és ütések” minden ütést mutat.
+- **A Kovács-tudás a botokat nem befolyásolja.** A `KV` kapcsoló alapból `false`; a Tipp a második véleményhez `withKov(fn)`-nel rövid időre bekapcsolja, a próbajátékok (`evalOpt`, `playOut`) mindig `KV=false`-szal futnak. Ellenőrzés: rögzített véletlenmaggal 90 leosztás (mindhárom kockázati szint) naplója betűre egyezik az átvezetés előtti változattal. (Külön mérésen a könyvi licitszabályok −1,25 ± 0,81 pont/ülést rontottak, a kontra és kijátszás +0,18 ± 0,19 döntetlen; ezért a könyv csak a Tippben szól.)
 
 ## Talonozás alacsony licitnél
 
