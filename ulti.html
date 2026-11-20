@@ -886,7 +886,7 @@ function finishHand(){
   for(const r of rows)if(r.k){const m=defs.filter(q=>G.kmult[q][r.k]).map(q=>`${NAME[q]} ×${G.kmult[q][r.k]}`);if(m.length)r.kontra=m.join(', ');}
   G.result={rows,change,declPts,defPts};
   G.phase='result';
-  addLog(`${NAME[d]} ${change[d]>0?'nyert':'vesztett'}: ${change[d]>0?'+':''}${change[d]} pont.`);
+  addLog(change[d]===0?'Pénz az ablakban: senki nem kap pontot.':`${NAME[d]} ${change[d]>0?'nyert':'vesztett'}: ${change[d]>0?'+':''}${change[d]} pont.`);
 }
 
 // ---- bot: bidding ----
@@ -2478,7 +2478,7 @@ function renderPanel(){
 function renderPanel0(el){
   if(G.phase==='result'){
     const r=G.result,c=CONTRACTS[G.ci],d=G.decl,won=r.change[d]>0;
-    let h=`<p class="status">${d===0?'Te játszottál':NAME[d]+' játszott'}: <b>${c.name}</b>. ${r.conceded?(d===0?'Bedobtad.':'Bedobta.'):won?(d===0?'Megnyerted.':'Megnyerte.'):(d===0?'Elbuktad.':'Elbukta.')}</p>`;
+    let h=`<p class="status">${d===0?'Te játszottál':NAME[d]+' játszott'}: <b>${c.name}</b>. ${r.conceded?(d===0?'Bedobtad.':'Bedobta.'):r.change[d]===0?'Pénz az ablakban: senki nem kap pontot.':won?(d===0?'Megnyerted.':'Megnyerte.'):(d===0?'Elbuktad.':'Elbukta.')}</p>`;
     // minden sor védőnként, a kontrával együtt; alul az összesítés, hogy a végösszeg követhető legyen
     const defs=[0,1,2].filter(q=>q!==d),sg=v=>`${v>0?'+':''}${v}`;
     const per=x=>defs.map(q=>{if(r.conceded)return x.delta;const m=x.k?(G.kmult[q][x.k]||1):1;return -defGain(x,m);});
@@ -2488,7 +2488,7 @@ function renderPanel0(el){
     if(G.claimShow){const cs=G.claimShow;h+=`<p class="rule">${cs.from+1}. ütéstől: ${claimVerb(cs.who,true)}, ${claimText(cs.side)}.</p>`;}
     h+=`<div class="tw"><table class="res"><tr><td></td><td class="det"></td><td class="det">védőnként</td></tr>${r.rows.map(x=>`<tr><td><span class="mark ${x.win?'pos':'neg'}">${x.win?'✓':'✗'}</span> ${x.label}</td><td class="det">${x.detail}</td><td class="${x.delta>0?'pos':'neg'}">${cell(x)}</td></tr>`).join('')}</table></div>`;
     {const tot=defs.map(q=>-r.change[q]);
-     h+=`<p class="status">${d===0?'Neked':({1:'Gellértnek',2:'Samunak'})[d]} védőnként: ${defs.map((q,i)=>`${NAME[q]} ${sg(tot[i])}`).join(', ')}, összesen <b class="${r.change[d]>0?'pos':'neg'}">${sg(r.change[d])}</b>.</p>`;}
+     h+=`<p class="status">${d===0?'Neked':({1:'Gellértnek',2:'Samunak'})[d]} védőnként: ${defs.map((q,i)=>`${NAME[q]} ${sg(tot[i])}`).join(', ')}, összesen <b class="${r.change[d]>0?'pos':r.change[d]<0?'neg':''}">${sg(r.change[d])}</b>.</p>`;}
     h+=`<div class="talon">Talon: ${G.talon.map(x=>cardHTML(x)).join('')}</div>`;
     h+=`<p class="status">Ebben a körben: ${[0,1,2].map(p=>`${NAME[p]} <b class="${r.change[p]>0?'pos':r.change[p]<0?'neg':''}">${r.change[p]>0?'+':''}${r.change[p]}</b>`).join(', ')}</p>`;
     h+=`<div class="row stick"><button class="btn" id="nextBtn">Következő osztás</button>${LEARN()||REV.show?'':'<button class="btn ghost" id="anBtn">Mi lett volna jobb?</button>'}</div>`;

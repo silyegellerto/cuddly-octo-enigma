@@ -53,6 +53,7 @@ Forrás: <https://ultiblog.hu/a-talonozas/>
 
 ## Felület
 
+- Ha a leosztásban senki nem kap pontot (a felvevő összesen 0), az eredmény: **„Pénz az ablakban”** (nem „elbukta”).
 - A játék neve **Rablóulti**, a botok **Gellért** és **Samu**.
 - Az Új játék megerősítő felirata: „Biztos?” (telefonon is ráfér).
 - Kényszervállalásnál piros „!” gomb nyitja a magyarázatot (nem takarja a licit gombot).
