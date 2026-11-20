@@ -1153,7 +1153,7 @@ function collectPlan(h12,minCi){
     const cT=CONTRACTS[T.ci],srt=h12.slice().sort((a,b)=>keepScore(a,cT,T.suit,h12)-keepScore(b,cT,T.suit,h12));
     for(const H of holds){
       let disc=srt.slice(0,2);
-      if(!discardAllowed(disc,h12,H)){const ok=srt.filter(x=>!isGift(x,h12));if(ok.length<2)continue;disc=ok.slice(0,2);}
+      if(!discardAllowed(disc,h12,H)){const ok=srt.filter(x=>discardAllowed([x,x],h12,H));if(ok.length<2)continue;disc=ok.slice(0,2);}
       const keep=h12.filter(x=>!disc.includes(x));
       let stuck=-1e9,hs=-2;
       for(const s of suitsFor(CONTRACTS[H])){if(checkReq(keep,H,s))continue;const e=estimate(keep,H,s,isTrumpC(CONTRACTS[H])?disc:null);if(e>stuck){stuck=e;hs=s;}}
@@ -1262,20 +1262,25 @@ function giftValue(x,h){
   let v=0;
   if(x.r===7)v=1;else if(x.r===3)v=(hasC(h,x.s,7)&&hasC(h,x.s,6))?0.2:0.8;
   else if(x.r===0)v=0.5;else if(x.r===5||x.r===6)v=0.45;
-  if(x.s===0)v+=v?0.15:0.08; // piros lap: piros játékot erősít
+  if(x.s===0)v+=0.5; // piros lap: a következő licitáló piros játékot (piros partit, piros ultit, piros betlit) mondhat vele
   return v;
 }
 // ultiblog, talonozás: alacsony licitnél (parti, piros parti) a talonba nem kerül ász, X, VII, király, felső,
 // mert a következő licitáló felveheti, és magasabbat mondhat vele. Kivétel: az X, ha ugyanabból a színből az ász és a király is nálad van.
-// Betliben a magas lapoktól épp meg kell szabadulni, ott ez nem érvényes.
-const LOW_BID=2;
+// Piros lap csak magas értékű bemondásnál (RED_BID-től) kerülhet a talonba, amikor megéri a kockázat:
+// a következő licitáló azzal piros játékot mondhat (kis piros lappal akár piros betlit).
+// Betliben a magas lapoktól épp meg kell szabadulni, ott ezek a tiltások nem érvényesek.
+const LOW_BID=2,RED_BID=8;
 const isGift=(x,h)=>x.r===7||x.r===0||x.r===5||x.r===6||(x.r===3&&!(hasC(h,x.s,7)&&hasC(h,x.s,6)));
-function discardAllowed(disc,h,ci){const c=CONTRACTS[ci];return c.val>LOW_BID||c.kind==='betli'||!disc.some(x=>isGift(x,h));}
-function safeDisc(srt,h,ci){let d=srt.slice(0,2);if(!discardAllowed(d,h,ci)){const ok=srt.filter(x=>!isGift(x,h));if(ok.length>=2)d=ok.slice(0,2);}return d;}
+function discardAllowed(disc,h,ci){const c=CONTRACTS[ci];if(c.kind==='betli')return true;
+  if(c.val<RED_BID&&disc.some(x=>x.s===0))return false;
+  return c.val>LOW_BID||!disc.some(x=>isGift(x,h));}
+function safeDisc(srt,h,ci){let d=srt.slice(0,2);if(!discardAllowed(d,h,ci)){const ok=srt.filter(x=>discardAllowed([x,x],h,ci));if(ok.length>=2)d=ok.slice(0,2);}return d;}
 function giftPenalty(disc,h,val){
   const f=val<=1?0.55:val<=2?0.45:val<=5?0.3:val<=10?0.15:0.05;
   let g=disc.reduce((a,x)=>a+giftValue(x,h),0);
   for(const x of disc)g-=0.05*Math.max(0,h.filter(y=>y.s===x.s).length-3); // hosszú színből dobni jobb
+  for(const x of disc)if(x.r!==0&&hasC(h,x.s,0))g-=0.1; // ultiblog: abból a színből dobj, amelyiknek a VII-ese nálad marad: abban a színben más nem tud ultit mondani
   return f*Math.max(0,g);
 }
 // ulti lapelosztás szerint (ultiblog táblázata)
@@ -2069,7 +2074,7 @@ function computeHint(){
     if(others.length)html+=`<p class="rule">További lehetőségek:</p><ul>${others.map(o=>`<li>${optName(o)}: ${evTxt(o)}</li>`).join('')}</ul>`;
     html+=bookHTML(b.rest,b.ci,b.suit);
     if(LEARN()){html+=kovHTML(b.rest,b.ci,b.suit);html+=`<p class="rule">${kovTalonNote(c)}.</p>`;}
-    if(c.val<=5)html+=`<p class="rule">${BLOG} (talonozás): alacsony licitnél ne tegyél le ászt, X-et, VII-est, királyt vagy felsőt, és a piros lapokkal is vigyázz, mert a következő licitáló felveheti őket, és magasabbat mondhat velük. Inkább a hosszú színedből dobj.</p>`;
+    if(c.val<=5)html+=`<p class="rule">${BLOG} (talonozás): alacsony licitnél ne tegyél le ászt, X-et, VII-est, királyt vagy felsőt, és piros lapot is csak magas értékű bemondásnál, mert a következő licitáló felveheti őket, és magasabbat mondhat velük. Inkább a hosszú színedből dobj.</p>`;
     if(isTrumpC(c)&&!c.red)html+=`<p class="rule">Az adut (${SUIT_NAMES[b.suit].toLowerCase()}) csak akkor kell bemondanod, ha a licited marad.</p>`;
     html+=`<p class="rule">${kinds.map(k=>KIND_TIPS[k]).join(' ')}</p>`;
     html+=`<p class="rule">Az esélyek a lapod próbajátékaiból jönnek (a legjobb jelölteknél 96 lejátszás), a többi lap véletlen kiosztásával. A 20/40 bemondások (a védőkéi is) és a talonba kerülő pontok benne vannak.</p>`;
@@ -2230,8 +2235,8 @@ function analyzeBid(rec,isFinalOwn){
     // lerakás ugyanerre a játékra: ugyanaz a próbajátékos keresés, amit a Tipp használ (a te lerakásod is benne van)
     const bd=bestDiscard(h,{ci:u.ci,suit:u.suit,disc:ch.disc,rest});
     let dh=`<p><b>Lerakás erre a játékra:</b> `;
-    const gifts=discardAllowed(ch.disc,h,u.ci)?[]:ch.disc.filter(x=>isGift(x,h));
-    if(gifts.length)dh+=`a talonba ${gifts.map(cname).join(' és ')} került. ${BLOG}: alacsony licitnél ilyet nem teszünk le, mert a következő licitáló felveheti, és magasabbat mondhat vele. A szabálynak megfelelő legjobb lerakás ${cards2(bd.disc)} lett volna (${evTxt(bd)}).`;
+    const gifts=discardAllowed(ch.disc,h,u.ci)?[]:ch.disc.filter(x=>!discardAllowed([x,x],h,u.ci));
+    if(gifts.length)dh+=`a talonba ${gifts.map(cname).join(' és ')} került. ${BLOG}: ${gifts.some(x=>x.s===0)?'piros lapot csak magas értékű bemondásnál teszünk le, ilyet pedig alacsony licitnél nem':'alacsony licitnél ilyet nem teszünk le'}, mert a következő licitáló felveheti, és magasabbat mondhat vele. A szabálynak megfelelő legjobb lerakás ${cards2(bd.disc)} lett volna (${evTxt(bd)}).`;
     else if(!sameD(bd.disc,ch.disc)&&bd.ev-u.ev>=MIN_DIFF)dh+=`jobb lett volna ${cards2(bd.disc)} (${evTxt(bd)}, a tiéddel ${fmt(u.ev)}). ${discardWhy(bd)}`;
     else dh+=sameD(bd.disc,ch.disc)?'a lerakásod volt a legjobb.':'a lerakásod jó volt, a többi lehetőség legfeljebb fél ponttal lett volna jobb.';
     dh+='</p>';
