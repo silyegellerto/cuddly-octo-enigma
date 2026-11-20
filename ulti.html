@@ -969,9 +969,9 @@ function bidOptions(h,minCi,noise=0){
   for(let ci=minCi;ci<CONTRACTS.length;ci++){
     const c=CONTRACTS[ci];
     for(const s of suitsFor(c)){let best=null;
-      const anyOk=h.some((x,i)=>h.some((y,j)=>j>i&&discardAllowed([x,y],h,ci)));
+      let tMin=2;for(let i=0;i<h.length;i++)for(let j=i+1;j<h.length;j++)tMin=Math.min(tMin,discardTier([h[i],h[j]],h,ci,s));
       for(let i=0;i<h.length;i++)for(let j=i+1;j<h.length;j++){
-        if(anyOk&&!discardAllowed([h[i],h[j]],h,ci))continue;
+        if(discardTier([h[i],h[j]],h,ci,s)>tMin)continue;
         const rest=h.filter((_,k)=>k!==i&&k!==j);
         const ev=estimate(rest,ci,s,c.kind==='trump'?[h[i],h[j]]:null)-giftPenalty([h[i],h[j]],h,c.val)+Math.random()*noise;
         if(!best||ev>best.ev)best={ev,ci,suit:s,disc:[h[i],h[j]],rest};
@@ -1032,24 +1032,25 @@ function discardCands(h,ci,suit){
     if(c.kind==='betli'&&disc.some(x=>x.r<=1))continue; // betliben a VII és VIII a legbiztosabb lap
     const rest=h.filter((_,k)=>k!==i&&k!==j);
     if(checkReq(rest,ci,suit))continue;
-    res.push({ci,suit,disc,rest,ok:discardAllowed(disc,h,ci),h0:estimate(rest,ci,suit,isTrumpC(c)?disc:null)-giftPenalty(disc,h,c.val)});
+    res.push({ci,suit,disc,rest,tier:discardTier(disc,h,ci,suit),h0:estimate(rest,ci,suit,isTrumpC(c)?disc:null)-giftPenalty(disc,h,c.val)});
   }
   return res.sort((a,b)=>b.h0-a.h0);
 }
 // a vállaláshoz a legjobb lerakás: a gyors becslés legjobbjai + színenként a legjobb, próbajátékkal lemérve
 function bestDiscard(h,o,extra){
-  const all=discardCands(h,o.ci,o.suit),cands=all.some(d=>d.ok)?all.filter(d=>d.ok):all;
+  const all=discardCands(h,o.ci,o.suit),tMin=Math.min(2,...all.map(d=>d.tier));for(const d of all)d.ok=d.tier===tMin;
+  const cands=all.filter(d=>d.ok);
   // betliben a gyors becslés sokszor félrevezet (pl. egy megtartott ász vagy egy rosszul védett király),
   // ezért ott minden lerakást lemérünk néhány próbajátékkal, és csak a legjobbakat pontosítjuk
   const top=CONTRACTS[o.ci].kind==='betli'?cands.map(d=>evalOpt({ci:o.ci,suit:o.suit,disc:d.disc,rest:d.rest},N_PRE)).sort(cmpOpt).slice(0,6):cands.slice(0,5);
   const bySuits={};for(const d of cands){const k=d.disc.map(x=>x.s).sort().join('');if(!bySuits[k]){bySuits[k]=1;if(!top.includes(d))top.push(d);}}
-  for(const d of [o,...(extra||[])])if(d&&d.disc&&!top.some(t=>sameD(t.disc,d.disc))&&(cands===all||discardAllowed(d.disc,h,o.ci)))top.push({ci:o.ci,suit:o.suit,disc:d.disc,rest:h.filter(x=>!d.disc.some(y=>y.id===x.id))});
+  for(const d of [o,...(extra||[])])if(d&&d.disc&&!top.some(t=>sameD(t.disc,d.disc))&&discardTier(d.disc,h,o.ci,o.suit)<=tMin)top.push({ci:o.ci,suit:o.suit,disc:d.disc,rest:h.filter(x=>!d.disc.some(y=>y.id===x.id))});
   const scr=top.slice(0,9).map(d=>evalOpt({ci:o.ci,suit:o.suit,disc:d.disc,rest:d.rest},N_SCREEN)).sort(cmpOpt);
   const fin=scr.slice(0,3).map(d=>evalOpt({ci:o.ci,suit:o.suit,disc:d.disc,rest:d.rest},N_FINAL)).sort(cmpOpt);
   const best=fin[0];best.alt=fin[1]||null;best.searched=true;
   // ha a szabály miatt kizárt lerakás kártyajátékban érezhetően jobb lenne, azt is megmutatjuk (tanulságnak)
-  const fb=all.filter(d=>!d.ok)[0];
-  if(fb&&cands!==all){const f=evalOpt({ci:o.ci,suit:o.suit,disc:fb.disc,rest:fb.rest},N_FINAL);if(f.ev-best.ev>=MIN_DIFF)best.forbidden=f;}
+  const fb=all.filter(d=>d.tier===1)[0];
+  if(fb&&tMin===0){const f=evalOpt({ci:o.ci,suit:o.suit,disc:fb.disc,rest:fb.rest},N_FINAL);if(f.ev-best.ev>=MIN_DIFF)best.forbidden=f;}
   return best;
 }
 const RANKC=new Map();
@@ -1275,7 +1276,17 @@ const isGift=(x,h)=>x.r===7||x.r===0||x.r===5||x.r===6||(x.r===3&&!(hasC(h,x.s,7
 function discardAllowed(disc,h,ci){const c=CONTRACTS[ci];if(c.kind==='betli')return true;
   if(c.val<RED_BID&&disc.some(x=>x.s===0))return false;
   return c.val>LOW_BID||!disc.some(x=>isGift(x,h));}
-function safeDisc(srt,h,ci){let d=srt.slice(0,2);if(!discardAllowed(d,h,ci)){const ok=srt.filter(x=>discardAllowed([x,x],h,ci));if(ok.length>=2)d=ok.slice(0,2);}return d;}
+// lerakás rangsora: 0 = szabályos; 1 = talonozási szabályba ütközik (VII, király, felső, piros lap alacsony licitnél);
+// 2 = adus játékban adut tenne le (a saját játékát gyengíti), vagy ászt/X-et tenne le alacsony licitnél (az a védőké, és a következőt erősíti).
+// Mindig a legkisebb elérhető fokozatból választunk; a 2-es fokozaton belül a próbajátékok döntenek.
+function discardTier(disc,h,ci,suit){const c=CONTRACTS[ci];if(c.kind==='betli')return 0;
+  if(isTrumpC(c)&&suit>=0&&disc.some(x=>x.s===suit))return 2;
+  if(discardAllowed(disc,h,ci))return 0;
+  return c.val<=LOW_BID&&disc.some(x=>x.r===7||(x.r===3&&isGift(x,h)))?2:1;}
+// a legkevésbé értékes két lap (srt eleje), de mindig a legkisebb elérhető lerakási fokozatból
+function safeDisc(srt,h,ci,suit=-1){let best=null,bk=1e9;
+  for(let i=0;i<srt.length;i++)for(let j=i+1;j<srt.length;j++){const k=discardTier([srt[i],srt[j]],h,ci,suit)*1000+i+j;if(k<bk){bk=k;best=[srt[i],srt[j]];}}
+  return best||srt.slice(0,2);}
 function giftPenalty(disc,h,val){
   const f=val<=1?0.55:val<=2?0.45:val<=5?0.3:val<=10?0.15:0.05;
   let g=disc.reduce((a,x)=>a+giftValue(x,h),0);
@@ -1322,7 +1333,7 @@ function greedyBest(h,minCi){
   let best=-1e9;
   for(let ci=minCi;ci<CONTRACTS.length;ci++){const c=CONTRACTS[ci];
     for(const s of suitsFor(c)){
-      const srt=h.slice().sort((a,b)=>keepScore(a,c,s,h)-keepScore(b,c,s,h)),disc=safeDisc(srt,h,ci),rest=h.filter(x=>!disc.includes(x));
+      const srt=h.slice().sort((a,b)=>keepScore(a,c,s,h)-keepScore(b,c,s,h)),disc=safeDisc(srt,h,ci,s),rest=h.filter(x=>!disc.includes(x));
       if(forcedParts(rest,ci,s).length)continue;
       const ev=estimate(rest,ci,s,isTrumpC(c)?disc:null)-giftPenalty(disc,h,c.val);
       if(ev>best)best=ev;
@@ -1352,7 +1363,7 @@ function pickupDetailH(hand,minCi,samples=24,talons=null){
     else{let i=pick(),j=pick();while(j===i)j=pick();h=[...hand,unseen[i],unseen[j]];}
     for(let ci=min;ci<CONTRACTS.length;ci++){const c=CONTRACTS[ci];
       for(const s of suitsFor(c)){
-        const srt=h.slice().sort((a,b)=>keepScore(a,c,s,h)-keepScore(b,c,s,h)),disc=safeDisc(srt,h,ci),rest=h.filter(x=>!disc.includes(x));
+        const srt=h.slice().sort((a,b)=>keepScore(a,c,s,h)-keepScore(b,c,s,h)),disc=safeDisc(srt,h,ci,s),rest=h.filter(x=>!disc.includes(x));
         if(checkReq(rest,ci,s)||forcedParts(rest,ci,s).length)continue;
         const dd=isTrumpC(c)?disc:null,ev=estimate(rest,ci,s,dd)-giftPenalty(disc,h,c.val),key=ci+':'+s;
         const pen=dd?dd.reduce((a,x)=>a+pts(x),0)/10*0.6:0,pw=Object.keys(c.comps).reduce((a,k)=>a*compP(rest,ci,s,k,pen),1);
@@ -2236,7 +2247,9 @@ function analyzeBid(rec,isFinalOwn){
     const bd=bestDiscard(h,{ci:u.ci,suit:u.suit,disc:ch.disc,rest});
     let dh=`<p><b>Lerakás erre a játékra:</b> `;
     const gifts=discardAllowed(ch.disc,h,u.ci)?[]:ch.disc.filter(x=>!discardAllowed([x,x],h,u.ci));
-    if(gifts.length)dh+=`a talonba ${gifts.map(cname).join(' és ')} került. ${BLOG}: ${gifts.some(x=>x.s===0)?'piros lapot csak magas értékű bemondásnál teszünk le, ilyet pedig alacsony licitnél nem':'alacsony licitnél ilyet nem teszünk le'}, mert a következő licitáló felveheti, és magasabbat mondhat vele. A szabálynak megfelelő legjobb lerakás ${cards2(bd.disc)} lett volna (${evTxt(bd)}).`;
+    const trD=isTrumpC(CONTRACTS[u.ci])&&u.suit>=0?ch.disc.filter(x=>x.s===u.suit):[];
+    if(trD.length&&discardTier(bd.disc,h,u.ci,u.suit)<2)dh+=`a talonba adu (${trD.map(cname).join(' és ')}) került. Adus játékban az adut megtartjuk, a lerakással a saját játékodat gyengíted. Jobb lett volna ${cards2(bd.disc)} (${evTxt(bd)}).`;
+    else if(gifts.length)dh+=`a talonba ${gifts.map(cname).join(' és ')} került. ${BLOG}: ${gifts.some(x=>x.s===0)?'piros lapot csak magas értékű bemondásnál teszünk le, ilyet pedig alacsony licitnél nem':'alacsony licitnél ilyet nem teszünk le'}, mert a következő licitáló felveheti, és magasabbat mondhat vele. A szabálynak megfelelő legjobb lerakás ${cards2(bd.disc)} lett volna (${evTxt(bd)}).`;
     else if(!sameD(bd.disc,ch.disc)&&bd.ev-u.ev>=MIN_DIFF)dh+=`jobb lett volna ${cards2(bd.disc)} (${evTxt(bd)}, a tiéddel ${fmt(u.ev)}). ${discardWhy(bd)}`;
     else dh+=sameD(bd.disc,ch.disc)?'a lerakásod volt a legjobb.':'a lerakásod jó volt, a többi lehetőség legfeljebb fél ponttal lett volna jobb.';
     dh+='</p>';

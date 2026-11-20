@@ -18,7 +18,8 @@ for(let g=0;g<60;g++){
   const a=botBidAction(p);
   if(a.type==='bid'){const c=CONTRACTS[a.ci],h=[...G.hands[p]];
     ok('licit érvényes (validateBid)',!validateBid(p,a.disc,a.ci,a.suit));
-    if(c.val<=LOW_BID&&c.kind!=='betli'){const any=h.some((x,i)=>h.some((y,j)=>j>i&&discardAllowed([x,y],h,a.ci)));ok('talon: alacsony licitnél nincs ász/X/VII/király/felső (ultiblog)',!any||discardAllowed(a.disc,h,a.ci),a.disc.map(cardName).join('+'));}
+    if(c.kind!=='betli'){let tMin=2;for(let i=0;i<h.length;i++)for(let j=i+1;j<h.length;j++)tMin=Math.min(tMin,discardTier([h[i],h[j]],h,a.ci,a.suit));
+      ok('talon: a legkisebb elérhető fokozatból (nincs ász/X/VII/K/F/piros alacsony licitnél, nincs adu adus játékban)',discardTier(a.disc,h,a.ci,a.suit)===tMin,a.disc.map(cardName).join('+'));}
     // a Tipp ugyanazt mondja, mint a bot
     if(p===G.turn){const d=bidDecision(h,minBidIndex()),t=d.plan?{ci:d.plan.H,suit:d.plan.suit,disc:d.plan.disc}:d.b;ok('Tipp = bot licitdöntés (gyűjtéssel együtt)',t.ci===a.ci&&t.suit===a.suit&&sameD(t.disc,a.disc));}
     if(G.bid&&G.bid.seat===p&&!firstBid){}

@@ -26,6 +26,7 @@ Forrás: <https://ultiblog.hu/a-talonozas/>
   - Kivétel: a X letehető, ha ugyanabból a színből az ász és a király is nálad van.
   - Ha a lapban nincs más szabályos lerakás, a tiltott is mehet.
 - **Piros lap** csak **magas értékű bemondásnál** (legalább 8 pont: piros 40-100, 40-100 ulti, piros ulti, …; `RED_BID=8`) kerülhet a talonba, amikor megéri a kockázat. Ennél kisebb bemondásnál nem: a következő licitáló piros játékot mondhatna vele. Magas bemondásnál is pontlevonással jár (`giftValue`).
+- **Adus játékban adut nem teszünk le** (a saját játékodat gyengítené). Sorrend, ha nincs szabályos lerakás: előbb VII, király, felső vagy piros lap; adu, illetve alacsony licitnél ász vagy X csak végső esetben, és ezek közül a próbajátékok döntenek (`discardTier`).
 - **Hosszú színből** dobj (kevésbé erősíted a következőt).
 - **Abból a színből dobj, amelyiknek a VII-ese nálad marad**: abban a színben más nem tud ultit mondani.
 - Magasabb licitnél a lerakás nem tiltott, de a „másnak kellő” lapok pontlevonással járnak (`giftPenalty`): minél kisebb a bemondás, annál nagyobb a levonás.
