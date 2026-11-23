@@ -428,6 +428,9 @@ html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:10
   .dock{flex:none;position:static;box-shadow:0 -6px 14px rgba(0,0,0,.06)}
   details.log,footer.foot{display:none}
   #toast{bottom:calc(env(safe-area-inset-bottom,0px) + 170px)}
+  /* kezdőképernyőről indítva (iOS 26) a rendszer a státuszsor alatt kb. 40–45 pontnyi sávot elhomályosít:
+     a fejléc ez alá kerül, a sáv háttérszínű marad */
+  html.sa .wrap{padding-top:calc(env(safe-area-inset-top,0px) + 42px)}
 }
 /* egérrel (számítógépen) a vízszintes húzás kényelmetlen: ott a kéz több sorba törik */
 @media (hover:hover) and (pointer:fine){
@@ -449,6 +452,7 @@ html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:10
 </style>
 </head>
 <body>
+<script>if(matchMedia('(display-mode: standalone)').matches||navigator.standalone===true)document.documentElement.classList.add('sa');</script>
 <div id="sbBand" aria-hidden="true"></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
