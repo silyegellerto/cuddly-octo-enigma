@@ -499,7 +499,7 @@ img.ico{width:1.2em;height:1.2em;vertical-align:-.25em;object-fit:contain;displa
   </nav>
   <h3 class="mcap">Beállítások</h3>
   <div class="mset">
-    <div class="mrow col"><span><b>Tipp</b><small>Tanuló: könyvi tanácsok, figyelmeztetés nagy hibánál, kör végi elemzés.</small></span><div class="seg wide two" role="radiogroup" aria-label="Tipp"><button role="radio" data-tip="0">Normál</button><button role="radio" data-tip="1">Tanuló</button></div></div>
+    <div class="mrow col"><span><b>Tipp</b><small>Tanuló: könyvi tanácsok, figyelmeztetés nagy hibánál, kör végi elemzés. Ki: nincs Tipp gomb és kör végi elemzés.</small></span><div class="seg wide" role="radiogroup" aria-label="Tipp"><button role="radio" data-tip="2">Ki</button><button role="radio" data-tip="0">Normál</button><button role="radio" data-tip="1">Tanuló</button></div></div>
     <div class="mrow"><span><b>Betűméret</b></span><div class="seg" role="radiogroup" aria-label="Betűméret"><button role="radio" data-fs="0">A−</button><button role="radio" data-fs="1">A</button><button role="radio" data-fs="2">A+</button></div></div>
     <div class="mrow col"><span><b>A botok kockázata</b><small>A Tipp is ezen a szinten dönt.</small></span><div class="seg wide" role="radiogroup" aria-label="A botok kockázata"><button role="radio" data-risk="0">Óvatos</button><button role="radio" data-risk="1">Normál</button><button role="radio" data-risk="2">Merész</button></div></div>
   </div>
@@ -2174,7 +2174,8 @@ function computeHint(){
 const humanTurn=()=>G.turn===0&&(G.phase==='bid'||G.phase==='trump'||G.phase==='kontra'||(G.phase==='play'&&G.trick.length<3));
 function syncHint(){
   const key=[G.phase,G.turn,G.trickNo,G.trick.length,G.hands[0].length,G.bid?G.bid.ci:'',G.kidx].join('|');
-  if(key!==UI.key){UI.key=key;UI.hc=null;UI.armCon=false;UI.hint=SET.autoHint&&humanTurn();}
+  if(key!==UI.key){UI.key=key;UI.hc=null;UI.armCon=false;UI.hint=SET.autoHint&&humanTurn()&&SET.tip!==2;}
+  if(SET.tip===2)UI.hint=false;
   if(UI.hint&&humanTurn()&&!UI.hc)UI.hc=computeHint();
 }
 // ---------- kör utáni elemzés (Tanuló tipp beállításnál magától) ----------
@@ -2362,7 +2363,7 @@ function buildAnalysis(){
 
 // ---------- render ----------
 function hintHTML(extra=''){
-  const tip=humanTurn()?`<button class="btn ghost" id="hintBtn" aria-expanded="${UI.hint}">${UI.hint?'Tipp elrejtése':'Tipp'}</button><label class="auto"><input type="checkbox" id="autoHint"${SET.autoHint?' checked':''}> Mindig mutasd</label>`:'';
+  const tip=humanTurn()&&SET.tip!==2?`<button class="btn ghost" id="hintBtn" aria-expanded="${UI.hint}">${UI.hint?'Tipp elrejtése':'Tipp'}</button><label class="auto"><input type="checkbox" id="autoHint"${SET.autoHint?' checked':''}> Mindig mutasd</label>`:'';
   if(!tip&&!extra)return '';
   let h=`<div class="actrow">${tip}${extra?`<span class="grow">${extra}</span>`:''}</div>`;
   if(tip&&UI.hint&&UI.hc){
@@ -2507,7 +2508,7 @@ function renderPanel0(el){
      h+=`<p class="status">${d===0?'Neked':({1:'Gellértnek',2:'Samunak'})[d]} védőnként: ${defs.map((q,i)=>`${NAME[q]} ${sg(tot[i])}`).join(', ')}, összesen <b class="${r.change[d]>0?'pos':r.change[d]<0?'neg':''}">${sg(r.change[d])}</b>.</p>`;}
     h+=`<div class="talon">Talon: ${G.talon.map(x=>cardHTML(x)).join('')}</div>`;
     h+=`<p class="status">Ebben a körben: ${[0,1,2].map(p=>`${NAME[p]} <b class="${r.change[p]>0?'pos':r.change[p]<0?'neg':''}">${r.change[p]>0?'+':''}${r.change[p]}</b>`).join(', ')}</p>`;
-    h+=`<div class="row stick"><button class="btn" id="nextBtn">Következő osztás</button>${G.deal?'<button class="btn replay" id="replayBtn" title="Ugyanez a leosztás még egyszer, ugyanazokkal a lapokkal">Újrajátszás</button>':''}${LEARN()||REV.show?'':'<button class="btn ghost" id="anBtn">Mi lett volna jobb?</button>'}</div>`;
+    h+=`<div class="row stick"><button class="btn" id="nextBtn">Következő osztás</button>${G.deal?'<button class="btn replay" id="replayBtn" title="Ugyanez a leosztás még egyszer, ugyanazokkal a lapokkal">Újrajátszás</button>':''}${LEARN()||REV.show||SET.tip===2?'':'<button class="btn ghost" id="anBtn">Mi lett volna jobb?</button>'}</div>`;
     if(LEARN()||REV.show){
       if(!REV.an)REV.an=buildAnalysis();
       h+=`<div class="analysis"><h3>Mi lett volna jobb?</h3>${REV.an}<div class="row"><button class="btn" id="nextBtn2">Következő osztás</button></div></div>`;
@@ -2868,7 +2869,7 @@ const TOUR=[
   {sel:['.table'],t:'Az asztal',x:'A felső sávban a játék, az adu és hogy hányadik ütésnél tartotok. Középre kerülnek a kijátszott lapok.'},
   {sel:['#dock'],t:'A lapjaid',x:'Mindig itt vannak, egy sorban. Ha nem fér ki mind, húzd jobbra-balra. Koppintással jelölsz ki vagy játszol ki egy lapot, hosszan nyomva nagyban mutatja. Fölötte a saját pontod és a „Talon”.'},
   {sel:['#panel'],t:'Itt döntesz',x:'Licit (a mondható játékok listája fel-le görgethető), talonfelvétel, kontra és a „Felmutatom”. A „Tipp” megmondja, mit lépne egy tapasztalt játékos, és miért. A ··· gomb mögött van a „Játszd le helyettem” és a bedobás.'},
-  {sel:['#menuBtn'],t:'Menü',x:'Itt találod a Szabályokat, a Statisztikádat és ezt a bemutatót, valamint a beállításokat: a Tipp részletessége (Normál vagy Tanuló), betűméret és a botok kockázata.'},
+  {sel:['#menuBtn'],t:'Menü',x:'Itt találod a Szabályokat, a Statisztikádat és ezt a bemutatót, valamint a beállításokat: a Tipp (kikapcsolva, Normál vagy Tanuló), betűméret és a botok kockázata.'},
   {t:'Jó játékot!',x:'Ha elakadsz, nyomd meg a Tippet. Játék közben egy-egy rövid tipp még felugrik, amikor először kerülsz új helyzetbe.'}
 ];
 function unionRect(sels){
