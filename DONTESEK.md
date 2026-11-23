@@ -65,4 +65,5 @@ Forrás: <https://ultiblog.hu/a-talonozas/>
 - A Tipp beállítása: **Ki / Normál / Tanuló**. „Ki” állásban a döntési panelen nincs Tipp gomb, és a kör végén a „Mi lett volna jobb?” gomb sem jelenik meg.
 - A 20/40 megtartásáról nincs külön szabály: a Tipp a próbajátékok alapján dönt (Gellért döntése).
 - Telefonos app-nézetben a dokumentum soha nem görög el (őrfüggvény + görgetés nélküli fókusz, dupla koppintásos nagyítás tiltva), hogy a tartalom ne csússzon a státuszsor alá.
+- iOS 26 kezdőképernyős homályosítás ellen: tömör, háttérszínű sáv a státuszsor mögött (`#sbBand`, magassága `env(safe-area-inset-top)`). Kísérlet: ha nem segít, következő lépés a fejléc lejjebb tolása. A háttérszín a státuszsorban maradjon (Gellért kérése).
 - A Tipp nincs mindig nyitva; a részletek a „▾ Miért?” alatt.
