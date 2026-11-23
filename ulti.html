@@ -170,6 +170,7 @@ details.more .pop button.danger.armed{background:var(--bad);color:var(--accent-i
 .btn{appearance:none;border:0;border-radius:12px;padding:11px 18px;font-weight:700;font-size:calc(17px * var(--fs));background:var(--accent);color:var(--accent-ink)}
 .btn:disabled{opacity:.4;cursor:default}
 .btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--ink)}
+.btn.replay{background:var(--brass);color:#2a2008}
 .btn.go{background:var(--go);color:var(--go-ink)}
 .btn.ghost.danger{border-color:var(--bad);color:var(--bad)}
 .btn.ghost.danger.armed{background:var(--bad);color:var(--accent-ink)}
@@ -642,16 +643,19 @@ function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random
 let G=null;
 function addLog(t){G.log.push(t);}
 
-function newDeal(dealer){
+// deal: ugyanazon leosztás újrajátszásához az eredeti lapok (azonosítók játékosonként)
+function newDeal(dealer,deal){
   const d=shuffle(makeDeck());
   const fh=nxt(dealer);
-  const hands=[[],[],[]];
+  let hands=[[],[],[]];
   let k=0;
-  for(const p of [fh,nxt(fh),nxt(nxt(fh))]){const n=p===fh?12:10;hands[p]=d.slice(k,k+n);k+=n;}
+  if(deal)hands=deal.map(ids=>ids.map(id=>({s:id>>3,r:id&7,id})));
+  else for(const p of [fh,nxt(fh),nxt(nxt(fh))]){const n=p===fh?12:10;hands[p]=d.slice(k,k+n);k+=n;}
   G={dealer,fh,hands,talon:[],phase:'bid',turn:fh,bid:null,passes:0,lastAction:['','',''],log:[],
      decl:-1,ci:-1,trump:-1,trumpGame:false,trick:[],won:[[],[],[]],tcount:[0,0,0],trickNo:0,leader:-1,
-     marr:[[],[],[]],ultiBroken:false,ultiWon:false,lastWinner:-1,played:[],result:null,revealed:false,talonPts:0,lastTrick:null};
-  addLog(`${NAME[fh]} kezd, 12 lappal.`);
+     marr:[[],[],[]],ultiBroken:false,ultiWon:false,lastWinner:-1,played:[],result:null,revealed:false,talonPts:0,lastTrick:null,
+     deal:hands.map(h=>h.map(x=>x.id))};
+  {const k=fh===0?'Te kezdesz':NAME[fh]+' kezd';addLog(deal?`Újrajátszás: ugyanazok a lapok. ${k}, 12 lappal.`:`${k}, 12 lappal.`);}
 }
 const holding12=p=>G.hands[p].length===12;
 // csak pontszámban értékesebb vállalás mondható
@@ -1153,11 +1157,10 @@ function collectPlan(h12,minCi){
   for(const T of targets){
     const cT=CONTRACTS[T.ci],srt=h12.slice().sort((a,b)=>keepScore(a,cT,T.suit,h12)-keepScore(b,cT,T.suit,h12));
     for(const H of holds){
-      let disc=srt.slice(0,2);
-      if(!discardAllowed(disc,h12,H)){const ok=srt.filter(x=>discardAllowed([x,x],h12,H));if(ok.length<2)continue;disc=ok.slice(0,2);}
-      const keep=h12.filter(x=>!disc.includes(x));
-      let stuck=-1e9,hs=-2;
-      for(const s of suitsFor(CONTRACTS[H])){if(checkReq(keep,H,s))continue;const e=estimate(keep,H,s,isTrumpC(CONTRACTS[H])?disc:null);if(e>stuck){stuck=e;hs=s;}}
+      // a lerakás a tartó licit adujához igazodik (adut nem teszünk le, talonozási szabályok: safeDisc)
+      let stuck=-1e9,hs=-2,disc=null,keep=null;
+      for(const s of suitsFor(CONTRACTS[H])){const d=safeDisc(srt,h12,H,s),k=h12.filter(x=>!d.includes(x));
+        if(checkReq(k,H,s))continue;const e=estimate(k,H,s,isTrumpC(CONTRACTS[H])?d:null);if(e>stuck){stuck=e;hs=s;disc=d;keep=k;}}
       if(stuck<=-1e8)continue;
       let sum=0;const K=6;
       for(let k=0;k<K;k++){const i=Math.floor(R()*unseen.length);let j=Math.floor(R()*unseen.length);if(j===i)j=(j+1)%unseen.length;sum+=greedyBest([...keep,unseen[i],unseen[j]],H+1);}
@@ -2421,7 +2424,14 @@ function flyFrom(el,from){
   if(RM()||!from||!el.animate)return;
   const r=el.getBoundingClientRect();if(!r.width)return;
   const dx=(from.left+from.width/2)-(r.left+r.width/2),dy=(from.top+from.height/2)-(r.top+r.height/2),sc=Math.max(.35,Math.min(1.6,from.width/r.width));
-  el.animate([{transform:`translate(${dx}px,${dy}px) scale(${sc})`,opacity:.9},{transform:'none',opacity:1}],{duration:280,easing:'cubic-bezier(.2,.8,.2,1)'});
+  // a botok lapjai felülről érkeznek, ott marad a helyben animálás (a döntött lapállással együtt)
+  if(from.top<r.bottom){el.animate([{transform:`translate(${dx}px,${dy}px) scale(${sc})`,opacity:.9},{transform:'none',opacity:1}],{duration:280,easing:'cubic-bezier(.2,.8,.2,1)'});return;}
+  // a saját lapod alulról jön: egy másolata az oldal legfelső rétegében halad (a panel fölött, nem mögötte); a valódi lap közben rejtve vár a helyén
+  const fly=el.cloneNode(true);fly.removeAttribute('id');fly.setAttribute('aria-hidden','true');
+  Object.assign(fly.style,{position:'fixed',left:r.left+'px',top:r.top+'px',width:r.width+'px',height:r.height+'px',margin:'0',zIndex:'30',pointerEvents:'none'});
+  document.body.appendChild(fly);el.style.visibility='hidden';
+  const a=fly.animate([{transform:`translate(${dx}px,${dy}px) scale(${sc})`,opacity:.9},{transform:'none',opacity:1}],{duration:280,easing:'cubic-bezier(.2,.8,.2,1)'});
+  const end=()=>{fly.remove();el.style.visibility='';};a.onfinish=end;a.oncancel=end;setTimeout(end,600);
 }
 // a kijátszott lap helye a kézben, mielőtt kikerül onnan
 function handRect(id){const el=document.querySelector(`#hand .card[data-id="${id}"]`);return el?el.getBoundingClientRect():null;}
@@ -2491,12 +2501,12 @@ function renderPanel0(el){
      h+=`<p class="status">${d===0?'Neked':({1:'Gellértnek',2:'Samunak'})[d]} védőnként: ${defs.map((q,i)=>`${NAME[q]} ${sg(tot[i])}`).join(', ')}, összesen <b class="${r.change[d]>0?'pos':r.change[d]<0?'neg':''}">${sg(r.change[d])}</b>.</p>`;}
     h+=`<div class="talon">Talon: ${G.talon.map(x=>cardHTML(x)).join('')}</div>`;
     h+=`<p class="status">Ebben a körben: ${[0,1,2].map(p=>`${NAME[p]} <b class="${r.change[p]>0?'pos':r.change[p]<0?'neg':''}">${r.change[p]>0?'+':''}${r.change[p]}</b>`).join(', ')}</p>`;
-    h+=`<div class="row stick"><button class="btn" id="nextBtn">Következő osztás</button>${LEARN()||REV.show?'':'<button class="btn ghost" id="anBtn">Mi lett volna jobb?</button>'}</div>`;
+    h+=`<div class="row stick"><button class="btn" id="nextBtn">Következő osztás</button>${G.deal?'<button class="btn replay" id="replayBtn" title="Ugyanez a leosztás még egyszer, ugyanazokkal a lapokkal">Újrajátszás</button>':''}${LEARN()||REV.show?'':'<button class="btn ghost" id="anBtn">Mi lett volna jobb?</button>'}</div>`;
     if(LEARN()||REV.show){
       if(!REV.an)REV.an=buildAnalysis();
       h+=`<div class="analysis"><h3>Mi lett volna jobb?</h3>${REV.an}<div class="row"><button class="btn" id="nextBtn2">Következő osztás</button></div></div>`;
     }
-    el.innerHTML=h;$('nextBtn').onclick=nextDeal;
+    el.innerHTML=h;$('nextBtn').onclick=()=>nextDeal();if($('replayBtn'))$('replayBtn').onclick=()=>nextDeal(true);
     if($('nextBtn2'))$('nextBtn2').onclick=nextDeal;
     if($('anBtn'))$('anBtn').onclick=()=>{REV.show=true;render();};
     return;
@@ -2596,7 +2606,7 @@ function renderHand(){
     const k=kontraTag(0);
     role=`${G.decl===0?'<b>Felvevő</b>':'Védő'}${G.revealed&&G.decl===0?' · <b class="opened">terítve</b>':''} · ütés ${G.tcount[0]}${G.marr[0].length?' · '+G.marr[0].map(m=>m.v).join('+'):''}${k?' · '+k:''}`;
   }
-  let mine=`<span class="me"><b>Te</b> <b class="pts ${v>0?'pos':v<0?'neg':''}${G.phase==='result'?anim('sc:'+SCORE.n+':0','flash',700).cls:''}">${v>0?'+':''}${v}</b>${G.dealer===0?' <span class="dl">oszt</span>':''} · ${role}</span><span class="mr">${G.phase==='bid'?`<label class="auto"><input type="checkbox" id="betliSort"${UI.betliSort?' checked':''}> Szín nélküli sorrend</label>`:''}<button class="linkbtn" id="seeBtn">Talon és ütések</button></span>`;
+  let mine=`<span class="me"><b>Te</b> <b class="pts ${v>0?'pos':v<0?'neg':''}${G.phase==='result'?anim('sc:'+SCORE.n+':0','flash',700).cls:''}">${v>0?'+':''}${v}</b>${G.dealer===0?' <span class="dl">oszt</span>':''} · ${role}</span><span class="mr">${G.phase==='bid'?`<label class="auto"><input type="checkbox" id="betliSort"${UI.betliSort?' checked':''}> Szín nélküli sorrend</label>`:''}<button class="linkbtn" id="seeBtn">Talon</button></span>`;
   $('mine').innerHTML=mine;
   if(G.revealed&&G.decl===0&&G.phase==='play'&&!(('rvt:'+dk) in ANIM)){ANIM['rvt:'+dk]=1;toast('Terített játék: kiterítetted a lapjaidat, a védők látják őket.');}
   // ha a kijátszható lap nem látszik a sorban, odagörgetjük
@@ -2731,10 +2741,10 @@ function advance(){
     else if(UI.auto)timer=setTimeout(()=>{if(G.phase==='play'&&G.turn===0&&UI.auto){const c=botChoose(0);UI.flyFrom={id:c.id,rect:handRect(c.id)};playCard(0,c);}advance();},700);
   }
 }
-function nextDeal(){
+function nextDeal(replay){
   ANIM={};UI.slotSeen=null;
   UI.sel=[];UI.ci=null;UI.suit=null;UI.err='';UI.warnId=null;UI.kon=new Set();UI.armCon=false;UI.auto=false;REV={bids:[],kon:null,plays:[],an:null,show:false};
-  newDeal(G?nxt(G.dealer):nxt(SCORE.dealer));advance();
+  if(replay===true&&G&&G.deal)newDeal(G.dealer,G.deal);else newDeal(G?nxt(G.dealer):nxt(SCORE.dealer));advance();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 let newArm=null;
@@ -2850,7 +2860,7 @@ const TOUR=[
   {t:'Üdv a Rablóultiban!',x:'Két gépi ellenfél, Gellért és Samu ellen játszol. Mutatok pár dolgot a képernyőn, utána kezdhetsz.'},
   {sel:['.opps'],t:'Az ellenfeleid',x:'A nevük mellett az összesített pontjuk. Itt látod, ki a felvevő és ki a védő, hány ütést vittek, és ha 20-at vagy 40-et mondanak be. Az „oszt” jelzi az osztót.'},
   {sel:['.table'],t:'Az asztal',x:'A felső sávban a játék, az adu és hogy hányadik ütésnél tartotok. Középre kerülnek a kijátszott lapok.'},
-  {sel:['#dock'],t:'A lapjaid',x:'Mindig itt vannak, egy sorban. Ha nem fér ki mind, húzd jobbra-balra. Koppintással jelölsz ki vagy játszol ki egy lapot, hosszan nyomva nagyban mutatja. Fölötte a saját pontod és a „Talon és ütések”.'},
+  {sel:['#dock'],t:'A lapjaid',x:'Mindig itt vannak, egy sorban. Ha nem fér ki mind, húzd jobbra-balra. Koppintással jelölsz ki vagy játszol ki egy lapot, hosszan nyomva nagyban mutatja. Fölötte a saját pontod és a „Talon”.'},
   {sel:['#panel'],t:'Itt döntesz',x:'Licit (a mondható játékok listája fel-le görgethető), talonfelvétel, kontra és a „Felmutatom”. A „Tipp” megmondja, mit lépne egy tapasztalt játékos, és miért. A ··· gomb mögött van a „Játszd le helyettem” és a bedobás.'},
   {sel:['#menuBtn'],t:'Menü',x:'Itt találod a Szabályokat, a Statisztikádat és ezt a bemutatót, valamint a beállításokat: a Tipp részletessége (Normál vagy Tanuló), betűméret és a botok kockázata.'},
   {t:'Jó játékot!',x:'Ha elakadsz, nyomd meg a Tippet. Játék közben egy-egy rövid tipp még felugrik, amikor először kerülsz új helyzetbe.'}

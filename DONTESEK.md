@@ -59,4 +59,7 @@ Forrás: <https://ultiblog.hu/a-talonozas/>
 - Kényszervállalásnál piros „!” gomb nyitja a magyarázatot (nem takarja a licit gombot).
 - A licitlista nem külön görgethető doboz; `⤢` gomb teljes képernyőn mutatja.
 - Telefonon álló helyzetben alkalmazás-nézet: csak a döntési panel görög, a fő gombsor alul ragad.
+- Eredménynél a „Következő osztás” mellett sárga **„Újrajátszás”** gomb: ugyanaz a leosztás ugyanazokkal a lapokkal, ugyanazzal az osztóval; a pontszámba normál leosztásként számít.
+- A lapsor fölötti gomb felirata **„Talon”** (az ablak továbbra is a talont és az ütéseket mutatja).
+- A saját kijátszott lapod a panel fölött repül az asztalra (nem tűnik el mögötte).
 - A Tipp nincs mindig nyitva; a részletek a „▾ Miért?” alatt.
