@@ -2441,7 +2441,13 @@ function gatherTrick(done){
   if(RM()||!cards.length||G.trick.length<3){done();return;}
   const w=G.trick[trickWinnerIdx(G.trick)].p,tg=(w===0?$('mine'):$('opp'+w)).getBoundingClientRect();
   for(const el of cards){const r=el.getBoundingClientRect();
-    el.animate([{transform:'none',opacity:1},{transform:`translate(${tg.left+tg.width/2-(r.left+r.width/2)}px,${tg.top+tg.height/2-(r.top+r.height/2)}px) scale(.45)`,opacity:0}],{duration:260,easing:'cubic-bezier(.4,0,.6,1)',fill:'forwards'});}
+    const kf=[{transform:'none',opacity:1},{transform:`translate(${tg.left+tg.width/2-(r.left+r.width/2)}px,${tg.top+tg.height/2-(r.top+r.height/2)}px) scale(.45)`,opacity:0}];
+    if(w!==0){el.animate(kf,{duration:260,easing:'cubic-bezier(.4,0,.6,1)',fill:'forwards'});continue;}
+    // ha te viszed, a lapok lefelé, a panelen át úsznak: másolatuk a legfelső rétegben halad, hogy ne a panel mögött tűnjenek el
+    const fly=el.cloneNode(true);fly.setAttribute('aria-hidden','true');
+    Object.assign(fly.style,{position:'fixed',left:r.left+'px',top:r.top+'px',width:r.width+'px',height:r.height+'px',margin:'0',zIndex:'30',pointerEvents:'none'});
+    document.body.appendChild(fly);el.style.visibility='hidden';
+    fly.animate(kf,{duration:260,easing:'cubic-bezier(.4,0,.6,1)',fill:'forwards'});setTimeout(()=>fly.remove(),320);}
   setTimeout(()=>{if(G===g&&G.phase==='play'&&G.trick.length===3)done();},260);
 }
 function renderTable(){
