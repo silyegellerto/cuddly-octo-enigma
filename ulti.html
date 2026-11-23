@@ -394,6 +394,7 @@ img.ico{width:1.2em;height:1.2em;vertical-align:-.25em;object-fit:contain;displa
    a döntési panel a maradék helyet kapja, és csak a belseje görgethető. Alacsony vagy fekvő
    képernyőn (és számítógépen) a megszokott görgethető oldal marad. */
 .cnt{display:none}
+html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 @media (max-width:979px) and (min-height:620px){
   /* a keret rögzített (position:fixed): iOS-en így az oldal semmiképp nem csúszhat el, a fejléc nem tűnik el felül */
   :root{padding:0}
@@ -2538,7 +2539,7 @@ function renderPanel0(el){
         const close=()=>{ov.classList.remove('show');setTimeout(()=>{if(!ov.classList.contains('show'))ov.innerHTML='';},220);};
         $('bidsClose').onclick=close;ov.onclick=e=>{if(e.target===ov)close();};
         ov.querySelectorAll('[data-ci2]').forEach(b=>b.onclick=()=>{UI.ci=+b.dataset.ci2;UI.err='';UI.bidScrollTo=true;close();render();});
-        const on=ov.querySelector('.chip.on');if(on)on.scrollIntoView({block:'center'});
+        const on=ov.querySelector('.chip.on'),sh=ov.querySelector('.sheet');if(on&&sh)sh.scrollTop+=on.getBoundingClientRect().top-sh.getBoundingClientRect().top-(sh.clientHeight-on.offsetHeight)/2;
       };
       // a figyelmeztetés nem tolja ki a gombokat: a piros felkiáltójelre koppintva ablakban jelenik meg
       if($('fwBtn'))$('fwBtn').onclick=()=>infoSheet(`<h2>Kényszervállalás</h2><p>${fw}</p>`);
@@ -2771,8 +2772,26 @@ document.querySelectorAll('[data-fs]').forEach(b=>b.onclick=()=>{SET.fs=+b.datas
 document.querySelectorAll('[data-risk]').forEach(b=>b.onclick=()=>{SET.risk=+b.dataset.risk;RISK=SET.risk;saveSet();syncSeg();UI.hc=null;if(G)render();});
 syncSeg();
 function syncTutor(){document.querySelectorAll('[data-tip]').forEach(b=>b.setAttribute('aria-checked',String(+b.dataset.tip===(SET.tip??0))));}
-const openMenu=()=>{$('menuOv').classList.add('show');$('mA2hs').hidden=standalone();setTimeout(()=>$('menuClose').focus(),30);};
-const closeMenu=()=>{$('menuOv').classList.remove('show');$('menuBtn').focus();};
+// iOS (főleg kezdőképernyőről indítva): app-nézetben a dokumentum soha ne görögjön el. Ha egy programozott görgetés,
+// fókusz vagy a billentyűzet/visszatérés a háttérből mégis elmozdítja, a tartalom a státuszsor alá csúszna, és az iOS
+// elhomályosítja a tetejét. Ilyenkor azonnal visszaállítjuk; nagyításnál (csípés) nem avatkozunk be.
+(function(){
+  const mq=matchMedia('(max-width:979px) and (min-height:620px)'),vv=window.visualViewport;
+  const fix=()=>{if(!mq.matches||(vv&&vv.scale>1.01))return;
+    if(window.scrollX||window.scrollY)window.scrollTo(0,0);
+    const se=document.scrollingElement;if(se&&(se.scrollTop||se.scrollLeft)){se.scrollTop=0;se.scrollLeft=0;}
+    if(document.body.scrollTop)document.body.scrollTop=0;
+    const w=document.querySelector('.wrap');if(w&&(w.scrollTop||w.scrollLeft)){w.scrollTop=0;w.scrollLeft=0;}};
+  addEventListener('scroll',fix,{passive:true});
+  if(vv){vv.addEventListener('scroll',fix);vv.addEventListener('resize',()=>{fix();setTimeout(fix,120);});}
+  addEventListener('pageshow',()=>{fix();setTimeout(fix,250);});
+  addEventListener('focusin',()=>setTimeout(fix,0));
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden){fix();setTimeout(fix,250);}});
+  addEventListener('orientationchange',()=>setTimeout(fix,300));
+  mq.addEventListener&&mq.addEventListener('change',fix);
+})();
+const openMenu=()=>{$('menuOv').classList.add('show');$('mA2hs').hidden=standalone();setTimeout(()=>$('menuClose').focus({preventScroll:true}),30);};
+const closeMenu=()=>{$('menuOv').classList.remove('show');$('menuBtn').focus({preventScroll:true});};
 $('menuBtn').onclick=openMenu;$('menuClose').onclick=closeMenu;
 $('menuOv').onclick=e=>{if(e.target.id==='menuOv')closeMenu();};
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('menuOv').classList.contains('show'))closeMenu();});

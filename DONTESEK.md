@@ -64,4 +64,5 @@ Forrás: <https://ultiblog.hu/a-talonozas/>
 - A saját kijátszott lapod a panel fölött repül az asztalra, és ha te viszed az ütést, a lapok is a panel fölött úsznak hozzád (nem tűnnek el mögötte).
 - A Tipp beállítása: **Ki / Normál / Tanuló**. „Ki” állásban a döntési panelen nincs Tipp gomb, és a kör végén a „Mi lett volna jobb?” gomb sem jelenik meg.
 - A 20/40 megtartásáról nincs külön szabály: a Tipp a próbajátékok alapján dönt (Gellért döntése).
+- Telefonos app-nézetben a dokumentum soha nem görög el (őrfüggvény + görgetés nélküli fókusz, dupla koppintásos nagyítás tiltva), hogy a tartalom ne csússzon a státuszsor alá.
 - A Tipp nincs mindig nyitva; a részletek a „▾ Miért?” alatt.
