@@ -398,7 +398,7 @@ img.ico{width:1.2em;height:1.2em;vertical-align:-.25em;object-fit:contain;displa
    szélességű, 10 px-nél magasabb, sima háttérszínű, és NEM pointer-events:none (az ilyet átugorja), akkor annak a színét
    teszi a státuszsor mögé, és nem homályosít. Ezért ez a sáv szándékosan fogadja a koppintást (alatta úgysincs semmi).
    Böngészőben és számítógépen a magassága 0, ott nincs hatása. */
-#sbBand{position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:25}
+#sbBand{position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:15}
 .cnt{display:none}
 html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 @media (max-width:979px) and (min-height:620px){
@@ -1005,7 +1005,7 @@ function bidOptions(h,minCi,noise=0){
 function rng(seed){return ()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 const pureDist=c=>Object.keys(c.comps).every(k=>k==='betli'||k==='durch');
 // ===== egységes értékelő: minden licitdöntés, Tipp és elemzés ebből számol =====
-// A lapot n-szer lejátssza a többi lap véletlen kiosztásával (a 20/40 bemondások, csendes bónuszok, kontra nélkül).
+// A lapot n-szer lejátssza a többi lap véletlen kiosztásával (a 20/40 bemondásokkal és a csendes bónuszokkal, kontra nélkül).
 // Rögzített véletlenmag: ugyanarra a lapra, lerakásra és játékcsaládra mindig ugyanaz az eredmény,
 // így pl. a betli és a piros betli ugyanazokon a próbaosztásokon fut, az esélyük azonos.
 const famKey=c=>c.kind+':'+Object.keys(c.comps).sort().join(',');
@@ -1138,10 +1138,6 @@ function inferTalons(p,n=16){
   while(out.length<n&&loose.length)out.push(loose.shift());
   return out.length>=4?out:null;
 }
-function talonForecast(talons){
-  const f={};for(const t of talons)for(const x of t)f[x.id]=(f[x.id]||0)+1;
-  return Object.entries(f).map(([id,k])=>({c:makeDeck()[+id],p:k/talons.length})).sort((a,b)=>b.p-a.p);
-}
 // A talonolvasás összefoglalója csoportokban (a konkrét lapot 22 ismeretlen lapból nem lehet megmondani)
 function talonSummary(talons,ci){
   const c=CONTRACTS[ci],bet=c.kind==='betli',n=talons.length,pc=k=>Math.round(k/n*10)*10;
@@ -1233,7 +1229,6 @@ function chooseBid(h,minCi){
   if(low)return Object.assign(Object.create(null),low,{ladder:best});
   return best;
 }
-function bestBid(h,minCi){return chooseBid(h,minCi);}
 function shouldConcede(cur,ci){const v=typeof cur==='number'?cur:cur.ev;return v< -concedeLoss(ci,null,1)-0.5;}
 function ownRaise(p){const min=minBidIndex(),b=min<CONTRACTS.length?chooseBid([...G.hands[p],...G.talon],min):null,cur=evalCurrent(G.hands[p],G.talon,G.bid.ci,G.bid.suit);return {b,cur,yes:!!(b&&b.ev>0.5&&b.ev>cur.ev+RISK_RAISE[RISK])};}
 // parti kontra a védők bemondás-előnye alapján (óvatos, normál, merész): ennyi különbség kell
@@ -1362,22 +1357,13 @@ function greedyBest(h,minCi){
     }}
   return best;
 }
-// a talon két ismeretlen lapjának Monte Carlo becslése: mennyit javíthat a lapon?
-function pickupEV(p,samples=10){
-  const mine=new Set(G.hands[p].map(x=>x.id));
-  const unseen=makeDeck().filter(x=>!mine.has(x.id));
-  const w=unseen.map(x=>(x.r===7||x.r===3||x.r===0||x.r>=5)?0.45:1); // a talonba inkább gyenge lap kerül
-  const tot=w.reduce((a,b)=>a+b,0),pick=()=>{let r=Math.random()*tot;for(let i=0;i<unseen.length;i++){r-=w[i];if(r<=0)return i;}return unseen.length-1;};
-  let sum=0;
-  for(let k=0;k<samples;k++){let i=pick(),j=pick();while(j===i)j=pick();sum+=greedyBest([...G.hands[p],unseen[i],unseen[j]],minBidIndex());}
-  return sum/samples;
-}
 // felvétel elemzése vállalásonként: a talon lehetséges lapjaival átlagosan mennyit ér (kényszervállalás nélkül)
-function pickupDetail(p,samples=24){return pickupDetailH(G.hands[p],minBidIndex(),samples);}
 function pickupDetailH(hand,minCi,samples=24,talons=null){
   const mine=new Set(hand.map(x=>x.id)),unseen=makeDeck().filter(x=>!mine.has(x.id));
   const w=unseen.map(x=>(x.r===7||x.r===3||x.r===0||x.r>=5)?0.45:1),tot=w.reduce((a,b)=>a+b,0);
-  const pick=()=>{let r=Math.random()*tot;for(let i=0;i<unseen.length;i++){r-=w[i];if(r<=0)return i;}return unseen.length-1;};
+  // rögzített mag: ugyanarra a lapra a bot és a Tipp ugyanazt számolja
+  const R=rng(hand.reduce((a,x)=>(Math.imul(a,31)+x.id+1)|0,13)^minCi*101);
+  const pick=()=>{let r=R()*tot;for(let i=0;i<unseen.length;i++){r-=w[i];if(r<=0)return i;}return unseen.length-1;};
   const acc={},min=minCi;
   for(let k=0;k<samples;k++){
     let h;
@@ -1394,10 +1380,6 @@ function pickupDetailH(hand,minCi,samples=24,talons=null){
   }
   // ahol egy mintában sem teljesült a feltétel, az nem jelölt
   return Object.values(acc).map(o=>({ci:o.ci,suit:o.suit,ev:o.sum/samples,p:o.ps/samples,ok:o.n/samples})).filter(o=>o.ok>=0.5).sort((a,b)=>b.ev-a.ev);
-}
-function bestSuitEst(h,ci,suit){
-  if(suit!==-2)return estimate(h,ci,suit,null);
-  return Math.max(...[1,2,3].map(s=>estimate(h,ci,s,null)));
 }
 
 // ---- stratégia: Jánoska–Zsigri: A rablóulti szabályai ----
@@ -2243,7 +2225,7 @@ function computeHint(){
     if(c.val<=5)html+=`<p class="rule">${BLOG} (talonozás): alacsony licitnél ne tegyél le ászt, X-et, VII-est, királyt vagy felsőt, és piros lapot is csak magas értékű bemondásnál, mert a következő licitáló felveheti őket, és magasabbat mondhat velük. Inkább a hosszú színedből dobj.</p>`;
     if(isTrumpC(c)&&!c.red)html+=`<p class="rule">Az adut (${SUIT_NAMES[b.suit].toLowerCase()}) csak akkor kell bemondanod, ha a licited marad.</p>`;
     html+=`<p class="rule">${kinds.map(k=>KIND_TIPS[k]).join(' ')}</p>`;
-    html+=`<p class="rule">Az esélyek a lapod próbajátékaiból jönnek (a legjobb jelölteknél 96 lejátszás), a többi lap véletlen kiosztásával. A 20/40 bemondások (a védőkéi is) és a talonba kerülő pontok benne vannak.</p>`;
+    html+=`<p class="rule">Az esélyek a lapod próbajátékaiból jönnek (a legjobb jelölteknél 96 lejátszás), a többi lap véletlen kiosztásával. A 20/40 bemondások (a védőkéi is) és a talonba kerülő pontok benne vannak. Betlinél erős védekezést feltételezünk: a próbajátékokban a védők látják a lapjaidat, így csak a valóban jó betli kap jó esélyt.</p>`;
     return {html,cards:new Set(b.disc.map(x=>x.id)),apply:()=>{UI.sel=b.disc.slice();UI.ci=b.ci;UI.suit=b.suit;UI.err='';}};
   }
   if(G.phase==='bid'&&G.bid&&G.bid.seat===0){
@@ -2509,7 +2491,7 @@ function buildAnalysis(){
   h+=whyLost();
   if(REV.kon&&!G.result.conceded){const k=analyzeKontra();if(k)h+='<h4 class="an-h">Kontra</h4>'+k;}
   if(REV.plays.length)h+='<h4 class="an-h">Lejátszás</h4>'+analyzePlay();
-  h+='<p class="note">Az „esély” és a „várható” pont a licitkor ismert lapjaidból jön: a gép 32–96-szor lejátssza a vállalást a többi lap véletlen kiosztásával, a 20/40 bemondásokkal együtt, kontra nélkül. A várható pont védőnként értendő, és a talonkockázatot is tartalmazza. A „lapok ismeretében” oszlop a valódi leosztással lejátszott eredmény a két védőtől együtt, kontra nélkül. Fél pontnál kisebb különbséget nem tekintünk jobbnak.</p>';
+  h+='<p class="note">Az „esély” és a „várható” pont a licitkor ismert lapjaidból jön: a gép 32–96-szor lejátssza a vállalást a többi lap véletlen kiosztásával, a 20/40 bemondásokkal együtt, kontra nélkül (betlinél erős védekezéssel: a védők látják a felvevő lapjait). A várható pont védőnként értendő, és a talonkockázatot is tartalmazza. A „lapok ismeretében” oszlop a valódi leosztással lejátszott eredmény a két védőtől együtt, kontra nélkül. Fél pontnál kisebb különbséget nem tekintünk jobbnak.</p>';
   return h;
 }
 

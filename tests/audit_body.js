@@ -1,3 +1,5 @@
+// rögzített keverés: a hiba minden futásnál ugyanott jön elő
+let AS=1;Math.random=()=>{AS|=0;AS=AS+0x6D2B79F5|0;let t=Math.imul(AS^AS>>>15,1|AS);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};
 const R={};const ok=(name,cond,info='')=>{(R[name]=R[name]||{ok:0,bad:0,ex:[]});if(cond)R[name].ok++;else{R[name].bad++;if(R[name].ex.length<2)R[name].ex.push(info);}};
 const D=makeDeck(),C=(s,r)=>D[s*8+r];
 function rank(c,tg){return tg?[0,1,2,6,3,4,5,7][c.r]:c.r;}
