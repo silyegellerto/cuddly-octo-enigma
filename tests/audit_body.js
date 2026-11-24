@@ -47,8 +47,8 @@ for(let g=0;g<60;g++){
   ok('lapadás: szín- és adukényszer, felülütés',indepLegal(hand,tr,card,G.trump,G.trumpGame));
   if(G.ultiLock&&p===G.decl&&G.trickNo<9&&card.s===G.trump&&card.r===0)ok('ulti: VII nem megy ki, amíg más adu van',!hand.some(x=>x.s===G.trump&&x.r!==0));
   ok('minden lépésnek van indoklása',!!WHY);
-  // védő nem a felvevő színével folytat, ha van más
-  if(!tr.length&&p!==G.decl&&G.trumpGame){
+  // védő nem a felvevő színével folytat, ha van más (kivéve 20-100: ott az ultiblog szerint épp a hajtószínt kell korán leadni)
+  if(!tr.length&&p!==G.decl&&G.trumpGame&&!CONTRACTS[G.ci].comps.c20){
     const dl=new Set((G.hist||[]).filter(t=>t[0].p===G.decl).map(t=>t[0].c.s));
     const alt=legalCards(p).some(x=>x.s!==G.trump&&!dl.has(x.s));
     if(alt&&dl.has(card.s)&&card.s!==G.trump&&!knownVoid(G.decl,card.s))ok('védő: nem a felvevő színével folytat (ha nem biztos ütés)',isTop(card,p)||!declMayBeat(p,card,false),cardName(card)+' | '+WHY);

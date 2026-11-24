@@ -45,7 +45,7 @@ Alap: ultiblog.hu szabálykönyv, kiegészítve Jánoska Levente – Zsigri: *A 
 - Kontra / rekontra (szubkontra nincs), az első lap előtt.
 - Korai vége (`allDecided`): ha a bemondás minden része eldőlt (betli/durchmars bukott, 100 megvan vagy elérhetetlen, ulti VII idő előtt kiment), a leosztás véget ér. Partis játék a végéig megy; ha a felvevő addig mindent vitt, a csendes durchmars miatt is tovább megy.
 - Parti kontra (`kontraJudge`, `PARTI_MARGIN`): ha a védők 20/40 bemondásai legalább 40 ponttal (óvatosnál 60) többet érnek a felvevőénél, a parti kontrázható kevés ütőlappal is (gépi lejátszásokban ilyenkor ~70%-ban bukik). Ilyen különbségnél a felvevő nem rekontráz partit.
-- Felmutatás (`claimCheck`, `solveClaim`, `resolveClaim`): ütés elején teljes kereséssel (egyenértékű lapok összevonásával) megnézi, biztos-e, hogy innentől minden ütés egy félé (felvevő mindent / betliben semmit / védők mindent). A botok maguktól felmutatnak, a játékosnak „Felmutatom” gomb jelenik meg; a maradékot a gép lejátssza, így a pontozás a szokásos.
+- Felmutatás (`claimCheck`, `solveClaim`, `resolveClaim`): ütés elején teljes kereséssel (egyenértékű lapok összevonásával) megnézi, biztos-e, hogy innentől minden ütés egy félé (felvevő mindent / betliben semmit / védők mindent). A felmutatás csak akkor érvényes, ha a felmutató saját tudása alapján minden lehetséges lapelosztásnál biztos (`claimSafe`: a rejtett lapokat a keresés a legrosszabb, de szabályos módon osztja ki, a színhiányok és a felülütési kényszer következményeivel). A botok maguktól felmutatnak, a játékosnak „Felmutatom” gomb jelenik meg; a maradékot a gép lejátssza, így a pontozás a szokásos.
 - Lapszámolás (`knownAt`, `mayHold`, `oppTrumps`, `declMayBeat`): a botok a bemondott 20/40-ből, az ulti VII-eséből, a 40-100 adu király-felsőjéből és az ismert színhiányokból következtetnek: a felvevő nem húz adut, ha a védőknél már nincs; a védők a társnál ismert lapot nem tekintik fenyegetésnek, és biztonságosan beadják a pontot, ha a felvevő nem tud fölé menni.
 - Bedobás bármikor (licit végén vagy játék közben), mindig kontrázott áron: a vállalás duplája védőnként, bukott ulti háromszorosa.
 - A leosztás véget ér, amint minden bemondott rész eldőlt (`allDecided`): durchmars az első elvesztett ütésnél, betli az első vitt ütésnél, 40-100 / 20-100 ha már megvan vagy már nem érhető el, ulti ha a VII idő előtt kiment. A parti a végéig megy. Korai befejezésnél csendes bónusz nem jár.
@@ -88,7 +88,7 @@ Visszaállítás: a `backup/ulti_v34_elenk_licit_elott.html` fájl.
 
 ## Talonozás alacsony licitnél
 
-Parti és piros parti licitnél a talonba nem kerül ász, X, VII, király vagy felső (ultiblog), kivéve az X-et, ha ugyanabból a színből az ász és a király is a kézben van. Betlire nem vonatkozik. Ez kötelező szabály (`discardAllowed`), nem csak levonás. Ha a tiltott lerakás kártyajátékban jobb lenne, a Tipp ezt tanulságként megmutatja.
+Parti és piros parti licitnél a talonba nem kerül ász, X, VII, király vagy felső (ultiblog), kivéve az X-et, ha ugyanabból a színből az ász és a király is a kézben van. Piros lap csak legalább 8 pontos bemondásnál mehet le, adus játékban adu nem (`discardTier`). Betlire nem vonatkozik. A megbeszélt döntések teljes listája: `DONTESEK.md`. Ez kötelező szabály (`discardAllowed`), nem csak levonás. Ha a tiltott lerakás kártyajátékban jobb lenne, a Tipp ezt tanulságként megmutatja.
 
 ## Szándékos eltérések a Wikipédia licittáblázatától
 

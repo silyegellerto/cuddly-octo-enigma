@@ -38,8 +38,10 @@ Forrás: <https://ultiblog.hu/a-talonozas/>
 - Talonozásnál nincs tiltás: a veszélyes lapoknak kell lemenniük. A VII és VIII soha nem megy le.
 - A Tipp betlinél **minden lehetséges lerakást** lemér próbajátékkal (`N_PRE=24`), a legjobbakat pontosabban is.
 - **Ász betliben**: csak 7–8 lapos színben tartható. 6 lapnál már nagyon kockázatos (a kint lévő két lap elosztásán múlik), rövidebb színben a védők addig hívják a színt, amíg rá nem kell tenni. Csak színhiánnyal lehet idő előtt eldobni.
-- **Védekezés**: a felülütési kényszer mindenkire vonatkozik, a védő társára is. A védő minden hívást végigszámol az ismeretlen lapok lehetséges elosztásain, és azt hívja, amelyiknél a felvevő a legnagyobb eséllyel viszi az ütést. A felvevő által elsőként hívott színt (valószínűleg rövid) kevésbé hívja vissza.
-- Ha a felvevő az ütést már nem viszi, a védő a legmagasabb lapját dobja (a kis lapokat az alá hívásokhoz tartja).
+- **A betli esélye** (Tipp és botlicit) **erős védekezést** feltételez: a próbajátékokban a védők látják a felvevő lapjait. Indok: a zárt lapos bot nem találja meg a lyukakat, így az esély túl optimista volt (16 betlijavaslaton átlag 67% helyett 48%; egy lyukas lap 85% helyett 3%). Ezért csak a valóban jó betlit javasolja.
+- **Védekezés**: a felülütési kényszer mindenkire vonatkozik, a védő társára is. A védő minden hívást végigszámol az ismeretlen lapok lehetséges elosztásain, és azt hívja, amelyiknél a felvevő a legnagyobb eséllyel viszi az ütést. A talonban a magas lapok (ász, király, felső) valószínűbbek, mert a betlis felvevő ezeket teszi le. (Az „elsőként hívott szín rövid” feltevést elvetettük, félrevitt.)
+- **Színtelenítés**: ha a védő nem tud színt adni, abból a színből dob tovább, amelyikből már elkezdett dobni; ha még egyikből sem, a legmagasabb lapját dobja (azonos rangnál a rövidebb színből).
+- Ha a védő tud színt adni, és a felvevő az ütést már nem viszi, a legmagasabb lapját teszi (a kis lapokat az alá hívásokhoz tartja).
 - **Terített betli**: az első ütés után a felvevő lapjai kiterítődnek (napló, értesítés, „terítve” jelzés).
 
 ## Licit, kontra, játékmenet
@@ -48,8 +50,20 @@ Forrás: <https://ultiblog.hu/a-talonozas/>
 - A **parti kontrázható** a védők 20+20-ával is (`PARTI_MARGIN = [60,40,40]`).
 - Sima durchmars színtelen sorrenddel megy (MAUSZ szerint), adus változatnál az adu sorrend.
 - **Felmutatás** („Felmutatom”): ha egy ütés elején biztos, hogy minden ütés az egyik félé. Mindkét irányban működik. A botok maguktól felmutatnak, ilyenkor a két bot maradék lapja is látszik.
+  - **Csak a felmutató tudása alapján biztos esetben** (`claimSafe`): minden lehetséges lapelosztásnál biztos legyen. Tudás: a saját lap (védőknél a két védőé együtt), a kiment lapok, felvevőnél a talon, a bemondásokból ismert lapok, a kiderült színhiányok. A rejtett lapokat a keresés a felmutatónak legrosszabb módon, de szabályosan osztja ki. Hibás volt: korábban a gép a valódi, eltakart lapokat is figyelembe vette (lyukas betlinél is felajánlotta).
 - Felmutatásnál ultis felvevő az adu VII-et az utolsó ütésre tartja.
 - Elnevezés: a piros szín nélküli durchmars neve **Redurchmars**.
+
+## Ultiblog-stratégiák (licit és lejátszás)
+
+Források: <https://ultiblog.hu/az-ulti-szabalyai/ulti-strategia> és az onnan linkelt cikkek (passz/parti, piros parti, 40-100, 20-100, ulti, piros ulti, betli, durchmars, kontra- és licittáblázat). 2026.11.24-én átnézve; ami benne van:
+
+- **Piros 40-100, 20-100, piros 20-100 nem nyitólicit** („soha nem elsőre”, „nem szabad azonnal, első körben”): nyitáskor alacsonyabbal tartunk, ezek csak túllicitálásra jönnek (`NOT_FIRST`).
+- **40-100 / 20-100 felvevő**: a húzó színben nem ásszal kezd, amíg a védőknél adu lehet, hanem előbb egy kisebb, pontot nem érő lappal.
+- **20-100 felvevő**: a védőknek járó egyetlen ütést a játék elején adja oda (amíg színt kell adniuk, nem tudnak kenni).
+- **20-100 védő**: korán megszabadul az adu- és hajtószínű lapjaitól, hogy később ászt vagy X-et kenhessen a társa ütésébe.
+- Már korábban is benne volt: talonozás; az ulti lapelosztás-táblázata, hajtószín, aduhúzás; ulti ellen a társ színéből indulás (nem aduból, nem a hajtószínből); betliben ászt nem indít, királlyal indul; 40-100-nál a hiányzó adu ász kihajtása felsővel/királlyal; durchmarsnál előbb a biztos ütők, a fogható lap utoljára, a védő a fogólapját tartja; kontra 20/40 és erős adu esetén, betliben egyéni; terített csak hibátlan lappal; partinál a nem piros 20 megtartása.
+- Nem építettük be (a cikkek csak általánosan írják): a társ dobásaiból jelzések olvasása, a blöff talon.
 
 ## Felület
 

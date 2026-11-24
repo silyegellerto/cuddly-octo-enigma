@@ -980,10 +980,14 @@ function estimate(hand,ci,suit,disc){
   for(const [k,v] of Object.entries(c.comps)){const p=compP(hand,ci,suit,k,pen);ev+=p*v-(1-p)*v*(k==='ulti'?2:1);}
   return ev;
 }
+// ultiblog: a piros 40-100-at „soha nem elsőre licitálják”, a 20-100-at „nem szabad azonnal, első körben bemondani”:
+// ezekhez a talonból várnak lapot, ezért nyitáskor a játékos alacsonyabbal tart (gyűjt), és csak túllicitáláskor mondja
+const NOT_FIRST=new Set(['Piros 40-100','20-100','Piros 20-100']);
 function bidOptions(h,minCi,noise=0){
   const res=[];
   for(let ci=minCi;ci<CONTRACTS.length;ci++){
     const c=CONTRACTS[ci];
+    if(minCi===0&&NOT_FIRST.has(c.name))continue;
     for(const s of suitsFor(c)){let best=null;
       let tMin=2;for(let i=0;i<h.length;i++)for(let j=i+1;j<h.length;j++)tMin=Math.min(tMin,discardTier([h[i],h[j]],h,ci,s));
       for(let i=0;i<h.length;i++)for(let j=i+1;j<h.length;j++){
@@ -1014,11 +1018,14 @@ function evalOpt(o,n=N_SCREEN){
   for(const x of disc.slice().sort((a,b)=>a.id-b.id))seed=(Math.imul(seed,17)+x.id+3)|0;
   for(const ch of famKey(c)+o.suit)seed=(Math.imul(seed,33)+ch.charCodeAt(0))|0;
   const R=rng(seed);let win=0,sum=0;const pc={};
+  // betlinél a próbajátékban a védők látják a felvevő lapjait (erős védekezés): egy tapasztalt védőpáros a hívásokból és
+  // dobásokból sokat kikövetkeztet, a zárt lapos bot viszont nem, így az esély túl optimista lenne (mérés: átlag 67% helyett 48%).
+  // Ezért a Tipp és a botok licitje csak a valóban jó betlit tartja jónak.
   try{KV=false; // a próbajátékok a mért, Kovács nélküli botmodellel futnak
     for(let k=0;k<n;k++){
       const d=rest.slice();for(let i=d.length-1;i>0;i--){const j=Math.floor(R()*(i+1));[d[i],d[j]]=[d[j],d[i]];}
       G={dealer:2,fh:0,hands:[hand.map(x=>({...x})),d.slice(0,10),d.slice(10,20)],talon:disc.map(x=>({...x})),phase:'bid',turn:0,bid:{ci:o.ci,suit:isTrumpC(c)?o.suit:-1,seat:0},passes:0,lastAction:['','',''],log:[],
-         decl:-1,ci:-1,trump:-1,trumpGame:false,trick:[],won:[[],[],[]],tcount:[0,0,0],trickNo:0,leader:-1,marr:[[],[],[]],ultiBroken:false,ultiWon:false,lastWinner:-1,played:[],result:null,revealed:false,talonPts:0,lastTrick:null};
+         decl:-1,ci:-1,trump:-1,trumpGame:false,trick:[],won:[[],[],[]],tcount:[0,0,0],trickNo:0,leader:-1,marr:[[],[],[]],ultiBroken:false,ultiWon:false,lastWinner:-1,played:[],result:null,revealed:c.kind==='betli',talonPts:0,lastTrick:null};
       endBidding();G.kmult=[{},{},{}];startPlay();
       let guard=0;while(G.phase==='play'&&guard++<60){if(G.trick.length===3){collectTrick();continue;}playCard(G.turn,botChoose(G.turn));}
       const ch=G.result?G.result.change[0]:0;sum+=ch;if(ch>0)win++;
@@ -1694,12 +1701,114 @@ function eqReduce(p,L){
   return out;
 }
 function claimTry(side,p0,i0){try{return solveClaim(side,p0,i0);}catch(e){if(e==='budget')return false;throw e;}}
+// ---- felmutatás a felmutató tudása szerint ----
+// A felmutatás csak akkor érvényes, ha a felmutató fél a saját tudása alapján MINDEN lehetséges lapelosztásnál biztos.
+// Tudása: a saját lapja (védőknél a két védőé együtt), a kiment lapok, felvevőnél a talon, a bemondásokból ismert lapok
+// és a korábbi ütésekből kiderült színhiányok. A rejtett lapokat egy ellenfél „osztja ki” menet közben, a felmutatónak
+// legrosszabb módon, de mindig szabályosan: amit kijátszik, az összefér az addigi lapjaival (színre színt, felülütési
+// kényszer, adukényszer), és a maradék lapok mindig szétoszthatók a kezek között. Ha a keresés túl hosszú, nincs felmutatás.
+function claimSafe(side,budget=25000){
+  const d=G.decl,tg=G.trumpGame,t=G.trump,ctrl=p=>side==='def'?p!==d:p===d;
+  const goal=w=>side==='decl'?w===d:w!==d;
+  const ulti=side==='decl'&&CONTRACTS[G.ci].comps.ulti&&!G.ultiBroken;
+  const players=[0,1,2].filter(p=>!ctrl(p));            // a rejtett lapú játékosok
+  const H=side==='def'?[d,-1]:players;                   // a lapok lehetséges helye; -1 = talon (nem játszik)
+  const hidden=side==='def'?[...G.hands[d],...G.talon]:players.flatMap(q=>G.hands[q]);
+  const pool=new Map();
+  for(const c of hidden){let m=0;
+    for(let i=0;i<H.length;i++){const q=H[i];if(q>=0&&knownVoid(q,c.s))continue;m|=1<<i;}
+    const k=knownAt(c);if(k>=0){const i=H.indexOf(k);m=i>=0?(1<<i):m;}
+    pool.set(c.id,{c,m});}
+  const cnt=H.map(q=>q>=0?G.hands[q].length:G.talon.length);
+  const feasible=()=>{ // Hall-feltétel: a rejtett lapok szétoszthatók a kezek között
+    const n=H.length;for(let S=1;S<(1<<n);S++){let need=0,cap=0;
+      for(let i=0;i<n;i++)if(S>>i&1)cap+=cnt[i];
+      for(const e of pool.values()){if(!e.m)return false;if((e.m&~S)===0)need++;}
+      if(need>cap)return false;}
+    return true;};
+  if(!feasible())return false;
+  const memo=new Map(),T=[],sv=G.trick;
+  const known=()=>[0,1,2].filter(ctrl).flatMap(q=>G.hands[q]);
+  // azonos színű lapok, amelyek között semmilyen más lap nincs, egyformák; ellenfélnél ugyanazzal a hellyel
+  const between=(a,b,ex)=>{const lo=Math.min(pow(a,tg),pow(b,tg)),hi=Math.max(pow(a,tg),pow(b,tg));
+    return ex.some(x=>x.s===a.s&&pow(x,tg)>lo&&pow(x,tg)<hi);};
+  function ctrlCands(p,L){
+    const ex=[...pool.values()].map(e=>e.c).concat(known().filter(x=>!G.hands[p].includes(x)),T.map(x=>x.c));
+    const out=[],by={};for(const c of L)(by[c.s]=by[c.s]||[]).push(c);
+    for(const s in by){const cs=by[s].sort((a,b)=>pow(b,tg)-pow(a,tg));let prev=null;
+      for(const c of cs){const seven=tg&&c.s===t&&c.r===0;if(prev&&!seven&&!between(prev,c,ex))continue;out.push(c);prev=c;}}
+    return out;}
+  function advCands(i){
+    const mine=[...pool.values()].filter(e=>e.m>>i&1);
+    const others=known().concat(T.map(x=>x.c),[...pool.values()].filter(e=>!(e.m>>i&1)).map(e=>e.c));
+    const groups=[];
+    for(const e of mine.sort((a,b)=>a.c.s-b.c.s||pow(a.c,tg)-pow(b.c,tg))){
+      const g=groups[groups.length-1];
+      if(g&&g[0].c.s===e.c.s&&g[0].m===e.m&&!between(g[g.length-1].c,e.c,others))g.push(e);else groups.push([e]);}
+    const out=[];for(const g of groups){out.push(g[0]);if(g.length>2)out.push(g[g.length>>1]);if(g.length>1)out.push(g[g.length-1]);}
+    return out;}
+  function key(leader){
+    return leader+'|'+[0,1,2].filter(ctrl).map(q=>G.hands[q].map(x=>x.id).sort((a,b)=>a-b).join(',')).join('/')+'|'+
+      [...pool.values()].map(e=>e.c.id*8+e.m).sort((a,b)=>a-b).join(',')+'|'+cnt.join(',');}
+  // gyors, biztos esetek az ütés elején (a kereséshez képest csak rövidítés, mindig igaz állítások)
+  function quick(leader){
+    const hid=[...pool.values()].map(e=>e.c),dh=G.hands[d];
+    if(side==='betli'){
+      // a felvevő minden lapja kisebb az ugyanolyan színű rejtett lapoknál: más hívására sosem kell fölé tennie
+      if(dh.some(x=>hid.some(y=>y.s===x.s&&y.r<x.r)))return false;
+      if(leader!==d)return true;
+      // ő hív: olyan lappal, amelyre valakinek biztosan fölé kell tennie (a rejtett lapok mind a védőknél vannak)
+      return dh.some(x=>hid.some(y=>y.s===x.s&&y.r>x.r));
+    }
+    if(side==='decl'&&leader===d&&!ulti){
+      // a felvevő hív, minden lapja a legmagasabb a színében, és a védőknél nincs adu: minden ütést ő visz
+      if(tg&&hid.some(y=>y.s===t))return false;
+      return dh.every(x=>!hid.some(y=>y.s===x.s&&pow(y,tg)>pow(x,tg)));
+    }
+    return false;}
+  function trick(leader){
+    if(![0,1,2].filter(ctrl).some(q=>G.hands[q].length))return true;
+    if(quick(leader))return true;
+    const k=key(leader);if(memo.has(k))return memo.get(k);
+    const r=play(leader);memo.set(k,r);return r;}
+  function play(p){
+    if(--budget<0)throw 'budget';
+    if(T.length===3){const w=T[trickWinnerIdx(T)].p;if(!goal(w))return false;
+      const saved=T.splice(0,3);try{return trick(w);}finally{T.push(...saved);}}
+    if(ctrl(p)){
+      const h=G.hands[p];G.trick=T;let L;try{L=legalCards(p);}finally{G.trick=sv;}
+      for(const c of ctrlCands(p,L)){
+        if(ulti&&p===d&&c.s===t&&c.r===0&&h.length>1)continue;
+        const idx=h.indexOf(c);h.splice(idx,1);T.push({p,c});
+        let r;try{r=play(nxt(p));}finally{T.pop();h.splice(idx,0,c);}
+        if(r)return true;}
+      return false;}
+    const i=H.indexOf(p);
+    for(const e of advCands(i)){
+      const c=e.c,saved=[...pool.entries()].map(([id,x])=>[id,x.m]);
+      pool.delete(c.id);cnt[i]--;
+      if(T.length){const ls=T[0].c.s,W=T[trickWinnerIdx(T)].c,cut=(f)=>{for(const x of pool.values())if(f(x.c))x.m&=~(1<<i);};
+        if(c.s===ls){if(W.s===ls&&!beats(c,W))cut(x=>x.s===ls&&pow(x,tg)>pow(W,tg));}
+        else{cut(x=>x.s===ls);
+          if(tg&&c.s!==t)cut(x=>x.s===t);
+          else if(tg&&c.s===t&&W.s===t&&!beats(c,W))cut(x=>x.s===t&&pow(x,tg)>pow(W,tg));}}
+      // ha a lap után a maradék nem osztható szét szabályosan, ezt a lapot nem tarthatta: kihagyjuk
+      let r=true;
+      if(feasible()){T.push({p,c});try{r=play(nxt(p));}finally{T.pop();}}
+      pool.set(c.id,e);cnt[i]++;for(const [id,m] of saved)pool.get(id).m=m;
+      if(!r)return false;}
+    return true;}
+  try{return trick(G.turn);}catch(e){if(e==='budget')return false;throw e;}finally{G.trick=sv;}
+}
 // az ütés elején egyszer: melyik fél mutathatja fel a lapjait (null: egyik sem)
 function claimCheck(){
   if(G.phase!=='play'||G.trick.length||G.trickNo>=9)return null;
   if(G.claimAt&&G.claimAt.n===G.trickNo)return G.claimAt.side;
   const sides=CONTRACTS[G.ci].kind==='betli'?['betli']:['decl','def'];
-  let side=null;for(const s of sides)if(claimTry(s,G.turn,0)){side=s;break;}
+  // előbb a valódi lapokkal (gyors szűrés: ha így sem biztos, semmiképp), utána a felmutató tudása szerint, minden elosztásra
+  let side=null;for(const s of sides){
+    let real;try{real=solveClaim(s,G.turn,0);}catch(e){if(e!=='budget')throw e;real='budget';}
+    if(real!==false&&claimSafe(s)){side=s;break;}}
   G.claimAt={n:G.trickNo,side};return side;
 }
 const claimers=side=>side==='def'?[0,1,2].filter(q=>q!==G.decl):[G.decl];
@@ -1744,8 +1853,7 @@ let WHY='';
 function betliLead(p,L){
   const pa=partnerOf(p),d=G.decl,out=outstanding(p),nd=G.hands[d].length,np=G.hands[pa].length,nt=Math.max(0,out.length-nd-np);
   const dv=[0,1,2,3].map(s=>knownVoid(d,s)),pv=[0,1,2,3].map(s=>knownVoid(pa,s));
-  // a betlis felvevő a rövid (gyakran egylapos) színét hívja először, hogy kifogyjon belőle: abban a színben kevés lapja maradhat
-  const dl=[0,1,2,3].map(s=>hist().some(tr=>tr[0].p===d&&tr[0].c.s===s)?0.5:1);
+  // a betlis felvevő a veszélyes magas lapjait teszi a talonba: ott az ász, a király, a felső valószínűbb
   let seed=11+p;for(const x of G.played)seed=(Math.imul(seed,31)+x.id+1)|0;for(const x of G.hands[p])seed=(Math.imul(seed,17)+x.id+1)|0;
   const R=rng(seed),K=24,worlds=[];
   for(let k=0;k<K;k++){
@@ -1754,7 +1862,7 @@ function betliLead(p,L){
       const u=out.slice();for(let i=u.length-1;i>0;i--){const j=Math.floor(R()*(i+1));[u[i],u[j]]=[u[j],u[i]];}
       DH=[];PH=[];let tl=0;ok=true;
       for(const c of u){
-        const wd=!dv[c.s]&&DH.length<nd?(nd-DH.length)*dl[c.s]:0,wp=!pv[c.s]&&PH.length<np?np-PH.length:0,wt=tl<nt?nt-tl:0,sum=wd+wp+wt;
+        const tw=[1,1,1,1.3,1.5,2,2.5,3.5][c.r],wd=!dv[c.s]&&DH.length<nd?nd-DH.length:0,wp=!pv[c.s]&&PH.length<np?np-PH.length:0,wt=tl<nt?(nt-tl)*tw:0,sum=wd+wp+wt;
         if(!sum){ok=t===5;if(!ok)break;continue;}
         const r=R()*sum;if(r<wd)DH.push(c);else if(r<wd+wp)PH.push(c);else tl++;}
     }
@@ -1823,6 +1931,17 @@ function botChoose(p){
       }
       return lo.length?R(maxBy(lo,P),'A legmagasabb olyan lapot dobd, amelyik még nem üt: így szabadulsz meg a veszélyes lapoktól.'):R(minBy(L,P),'Sajnos mindenképp ütsz, ez a betli bukását jelenti.');
     }
+    // színtelenítés: ha nem tudsz színt adni, abból a színből dobj tovább, amelyikből már elkezdtél dobni, hogy hamar
+    // kifogyj belőle; ha még egyikből sem, a legmagasabb lapodat dobod (azonos rangnál a rövidebb színből), és onnan folytatod
+    if(!lead&&!G.hands[p].some(x=>x.s===tr[0].c.s)){
+      const H=G.hands[p],len=s=>H.filter(x=>x.s===s).length;
+      const started=new Set((G.hist||[]).flatMap(t2=>t2.filter(e=>e.p===p&&e.c.s!==t2[0].c.s).map(e=>e.c.s)));
+      const cont=L.filter(x=>started.has(x.s));
+      if(cont.length){const x=maxBy(cont,y=>y.r*10-len(y.s));
+        return R(x,`Nincs ${SUIT_NAMES[tr[0].c.s].toLowerCase()} lapod, ezért dobhatsz. ${BOOK}: színtelenítés. A ${SUIT_NAMES[x.s].toLowerCase()} színből már elkezdtél dobni, abból folytasd, hogy minél hamarabb kifogyj belőle: utána, ha a társad ezt a színt hívja, nem neked kell a felvevő lapja fölé tenned.`);}
+      const x=maxBy(L,y=>y.r*10-len(y.s));
+      return R(x,`Nincs ${SUIT_NAMES[tr[0].c.s].toLowerCase()} lapod, ezért dobhatsz. A legmagasabb lapodtól szabadulsz meg, és a következő dobásoknál ebből a színből folytatod (színtelenítés), a kis lapjaidat pedig a későbbi alá hívásokhoz tartod.`);
+    }
     if(!lead&&tr[trickWinnerIdx(tr)].p===G.decl){const lo=L.filter(x=>!wouldWin(x));if(lo.length)return R(maxBy(lo,P),'A felvevő viszi az ütést. Maradj alatta, és közben szabadulj meg egy magasabb lappal.');}
     if(!lead&&tr.some(t=>t.p===G.decl))return R(maxBy(L,P),'A felvevő ezt az ütést már nem viszi, így a legmagasabb lapodat dobod el. A kis lapjaidat tartsd meg: később azokkal tudsz a felvevő alá hívni.');
     if(!lead)return R(minBy(L,P),'A felvevő még ezután tesz. Maradj minél lejjebb, hogy a felülütési kényszer miatt neki kelljen fölé tennie.');
@@ -1890,6 +2009,21 @@ function botChoose(p){
       const force=L.filter(x=>!isT(x)&&dv(x.s)&&!pts(x));
       if(force.length)return R(minBy(force,P),`${BOOK}: ultinál a felvevő színhiányát kell megtalálni. Ebből a színből már nincs neki, így adut kell tennie, és fogynak az aduja, amelyek a VII-est védik. Számolás: a felvevőnél legfeljebb ${oppTrumps(p).length} adu lehet még (a VII-essel együtt).`);
     }
+    if(decl&&tg&&c.comps.c20&&G.trickNo<=2){
+      // ultiblog (20-100): a védőknek járó egyetlen ütést a játék elején add oda, amíg sok lapjuk van, és színt kell adniuk:
+      // ilyenkor még nem tudnak ászt vagy X-et kenni bele
+      const out2=outstanding(p),lose=L.filter(x=>!isT(x)&&!pts(x)&&!isTop(x,p)&&out2.filter(y=>y.s===x.s).length>=3);
+      if(lose.length){const x=maxBy(lose,y=>out2.filter(z=>z.s===y.s).length*10-P(y));
+        return R(x,`${BLOG}: 20-100-nál a védők egy ütést elvihetnek. Ezt add oda a játék elején ezzel a kis lappal: most még van ebből a színből a védőknél, így színt kell adniuk, és nem tudnak ászt vagy X-et kenni bele.`);}
+    }
+    if(decl&&tg&&(c.comps.c40||c.comps.c20)&&outTr.length){
+      // ultiblog (40-100): a húzó színben ne ásszal kezdj, mert az elüthető; előbb egy kisebb, pontot nem érő lapot hívj
+      const H=G.hands[p];
+      const runs=[0,1,2,3].filter(s=>s!==t&&!G.played.some(x=>x.s===s)&&H.filter(x=>x.s===s).length>=3&&H.some(x=>x.s===s&&pts(x)))
+        .map(s=>L.filter(x=>x.s===s&&!pts(x))).filter(a=>a.length).sort((u,v)=>v.length-u.length);
+      if(runs.length){const x=minBy(runs[0],P);
+        return R(x,`${BLOG}: a húzó színben ne ásszal kezdj, mert az elüthető. Előbb egy kisebb, pontot nem érő lapot hívsz: kiderül, kinél van még ebből a színből, és az ászod, X-ed később biztosabban üt.`);}
+    }
     // védőként a társnál ismert (bemondott) magasabb lap nem fenyeget; felvevőként az isTop számol
     const sure=L.filter(x=>!isT(x)&&(decl?isTop(x,p):!declMayBeat(p,x,false))&&!dv(x.s));
     if(sure.length){const x=maxBy(sure,y=>pts(y)*10+P(y));return R(x,`Ez a legmagasabb kint lévő lap a színében, így valószínűleg elviszi az ütést${pts(x)?', és pontot is hoz':''}.`);}
@@ -1901,6 +2035,12 @@ function botChoose(p){
       if(by)return R(maxBy(by,P),`${BOOK}: hajtószín. A leghosszabb színedből hívj, így ha az ellenfelek kifogynak belőle, adut kell tenniük, és a végén nem marad adujuk a VII-esed ellen.`);
     }
     const declLed=new Set((G.hist||[]).filter(tr=>tr[0].p===G.decl).map(tr=>tr[0].c.s));
+    if(!decl&&tg&&c.comps.c20){
+      // ultiblog (20-100): a védők korán szabaduljanak meg az adu- és hajtószínű lapjaiktól, hogy később a másik két színből
+      // ászt vagy X-et kenhessenek a társuk ütésébe
+      const sh=L.filter(x=>!pts(x)&&(isT(x)||declLed.has(x.s)));
+      if(sh.length)return R(minBy(sh,P),`${BLOG}: 20-100 ellen korán szabadulj meg az adu- és a hajtószínű lapjaidtól. Ha ezekből kifogysz, később, amikor a társad viszi az ütést, ászt vagy X-et kenhetsz bele.`);
+    }
     if(!decl){
       const pal=partnerSuits(p).filter(s=>s!==t&&!dv(s)&&!declLed.has(s));
       const ps=L.filter(x=>pal.includes(x.s)&&!isT(x));
