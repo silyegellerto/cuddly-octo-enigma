@@ -1,17 +1,25 @@
-// Cloudflare Worker: egyelőre csak a statikus játékot szolgálja ki (ulti.html, cards/, fonts/, icons/).
-// A multiplayer kód (API, WebSocket, Durable Objectek) később kerül ide.
+// Cloudflare Worker: a statikus játék (ulti.html, cards/, fonts/, icons/) és a multiplayer szerver.
 {
   "name": "rabloulti",
   "compatibility_date": "2026-11-01",
+  "main": "src/worker.js",
+  // A motort telepítéskor vágja ki az ulti.html-ből (build/engine.js, nincs a repóban).
+  "build": { "command": "node scripts/build-engine.mjs" },
   // Csak a saját domainen érhető el; a workers.dev és az előnézeti címek ki vannak kapcsolva.
   "routes": [{ "pattern": "ulti.silyegellert.cc", "custom_domain": true }],
   "workers_dev": false,
   "preview_urls": false,
   "assets": {
     // A repó gyökere a statikus mappa; hogy mi kerül ki a webre, azt a .assetsignore szűri.
+    // Létező fájlra a Worker kódja nem is fut le, csak a többi kérésre.
     "directory": ".",
     // A fájlok pontosan azon a címen érhetők el, ahol vannak (/ulti.html nem ugrik át /ulti-ra).
     "html_handling": "none",
     "not_found_handling": "none"
-  }
+  },
+  "durable_objects": { "bindings": [{ "name": "TABLE", "class_name": "Table" }] },
+  // Ingyenes csomagban csak SQLite-alapú Durable Object használható.
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Table"] }],
+  // Naplók és processzoridő a Cloudflare felületén (Observability).
+  "observability": { "enabled": true }
 }
