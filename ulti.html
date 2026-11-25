@@ -60,6 +60,8 @@ button:focus-visible,.card:focus-visible{outline:3px solid var(--brass);outline-
 
 header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;min-height:48px}
 .hnav{display:flex;gap:6px;align-items:center}
+#mpBtn span{display:none}
+#newBtn{white-space:nowrap}
 .navlink{display:none;border:0;background:none;color:var(--ink);font:inherit;font-size:calc(16px * var(--fs));font-weight:600;padding:10px 12px;border-radius:10px}
 .navlink:hover{background:var(--chip)}
 .iconbtn.round{width:44px;height:44px;padding:0;display:inline-flex;align-items:center;justify-content:center}
@@ -159,6 +161,8 @@ details.more .pop button.danger.armed{background:var(--bad);color:var(--accent-i
 @media (min-width:980px){
   .wrap{max-width:1240px;padding:8px 24px 32px}
   .navlink{display:inline-block}
+  /* gépen a barátos gomb szövegként a többi menüpont mellett */
+  .navlink{order:-2}#mpBtn{order:-1;width:auto;height:auto;border:0;background:none;padding:10px 12px;border-radius:10px;font-size:calc(16px * var(--fs));font-weight:600}#mpBtn:hover{background:var(--chip)}#mpBtn svg{display:none}#mpBtn span{display:inline}
   .game{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,400px);grid-template-areas:"opps panel" "table panel" "dock panel" ". panel";grid-template-rows:auto auto auto 1fr;column-gap:22px;align-items:start}
   .opps{grid-area:opps}.table{grid-area:table}.dock{grid-area:dock}
   .panel{grid-area:panel;margin:0;position:sticky;top:12px;max-height:calc(100vh - 84px);overflow:auto}
@@ -400,6 +404,22 @@ img.ico{width:1.2em;height:1.2em;vertical-align:-.25em;object-fit:contain;displa
    Böngészőben és számítógépen a magassága 0, ott nincs hatása. */
 #sbBand{position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:15}
 .cnt{display:none}
+/* multiplayer: lefordított lap, váró, visszaszámláló */
+/* multiplayerben nincs napló (emlékeztetőként előnyt adna) */
+body.mp .log,body.mp #mLog{display:none}
+.card.cb{background:repeating-linear-gradient(45deg,#7d2520 0 4px,#9b2f28 4px 8px);border:2px solid #f3ead6}
+.mpf{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.mpf label{font-weight:700;font-size:calc(15px * var(--fs))}
+.mpf input{font:inherit;font-size:calc(18px * var(--fs));padding:10px 12px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);min-width:0}
+.mpf input.code{text-transform:uppercase;letter-spacing:.18em;font-weight:700}
+.mpcode{font-size:calc(40px * var(--fs));font-weight:800;letter-spacing:.16em;text-align:center;margin:6px 0 2px;font-variant-numeric:tabular-nums}
+.seats{list-style:none;padding:0;margin:12px 0;display:flex;flex-direction:column;gap:6px}
+.seats li{display:flex;justify-content:space-between;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.seats li.empty{color:var(--muted);border-style:dashed}
+.mpclock{display:flex;justify-content:space-between;gap:8px;font-size:calc(14px * var(--fs));color:var(--muted);margin:0 0 6px}
+.mpclock b{color:var(--ink);font-variant-numeric:tabular-nums}
+.mpclock.low b{color:var(--bad)}
+.mpwarn{background:var(--hint-bg);border-left:4px solid var(--brass);padding:8px 10px;border-radius:10px;margin:0 0 8px;font-weight:600}
 html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 @media (max-width:979px) and (min-height:620px){
   /* a keret rögzített (position:fixed): iOS-en így az oldal semmiképp nem csúszhat el, a fejléc nem tűnik el felül */
@@ -472,6 +492,7 @@ html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:10
       <button class="navlink" id="navRules">Szabályok</button>
       <button class="navlink" id="navStats">Statisztikám</button>
       <button class="iconbtn" id="newBtn">Új játék</button>
+      <button class="iconbtn round" id="mpBtn" aria-label="Játék barátokkal" title="Játék barátokkal"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6.5" cy="7.5" r="2.5"/><circle cx="17.5" cy="7.5" r="2.5"/><circle cx="12" cy="10.5" r="2.8"/><path d="M6.5 20v-1.5a3.5 3.5 0 0 1 3.5-3.5h4a3.5 3.5 0 0 1 3.5 3.5V20z"/><path d="M5.5 17.5H2.5V16a3.5 3.5 0 0 1 3.5-3.5h2.2M18.5 17.5h3V16a3.5 3.5 0 0 0-3.5-3.5h-2.2"/></svg><span>Játék barátokkal</span></button>
       <button class="iconbtn round" id="menuBtn" aria-label="Menü" aria-haspopup="dialog"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
     </nav>
   </header>
@@ -519,6 +540,7 @@ html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:10
 </div></div>
 <div class="ov" id="bidsOv"></div>
 <div class="ov" id="infoOv"><div class="sheet" id="infoSheet"></div></div>
+<div class="ov" id="mpOv" role="dialog" aria-modal="true" aria-label="Játék barátokkal"><div class="sheet" id="mpSheet"></div></div>
 <div class="ov" id="a2hsOv"><div class="sheet" id="a2hsSheet"></div></div>
 <div class="ov" id="statsOv"><div class="sheet" id="statsSheet"></div></div>
 <div id="tour" role="dialog" aria-modal="true" aria-label="Bemutató"><div class="tspot"></div><div class="tbub" id="tourBub"></div></div>
@@ -667,7 +689,7 @@ function newDeal(dealer,deal){
      decl:-1,ci:-1,trump:-1,trumpGame:false,trick:[],won:[[],[],[]],tcount:[0,0,0],trickNo:0,leader:-1,
      marr:[[],[],[]],ultiBroken:false,ultiWon:false,lastWinner:-1,played:[],result:null,revealed:false,talonPts:0,lastTrick:null,
      deal:hands.map(h=>h.map(x=>x.id))};
-  {const k=fh===0?'Te kezdesz':NAME[fh]+' kezd';addLog(deal?`Újrajátszás: ugyanazok a lapok. ${k}, 12 lappal.`:`${k}, 12 lappal.`);}
+  {const k=fh===0&&NAME[0]==='Te'?'Te kezdesz':NAME[fh]+' kezd';addLog(deal?`Újrajátszás: ugyanazok a lapok. ${k}, 12 lappal.`:`${k}, 12 lappal.`);}
 }
 const holding12=p=>G.hands[p].length===12;
 // csak pontszámban értékesebb vállalás mondható
@@ -828,7 +850,7 @@ function collectTrick(){
   }
   (G.hist=G.hist||[]).push(G.trick.slice());
   G.lastTrick=G.trick;G.trick=[];G.trickNo++;G.leader=w;G.turn=w;
-  if(c.open&&!G.revealed){G.revealed=true;addLog(G.decl===0?'Terített játék: az első ütés után kiterítetted a lapjaidat, a védők látják őket.':`Terített játék: ${NAME[G.decl]} kiteríti a lapjait.`);}
+  if(c.open&&!G.revealed){G.revealed=true;addLog(G.decl===0&&NAME[0]==='Te'?'Terített játék: az első ütés után kiterítetted a lapjaidat, a védők látják őket.':`Terített játék: ${NAME[G.decl]} kiteríti a lapjait.`);}
   const early=allDecided();
   if(early)addLog('Minden bemondás eldőlt, a többi lapot nem kell lejátszani.');
   let end=G.trickNo===10||early;
@@ -2151,6 +2173,7 @@ let timer=null;
 const ico=(s,cls='')=>`<img class="ico s${s} ${cls}" src="cards/suit${s}.webp" alt="" aria-hidden="true">`;
 const cname=c=>`${SUIT_NAMES[c.s].toLowerCase()} ${c.r>=4?RANK_NAMES[c.r].toLowerCase():RANK_NAMES[c.r]}`;
 function cardHTML(c,cls='',attrs=''){
+  if(!c)return `<div class="card cb ${cls}" role="img" aria-label="Lefordított lap"></div>`; // multiplayer: rejtett lap
   const t=G&&G.phase!=='bid'&&G.trumpGame&&c.s===G.trump?' t':'';
   return `<div class="card c${c.id}${t} ${cls}" ${attrs} ${attrs.includes('role=')?'':'role="img" '}aria-label="${SUIT_NAMES[c.s]} ${RANK_NAMES[c.r]}"></div>`;
 }
@@ -2159,6 +2182,9 @@ function sortHand(h){
   const order=s=>G.phase!=='bid'&&G.phase!=='trump'&&G.trumpGame&&s===G.trump?-1:s;
   return h.slice().sort((a,b)=>order(a.s)-order(b.s)||pow(b,tg)-pow(a,tg));
 }
+// multiplayerben a pont a szoba összesítője, a leosztás sorszáma a szobáé (animációk kulcsa)
+const scoreOf=p=>MP&&MP.state?((MP.state.players[p]||{}).score||0):SCORE.tot[p];
+const dealNo=()=>MP?'mp'+MP.dealIdx:SCORE.n;
 const optName=o=>{const c=CONTRACTS[o.ci];return c.kind==='trump'&&!c.red?`${c.name}, adu: ${SUIT_NAMES[o.suit].toLowerCase()}`:c.name;};
 
 // ---------- hints ----------
@@ -2309,6 +2335,7 @@ const humanTurn=()=>G.turn===0&&(G.phase==='bid'||G.phase==='trump'||G.phase==='
 function syncHint(){
   const key=[G.phase,G.turn,G.trickNo,G.trick.length,G.hands[0].length,G.bid?G.bid.ci:'',G.kidx].join('|');
   if(key!==UI.key){UI.key=key;UI.hc=null;UI.armCon=false;UI.hint=SET.autoHint&&humanTurn()&&SET.tip!==2;}
+  if(MP){UI.hint=false;UI.hc=null;return;}
   if(SET.tip===2)UI.hint=false;
   if(UI.hint&&humanTurn()&&!UI.hc)UI.hc=computeHint();
 }
@@ -2497,7 +2524,7 @@ function buildAnalysis(){
 
 // ---------- render ----------
 function hintHTML(extra=''){
-  const tip=humanTurn()&&SET.tip!==2?`<button class="btn ghost" id="hintBtn" aria-expanded="${UI.hint}">${UI.hint?'Tipp elrejtése':'Tipp'}</button><label class="auto"><input type="checkbox" id="autoHint"${SET.autoHint?' checked':''}> Mindig mutasd</label>`:'';
+  const tip=humanTurn()&&SET.tip!==2&&!MP?`<button class="btn ghost" id="hintBtn" aria-expanded="${UI.hint}">${UI.hint?'Tipp elrejtése':'Tipp'}</button><label class="auto"><input type="checkbox" id="autoHint"${SET.autoHint?' checked':''}> Mindig mutasd</label>`:'';
   if(!tip&&!extra)return '';
   let h=`<div class="actrow">${tip}${extra?`<span class="grow">${extra}</span>`:''}</div>`;
   if(tip&&UI.hint&&UI.hc){
@@ -2527,7 +2554,7 @@ function kontraTag(p){
   const ks=Object.keys(G.kmult[p]);return ks.length?'Kontra: '+ks.map(k=>COMP_NAMES[k]).join(', '):'';
 }
 function oppHTML(p){
-  const v=SCORE.tot[p],sgn=x=>`${x>0?'+':''}${x}`;
+  const v=scoreOf(p),sgn=x=>`${x>0?'+':''}${x}`;
   let badge='';const parts=[];
   if((G.phase==='bid'||G.phase==='trump')){
     if(G.lastAction[p])badge=`<span class="badge">${G.lastAction[p]}</span>`;
@@ -2539,11 +2566,12 @@ function oppHTML(p){
     // az ultiban csak az értéket mondják be (20 vagy 40), a színt nem
     if(G.marr[p].length)parts.push('Bemondás: '+G.marr[p].map(m=>m.v).join('+'));
   }
+  if(MP&&MP.state){const pl=MP.state.players[p];if(pl&&!pl.bot&&(pl.away||!pl.online))parts.push(pl.online?'a gép lép helyette':'kiesett, a gép lép helyette');}
   const HH=shownHand(p),n=HH.length;
   const showOpen=(G.revealed&&p===G.decl)||G.phase==='result';
-  const ok=(G.phase==='result'?'res':'rev')+':'+SCORE.n+':'+G.dealer+':'+p;
+  const ok=(G.phase==='result'?'res':'rev')+':'+dealNo()+':'+G.dealer+':'+p;
   const cards=showOpen&&n?`<div class="open">${sortHand(HH).map((c,i)=>{const a=anim(ok+':'+c.id,'flipin',340,i*30);return cardHTML(c,a.cls.trim(),a.style?`style="${a.style}"`:'');}).join('')}</div>`:`<div class="backs" aria-label="${n} lap">${'<i></i>'.repeat(n)}</div>`;
-  return `<div class="nm"><span>${NAME[p]}${G.dealer===p?' <span class="dl">oszt</span>':''}</span><span class="pts ${v>0?'pos':v<0?'neg':''}${G.phase==='result'?anim('sc:'+SCORE.n+':'+p,'flash',700).cls:''}">${sgn(v)}</span></div><div class="meta">${badge}${parts.map(x=>`<span>${x}</span>`).join('')}${showOpen?'':`<span class="cnt">${n} lap</span>`}</div>${cards}`;
+  return `<div class="nm"><span>${NAME[p]}${G.dealer===p?' <span class="dl">oszt</span>':''}</span><span class="pts ${v>0?'pos':v<0?'neg':''}${G.phase==='result'?anim('sc:'+dealNo()+':'+p,'flash',700).cls:''}">${sgn(v)}</span></div><div class="meta">${badge}${parts.map(x=>`<span>${x}</span>`).join('')}${showOpen?'':`<span class="cnt">${n} lap</span>`}</div>${cards}`;
 }
 // ---- animációk ----
 // Az oldal minden lépésnél újrarajzol, ezért a „belépő” animációt csak a tényleg új elem kapja. Az ANIM tárolja,
@@ -2621,6 +2649,8 @@ function renderPanel(){
   const el=$('panel');
   const top=el.scrollTop;
   renderPanel0(el);
+  if(MP)el.insertAdjacentHTML('afterbegin',(MP.reconnecting?'<p class="mpwarn" role="status">Újracsatlakozás…</p>':MP.state.players[0].away?'<p class="mpwarn" role="status">Lejárt az időd, most a gép lép helyetted. Lépj, és visszaveszed.</p>':'')+(MP.state.deadline&&G.phase!=='result'?`<p class="mpclock" id="mpClockRow"><span>${G.turn===0?'Ennyi időd van lépni':`${NAME[G.turn]} lépésére vár`}</span><b id="mpClock"></b></p>`:''));
+  if(MP)mpTick();
   const nl=$('bidList');
   el.classList.toggle('fit',!!nl&&!UI.hint);
   // újrarajzoláskor (pl. lapkijelölés) a panel görgetési helye megmarad; a Tipp vagy a ⤢ ablak választása a képbe gördül
@@ -2639,9 +2669,12 @@ function renderPanel0(el){
     if(G.claimShow){const cs=G.claimShow;h+=`<p class="rule">${cs.from+1}. ütéstől: ${claimVerb(cs.who,true)}, ${claimText(cs.side)}.</p>`;}
     h+=`<div class="tw"><table class="res"><tr><td></td><td class="det"></td><td class="det">védőnként</td></tr>${r.rows.map(x=>`<tr><td><span class="mark ${x.win?'pos':'neg'}">${x.win?'✓':'✗'}</span> ${x.label}</td><td class="det">${x.detail}</td><td class="${x.delta>0?'pos':'neg'}">${cell(x)}</td></tr>`).join('')}</table></div>`;
     {const tot=defs.map(q=>-r.change[q]);
-     h+=`<p class="status">${d===0?'Neked':({1:'Gellértnek',2:'Samunak'})[d]} védőnként: ${defs.map((q,i)=>`${NAME[q]} ${sg(tot[i])}`).join(', ')}, összesen <b class="${r.change[d]>0?'pos':r.change[d]<0?'neg':''}">${sg(r.change[d])}</b>.</p>`;}
+     h+=`<p class="status">${d===0?'Neked':`A felvevőnek (${NAME[d]})`} védőnként: ${defs.map((q,i)=>`${NAME[q]} ${sg(tot[i])}`).join(', ')}, összesen <b class="${r.change[d]>0?'pos':r.change[d]<0?'neg':''}">${sg(r.change[d])}</b>.</p>`;}
     h+=`<div class="talon">Talon: ${G.talon.map(x=>cardHTML(x)).join('')}</div>`;
     h+=`<p class="status">Ebben a körben: ${[0,1,2].map(p=>`${NAME[p]} <b class="${r.change[p]>0?'pos':r.change[p]<0?'neg':''}">${r.change[p]>0?'+':''}${r.change[p]}</b>`).join(', ')}</p>`;
+    if(MP)h+=`<p class="status">A szoba állása (${MP.state.deals}. leosztás után): ${[0,1,2].map(p=>`${NAME[p]} <b class="${scoreOf(p)>0?'pos':scoreOf(p)<0?'neg':''}">${scoreOf(p)>0?'+':''}${scoreOf(p)}</b>`).join(', ')}</p>`;
+    if(MP){const w=MP.state.ready[0]&&!MP.state.players[0].away;h+=`<div class="row stick"><button class="btn" id="nextBtn"${w?' disabled':''}>${w?'Várakozás a többiekre…':'Következő osztás'}</button></div>`;el.innerHTML=h;
+      $('nextBtn').onclick=()=>mpSend({t:'next'});return;}
     h+=`<div class="row stick"><button class="btn" id="nextBtn">Következő osztás</button>${G.deal?'<button class="btn replay" id="replayBtn" title="Ugyanez a leosztás még egyszer, ugyanazokkal a lapokkal">Újrajátszás</button>':''}${LEARN()||REV.show||SET.tip===2?'':'<button class="btn ghost" id="anBtn">Mi lett volna jobb?</button>'}</div>`;
     if(LEARN()||REV.show){
       if(!REV.an)REV.an=buildAnalysis();
@@ -2682,9 +2715,9 @@ function renderPanel0(el){
       const can=canPickUp(0),own=G.bid.seat===0;
       const q=own?`Senki nem licitált a <b>${CONTRACTS[G.bid.ci].name}</b> mondásodra. Visszaveheted a talont, és mondhatsz magasabbat, maradhatsz, és ezzel lezárul a licit, vagy bedobhatod a lapjaidat: ekkor a mondás kontrázott árát fizeted (összesen ${fmt(-2*concedeLoss(G.bid.ci,null,1))} pont).`:`A licit most: <b>${CONTRACTS[G.bid.ci].name}</b> (${NAME[G.bid.seat]}). Felveszed a talont?`;
       el.innerHTML=`<p class="status">${q}</p>${hintHTML()}<div class="row stick" style="margin-top:10px"><button class="btn" id="pickBtn"${can?'':' disabled'}>${own?'Visszaveszem':'Felveszem'}</button><button class="btn go" id="passBtn">${own?'Maradok':'Passz'}</button>${own?`<button class="btn ghost danger${UI.armCon?' armed':''}" id="conBtn">${UI.armCon?'Biztos? Bedobás':'Bedobás'}</button>`:''}</div>`;
-      $('pickBtn').onclick=()=>{doPickUp(0);UI.sel=[];UI.ci=null;UI.suit=null;UI.err='';advance();};
-      $('passBtn').onclick=()=>{REV.bids.push({type:'pass',own:G.bid.seat===0,cur:{...G.bid},...snap()});doPass(0);advance();};
-      if($('conBtn'))$('conBtn').onclick=()=>{if(!UI.armCon){UI.armCon=true;render();return;}UI.armCon=false;REV.bids.push({type:'pass',own:true,conceded:true,cur:{...G.bid},...snap()});doConcede(0);REV.bids.forEach(r=>{if(r.choice&&r.choice.suit===-2)r.choice.suit=G.trump;if(r.cur&&r.cur.suit===-2)r.cur.suit=G.trump;});advance();};
+      $('pickBtn').onclick=()=>{UI.sel=[];UI.ci=null;UI.suit=null;UI.err='';if(MP)return mpSend({t:'pickup'});doPickUp(0);advance();};
+      $('passBtn').onclick=()=>{if(MP)return mpSend({t:'pass'});REV.bids.push({type:'pass',own:G.bid.seat===0,cur:{...G.bid},...snap()});doPass(0);advance();};
+      if($('conBtn'))$('conBtn').onclick=()=>{if(!UI.armCon){UI.armCon=true;render();return;}UI.armCon=false;if(MP)return mpSend({t:'concede'});REV.bids.push({type:'pass',own:true,conceded:true,cur:{...G.bid},...snap()});doConcede(0);REV.bids.forEach(r=>{if(r.choice&&r.choice.suit===-2)r.choice.suit=G.trump;if(r.cur&&r.cur.suit===-2)r.cur.suit=G.trump;});advance();};
     }
     bindHint();return;
   }
@@ -2692,7 +2725,7 @@ function renderPanel0(el){
     const c=CONTRACTS[G.bid.ci],h=G.hands[0];
     const btn=[1,2,3].map(s=>{const e=checkReq(h,G.bid.ci,s),f=forcedParts(h,G.bid.ci,s);return `<button class="chip${UI.suit===s?' on':''}" data-pick="${s}"${e?' disabled':''}>${ico(s)} ${SUIT_NAMES[s]}${f.length?' (kényszer)':''}</button>`;}).join('');
     el.innerHTML=`<p class="status">A licited maradt: <b>${c.name}</b>. Most mondd be az adut.</p><div class="suits">${btn}</div>${hintHTML()}`;
-    el.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{const su=+b.dataset.pick;const r=[...REV.bids].reverse().find(x=>x.type==='bid');if(r)r.choice.suit=su;UI.suit=null;pickTrump(su);advance();});
+    el.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{const su=+b.dataset.pick;if(MP)return mpSend({t:'trump',s:su});const r=[...REV.bids].reverse().find(x=>x.type==='bid');if(r)r.choice.suit=su;UI.suit=null;pickTrump(su);advance();});
     bindHint();return;
   }
   if(G.phase==='kontra'&&G.turn===0){
@@ -2703,15 +2736,15 @@ function renderPanel0(el){
     const chips=opts.map(o=>{const key=o.k+':'+o.def,m=mustKontra(0,o.k);return `<button class="chip${UI.kon.has(key)||m?' on':''}" data-kon="${key}"${m?' disabled':''}><span>${G.decl===0?'Rekontra':'Kontra'}: ${COMP_NAMES[o.k]}${m?' (kötelező)':''}</span></button>`;}).join('');
     el.innerHTML=`<p class="status">${head}</p><div class="chips">${chips}</div>${hintHTML()}<div class="row stick" style="margin-top:10px"><button class="btn" id="konBtn">${UI.kon.size?(G.decl===0?'Rekontra':'Kontra'):'Tovább, kontra nélkül'}</button></div>`;
     el.querySelectorAll('[data-kon]').forEach(b=>b.onclick=()=>{const k=b.dataset.kon;UI.kon.has(k)?UI.kon.delete(k):UI.kon.add(k);render();});
-    $('konBtn').onclick=()=>{const list=opts.filter(o=>UI.kon.has(o.k+':'+o.def));UI.kon=new Set();REV.kon={decl:G.decl===0,opts:opts.slice(),list:list.slice()};doKontra(0,list);advance();};
+    $('konBtn').onclick=()=>{const list=opts.filter(o=>UI.kon.has(o.k+':'+o.def));UI.kon=new Set();if(MP)return mpSend({t:'kontra',keys:list.map(o=>o.k)});REV.kon={decl:G.decl===0,opts:opts.slice(),list:list.slice()};doKontra(0,list);advance();};
     bindHint();return;
   }
   const play=G.phase==='play';
-  const canClaim=play&&G.claimAt&&G.claimAt.n===G.trickNo&&G.claimAt.side&&claimHuman(G.claimAt.side);
+  const canClaim=!MP&&play&&G.claimAt&&G.claimAt.n===G.trickNo&&G.claimAt.side&&claimHuman(G.claimAt.side);
   const dots='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M5 12h.01M12 12h.01M19 12h.01"/></svg>';
-  const more=play&&!UI.auto?`<details class="more" id="moreDd"${UI.moreOpen?' open':''}><summary aria-label="További lehetőségek">${dots}</summary><div class="pop"><button id="autoBtn">Játszd le helyettem</button>${G.decl===0?`<button class="danger${UI.armCon?' armed':''}" id="conBtn">${UI.armCon?`Biztos? Bedobás: ${fmt(-[1,2].reduce((a,q)=>a+concedeLoss(G.ci,G.kmult,q),0))} pont`:'Bedobom a lapjaimat'}</button>`:''}</div></details>`:'';
+  const more=play&&!UI.auto&&(!MP||G.decl===0)?`<details class="more" id="moreDd"${UI.moreOpen?' open':''}><summary aria-label="További lehetőségek">${dots}</summary><div class="pop">${MP?'':'<button id="autoBtn">Játszd le helyettem</button>'}${G.decl===0?`<button class="danger${UI.armCon?' armed':''}" id="conBtn">${UI.armCon?`Biztos? Bedobás: ${fmt(-[1,2].reduce((a,q)=>a+concedeLoss(G.ci,G.kmult,q),0))} pont`:'Bedobom a lapjaimat'}</button>`:''}</div></details>`:'';
   el.innerHTML=`<p class="status">${statusText()}</p>${UI.err?`<p class="err">${UI.err}</p>`:''}${canClaim?`<div class="row" style="margin-top:8px;align-items:center"><button class="btn go" id="claimBtn">Felmutatom</button><span class="sub" style="color:var(--muted)">${claimText(G.claimAt.side).replace('innentől','Innentől biztosan')}.</span></div>`:''}${UI.auto?`<div class="actrow"><button class="btn ghost" id="autoBtn">Megállítás, játszom tovább</button></div>`:hintHTML(more)}`;
-  if($('conBtn'))$('conBtn').onclick=()=>{if(!UI.armCon){UI.armCon=true;render();return;}UI.armCon=false;UI.moreOpen=false;clearTimeout(timer);doConcede(0);advance();};
+  if($('conBtn'))$('conBtn').onclick=()=>{if(!UI.armCon){UI.armCon=true;render();return;}UI.armCon=false;UI.moreOpen=false;if(MP)return mpSend({t:'concede'});clearTimeout(timer);doConcede(0);advance();};
   if($('claimBtn'))$('claimBtn').onclick=()=>{clearTimeout(timer);resolveClaim(G.claimAt.side);advance();};
   if($('autoBtn'))$('autoBtn').onclick=()=>{UI.auto=!UI.auto;UI.moreOpen=false;UI.warnId=null;UI.err='';advance();};
   bindHint();
@@ -2724,7 +2757,7 @@ function renderHand(){
   if(G.phase==='play'&&G.turn===0&&G.trick.length<3)legal=new Set(legalCards(0).map(x=>x.id));
   const selecting=G.phase==='bid'&&G.turn===0&&holding12(0);
   const hintIds=UI.hint&&UI.hc?UI.hc.cards:null;
-  const dk=SCORE.n+':'+G.dealer,first=!(('deal:'+dk) in ANIM);anim('deal:'+dk,'',0);
+  const dk=dealNo()+':'+G.dealer,first=!(('deal:'+dk) in ANIM);anim('deal:'+dk,'',0);
   $('hand').innerHTML=h.map((c,i)=>{
     let cls='';
     if(legal)cls=legal.has(c.id)?'play legal':'dim';
@@ -2741,13 +2774,13 @@ function renderHand(){
     el.onclick=act;
     el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();act();}};
   });
-  const v=SCORE.tot[0],n0=shownHand(0).length;
+  const v=scoreOf(0),n0=shownHand(0).length;
   let role=`${n0} lap`;
   if(G.phase!=='bid'&&G.phase!=='trump'){
     const k=kontraTag(0);
     role=`${G.decl===0?'<b>Felvevő</b>':'Védő'}${G.revealed&&G.decl===0?' · <b class="opened">terítve</b>':''} · ütés ${G.tcount[0]}${G.marr[0].length?' · '+G.marr[0].map(m=>m.v).join('+'):''}${k?' · '+k:''}`;
   }
-  let mine=`<span class="me"><b>Te</b> <b class="pts ${v>0?'pos':v<0?'neg':''}${G.phase==='result'?anim('sc:'+SCORE.n+':0','flash',700).cls:''}">${v>0?'+':''}${v}</b>${G.dealer===0?' <span class="dl">oszt</span>':''} · ${role}</span><span class="mr">${G.phase==='bid'?`<label class="auto"><input type="checkbox" id="betliSort"${UI.betliSort?' checked':''}> Szín nélküli sorrend</label>`:''}<button class="linkbtn" id="seeBtn">Talon</button></span>`;
+  let mine=`<span class="me"><b>Te</b> <b class="pts ${v>0?'pos':v<0?'neg':''}${G.phase==='result'?anim('sc:'+dealNo()+':0','flash',700).cls:''}">${v>0?'+':''}${v}</b>${G.dealer===0?' <span class="dl">oszt</span>':''} · ${role}</span><span class="mr">${G.phase==='bid'?`<label class="auto"><input type="checkbox" id="betliSort"${UI.betliSort?' checked':''}> Szín nélküli sorrend</label>`:''}<button class="linkbtn" id="seeBtn">Talon</button></span>`;
   $('mine').innerHTML=mine;
   if(G.revealed&&G.decl===0&&G.phase==='play'&&!(('rvt:'+dk) in ANIM)){ANIM['rvt:'+dk]=1;toast('Terített játék: kiterítetted a lapjaidat, a védők látják őket.');}
   // ha a kijátszható lap nem látszik a sorban, odagörgetjük
@@ -2759,10 +2792,10 @@ function renderHand(){
 function renderSee(){
   const known=G.talonBy===0||G.phase==='result';
   let h=`<h2>Talon és ütések</h2><h3>Talon</h3>`;
-  h+=G.talon.length?(known?`<div class="trio">${G.talon.map(x=>cardHTML(x)).join('')}</div><p class="small">${G.talonBy===0?'Ezt a két lapot te tetted le.':'A kör vége után látható.'}</p>`:'<p class="small">A talonban lévő lapokat nem te tetted le, ezért nem láthatod.</p>'):'<p class="small">A talon most nálad van.</p>';
-  const all=G.hist||[],showAll=LEARN();
+  h+=G.talon.length?(MP&&!known?`<div class="trio">${G.talon.map(()=>cardHTML(null)).join('')}</div><p class="small">A talonban lévő lapokat nem te tetted le, ezért nem láthatod.</p>`:known?`<div class="trio">${G.talon.map(x=>cardHTML(x)).join('')}</div><p class="small">${G.talonBy===0?'Ezt a két lapot te tetted le.':'A kör vége után látható.'}</p>`:'<p class="small">A talonban lévő lapokat nem te tetted le, ezért nem láthatod.</p>'):'<p class="small">A talon most nálad van.</p>';
+  const all=G.hist||[],showAll=LEARN()&&!MP;
   const H=all.map((tr,i)=>({tr,i})).filter(o=>showAll||o.tr[trickWinnerIdx(o.tr)].p===0);
-  h+=`<h3>${showAll?'Ütések':'Az ütéseid'}</h3>`+(showAll?'':'<p class="small">Csak a saját ütéseidet láthatod. Tanuló tipp beállításnál mindenkiét mutatja.</p>')+(H.length?H.map(({tr,i})=>{const w=tr[trickWinnerIdx(tr)].p;return `<div class="trickrow"><span class="tn">${i+1}.</span><div class="trio">${tr.map(t=>`<div class="tc">${cardHTML(t.c,t.p===w?'win':'')}<small>${NAME[t.p]}</small></div>`).join('')}</div><span class="tw2">${NAME[w]}</span></div>`;}).join(''):(showAll?'<p class="small">Még nincs lezárt ütés.</p>':'<p class="small">Még nem vittél ütést.</p>'));
+  h+=`<h3>${showAll?'Ütések':'Az ütéseid'}</h3>`+(showAll?'':`<p class="small">Csak a saját ütéseidet láthatod.${MP?'':' Tanuló tipp beállításnál mindenkiét mutatja.'}</p>`)+(H.length?H.map(({tr,i})=>{const w=tr[trickWinnerIdx(tr)].p;return `<div class="trickrow"><span class="tn">${i+1}.</span><div class="trio">${tr.map(t=>`<div class="tc">${cardHTML(t.c,t.p===w?'win':'')}<small>${NAME[t.p]}</small></div>`).join('')}</div><span class="tw2">${NAME[w]}</span></div>`;}).join(''):(showAll?'<p class="small">Még nincs lezárt ütés.</p>':'<p class="small">Még nem vittél ütést.</p>'));
   h+=`<div class="row" style="margin-top:12px"><button class="btn" id="closeSee">Bezár</button></div>`;
   $('seeSheet').innerHTML=h;$('closeSee').onclick=()=>$('seeOv').classList.remove('show');
   $('seeOv').classList.add('show');
@@ -2834,9 +2867,10 @@ function onCard(id){
   if(G.phase==='play'&&G.turn===0&&G.trick.length<3){
     const L=legalCards(0),c=L.find(x=>x.id===id);if(!c)return;
     const ct=CONTRACTS[G.ci];
-    if(ct.comps.ulti&&G.decl===0&&c.s===G.trump&&c.r===0&&G.trickNo<9&&L.length>1&&UI.warnId!==id){
+    if(!MP&&ct.comps.ulti&&G.decl===0&&c.s===G.trump&&c.r===0&&G.trickNo<9&&L.length>1&&UI.warnId!==id){
       UI.warnId=id;UI.err='Ha most kijátszod az adu VII-est, elbukik az ulti. Koppints rá újra, ha mégis ezt akarod.';render();return;
     }
+    if(MP){UI.warnId=null;UI.err='';UI.flyFrom={id:c.id,rect:handRect(c.id)};mpSend({t:'play',id:c.id});return;}
     if(LEARN()&&UI.warnId!==id&&L.length>1){
       const sug=botChoose(0);
       if(sug.id!==c.id){const r=playLoss(c,sug);
@@ -2851,6 +2885,7 @@ function humanBid(){
   const e=validateBid(0,UI.sel,UI.ci,UI.ci==null?null:!isTrumpC(CONTRACTS[UI.ci])?-1:CONTRACTS[UI.ci].red?0:-2);
   if(e){UI.err=e;render();return;}
   const c=CONTRACTS[UI.ci],su=!isTrumpC(c)?-1:c.red?0:-2;
+  if(MP){const m={t:'bid',ci:UI.ci,disc:UI.sel.map(x=>x.id)};UI.sel=[];UI.ci=null;UI.err='';return mpSend(m);}
   REV.bids.push({type:'bid',...snap(),choice:{ci:UI.ci,suit:su,disc:UI.sel.map(x=>({...x}))}});
   doBid(0,UI.sel,UI.ci,su);
   UI.sel=[];UI.ci=null;UI.err='';
@@ -2858,6 +2893,7 @@ function humanBid(){
 }
 function advance(){
   clearTimeout(timer);
+  if(MP)return;
   if(G.phase==='result'&&!G.scored){
     G.scored=true;for(let p=0;p<3;p++)SCORE.tot[p]+=G.result.change[p];
     SCORE.n++;SCORE.dealer=G.dealer;saveScore();
@@ -2891,8 +2927,9 @@ function nextDeal(replay){
 let newArm=null;
 $('newBtn').onclick=()=>{
   const b=$('newBtn');
-  if(!newArm){b.textContent='Biztos?';b.classList.add('on');newArm=setTimeout(()=>{newArm=null;b.textContent='Új játék';b.classList.remove('on');},3500);return;}
-  clearTimeout(newArm);newArm=null;b.textContent='Új játék';b.classList.remove('on');
+  if(!newArm){b.textContent='Biztos?';b.classList.add('on');newArm=setTimeout(()=>{newArm=null;b.textContent=MP?'Kilépés':'Új játék';b.classList.remove('on');},3500);return;}
+  clearTimeout(newArm);newArm=null;b.textContent=MP?'Kilépés':'Új játék';b.classList.remove('on');
+  if(MP){mpLeave();return;}
   clearTimeout(timer);
   SCORE={tot:[0,0,0],n:0,dealer:Math.floor(Math.random()*3)};saveScore();G=null;nextDeal();
 };
@@ -3112,7 +3149,8 @@ function placeTip(){
   const r=el.getBoundingClientRect();placeBubble($('tipBub'),{left:r.left,top:r.top,right:r.right,bottom:r.bottom},4,true);
 }
 function maybeTip(){
-  if(TOUR_ON||!G){hideTip();return;}
+  // multiplayerben nincs helyzeti tipp: a szövegük a Tippre és az elemzésre hivatkozik, és a lépési időt takarnák
+  if(TOUR_ON||!G||MP||document.querySelector('.ov.show')){hideTip();return;}
   // ha a helyzet elmúlt (pl. döntöttél), a tipp látottnak számít
   const cur=UI.tip&&TIPS.find(t=>t.k===UI.tip);
   if(cur&&!cur.when()){seenTip(cur.k);hideTip();}
@@ -3151,14 +3189,152 @@ $('a2hsBtn').onclick=async()=>{
 $('a2hsOv').onclick=e=>{if(e.target.id==='a2hsOv')$('a2hsOv').classList.remove('show');};
 $('mA2hs').onclick=()=>{$('menuOv').classList.remove('show');$('a2hsBtn').onclick();};
 
+// ---- multiplayer: privát szoba (a szerver leírása: docs/MULTIPLAYER.md) ----
+// A szerver adja a G-t a játékos szemszögéből (ő a 0. ülés, a rejtett lapok null-ok). A felület ugyanazzal a megjelenítéssel
+// és a motor ellenőrzéseivel dolgozik, de a lépést üzenetben küldi el; helyben nem fut osztás, bot, mentés és pontszámírás.
+let MP=null;
+const MPKEY='ulti-mp-v1';
+const mpStore=()=>{try{return Object.assign({name:'',tokens:{},last:null},JSON.parse(localStorage.getItem(MPKEY)||'null'));}catch(e){return {name:'',tokens:{},last:null};}};
+const mpSave=f=>{try{const o=mpStore();f(o);localStorage.setItem(MPKEY,JSON.stringify(o));}catch(e){}};
+const CODE_OK=c=>/^[A-HJ-NP-Z2-9]{6}$/.test(c);
+const mpLink=c=>`${location.origin}/?szoba=${c}`;
+let SP=null; // az egyjátékos állás, amíg a szobában vagy
+function mpOpenMenu(msg='',code=''){
+  const st=mpStore();hideTip();
+  $('menuOv').classList.remove('show');
+  $('mpSheet').dataset.v='';
+  $('mpSheet').innerHTML=`<div class="mhead"><h2>Játék barátokkal</h2><button class="iconbtn round" id="mpClose" aria-label="Bezár"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <p class="small">Privát szoba: hívd meg a barátaidat egy kóddal vagy linkkel. Az üres helyekre gép ül.</p>
+    <div class="mpf"><label for="mpName">Neved</label><input id="mpName" maxlength="16" autocomplete="nickname" value="${(st.name||'').replace(/"/g,'')}"></div>
+    <div class="row"><button class="btn" id="mpNew">Új szoba</button></div>
+    <div class="mpf"><label for="mpCode">Belépés kóddal</label><div class="row" style="flex-wrap:nowrap"><input id="mpCode" class="code" maxlength="6" autocapitalize="characters" autocomplete="off" spellcheck="false" value="${code}" style="flex:1"><button class="btn go" id="mpJoin">Belépés</button></div></div>
+    <p class="err" id="mpErr" role="alert">${msg}</p>`;
+  $('mpOv').classList.add('show');
+  const name=()=>{const n=$('mpName').value.replace(/[\u0000-\u001f<>&"']/g,'').trim().slice(0,16);if(!n){$('mpErr').textContent='Add meg a neved.';$('mpName').focus();return null;}mpSave(o=>{o.name=n;});return n;};
+  $('mpClose').onclick=()=>$('mpOv').classList.remove('show');
+  $('mpNew').onclick=()=>{const n=name();if(n)mpStart({name:n});};
+  $('mpJoin').onclick=()=>{const n=name();if(!n)return;const c=$('mpCode').value.trim().toUpperCase();if(!CODE_OK(c)){$('mpErr').textContent='A kód 6 betű vagy szám.';return;}mpStart({name:n,code:c});};
+  $('mpCode').onkeydown=e=>{if(e.key==='Enter')$('mpJoin').onclick();};
+  setTimeout(()=>(code&&st.name?$('mpJoin'):$('mpName')).focus({preventScroll:true}),30);
+}
+// belépés egy szobába (code nélkül: új szoba); a megszakadt kapcsolatot ugyanígy építjük újra, a tokennel
+function mpStart({name,code}){
+  if(!MP){clearTimeout(timer);SP={G,REV};}
+  document.body.classList.add('mp');
+  MP={name,code:code||null,token:code?mpStore().tokens[code]||null:null,ws:null,state:null,dealIdx:0,retry:0,reconnecting:false,closing:false,wait:false,busy:false,pending:null};
+  $('newBtn').textContent='Kilépés';
+  mpConnect();
+}
+function mpConnect(){
+  const m=MP,q=`name=${encodeURIComponent(m.name)}${m.token?'&token='+m.token:''}`;
+  const url=(location.protocol==='https:'?'wss://':'ws://')+location.host+(m.code?`/ws/room/${m.code}?${q}`:`/ws/new?${q}`);
+  let ws;try{ws=new WebSocket(url);}catch(e){mpFail('Nem sikerült kapcsolódni a szerverhez.');return;}
+  m.ws=ws;
+  ws.onmessage=e=>{if(MP!==m)return;let x;try{x=JSON.parse(e.data);}catch(err){return;}
+    if(x.t==='welcome'){m.code=x.code;m.token=x.token;m.retry=0;m.reconnecting=false;m.wait=false;mpSave(o=>{o.tokens[x.code]=x.token;o.last=x.code;});}
+    else if(x.t==='error'){m.wait=false;if(x.fatal){mpFail(x.msg,true);}else toast(x.msg);}
+    else if(x.t==='state')mpState(x);};
+  ws.onclose=e=>{if(MP!==m||m.closing)return;
+    if(e.code===4002)return mpFail('A játékot egy másik lapon vagy eszközön folytatod.');
+    if(e.code===4003||e.code===4004)return mpFail('A szoba bezárult.',true);
+    if(e.code===4008)toast('Túl sok üzenet: újracsatlakozom.');
+    // megszakadt kapcsolat: 1, 2, 5 mp múlva újra (a szerver 3 percig tartja a helyed), utána vissza a menübe
+    if(!m.code||m.retry>=40)return mpFail('Megszakadt a kapcsolat a szerverrel.');
+    m.reconnecting=true;if(G&&m.state&&m.state.G)render();else mpLobby();
+    setTimeout(()=>{if(MP===m)mpConnect();},[1000,2000,5000][Math.min(m.retry++,2)]);};
+}
+function mpSend(msg){
+  if(!MP||!MP.ws||MP.ws.readyState!==1){toast('Nincs kapcsolat, újracsatlakozás…');return;}
+  if(MP.wait)return; // egy lépés egyszerre: a következő állapotig nem küldünk újat
+  MP.wait=true;MP.ws.send(JSON.stringify(msg));
+}
+function mpFail(msg,gone){
+  const m=MP;if(!m)return;
+  m.closing=true;try{m.ws&&m.ws.close(1000);}catch(e){}
+  if(gone&&m.code)mpSave(o=>{delete o.tokens[m.code];if(o.last===m.code)o.last=null;});
+  const code=gone?'':(m.code||'');
+  mpEnd();
+  mpOpenMenu(msg,code);
+}
+function mpLeave(){
+  const m=MP;if(!m)return;
+  m.closing=true;try{m.ws&&m.ws.close(1000);}catch(e){}
+  mpSave(o=>{if(o.last===m.code)o.last=null;});
+  mpEnd();
+}
+// vissza az egyjátékos játékhoz, ott folytatva, ahol abbahagytad
+function mpEnd(){
+  MP=null;document.body.classList.remove('mp');NAME.splice(0,3,'Te','Gellért','Samu');
+  $('newBtn').textContent='Új játék';$('mpOv').classList.remove('show');
+  ANIM={};UI.slotSeen=null;UI.sel=[];UI.ci=null;UI.err='';UI.kon=new Set();UI.armCon=false;
+  if(SP&&SP.G){G=SP.G;REV=SP.REV;SP=null;advance();}else{SP=null;G=null;nextDeal();}
+}
+function mpState(x){
+  const m=MP;m.wait=false;m.reconnecting=false;
+  if(m.busy){m.pending=x;return;}
+  const old=m.state&&m.state.G,ng=x.G;
+  // az ütés végén a lapok a nyerőhöz úsznak (a régi képen), utána jön az új állapot
+  if(old&&ng&&G===old&&old.phase==='play'&&old.trick.length===3&&ng.trickNo!==old.trickNo&&!RM()){
+    m.busy=true;gatherTrick(()=>{});setTimeout(()=>{m.busy=false;const p=m.pending||x;m.pending=null;mpApply(p);},270);return;
+  }
+  mpApply(x);
+}
+function mpApply(x){
+  const m=MP;if(!m)return;
+  const old=m.state&&m.state.G;
+  m.state=x;
+  for(let i=1;i<3;i++)NAME[i]=x.players[i]?x.players[i].name:'—';
+  if(x.status!=='playing'||!x.G){mpLobby();return;}
+  // a nyitott szobaablak (kód, helyek) frissül, a váró és a kapcsolódás ablaka az induláskor bezárul
+  const room=$('mpOv').classList.contains('show')&&old&&$('mpSheet').dataset.v==='room';
+  if(!room)$('mpOv').classList.remove('show');
+  // új leosztás: a kijelölések és az animációk alapállapotba
+  const fresh=!old||(old.phase==='result'&&x.G.phase!=='result')||x.G.hands[0].length>old.hands[0].length+2;
+  if(fresh){m.dealIdx++;ANIM={};UI.slotSeen=null;UI.sel=[];UI.ci=null;UI.suit=null;UI.err='';UI.kon=new Set();UI.armCon=false;UI.warnId=null;}
+  G=x.G;
+  render();
+  if(room)mpLobby();
+}
+function mpLobby(){
+  const m=MP,x=m.state;hideTip();
+  if(!x){$('mpSheet').dataset.v='';$('mpSheet').innerHTML=`<h2>Játék barátokkal</h2><p class="status">${m.reconnecting?'Újracsatlakozás…':'Kapcsolódás…'}</p><div class="row"><button class="btn ghost" id="mpBack">Mégse</button></div>`;$('mpOv').classList.add('show');$('mpBack').onclick=mpLeave;return;}
+  const seats=[0,1,2].map(i=>{const pl=x.players[i];return pl?`<li><span><b>${i===0?'Te':pl.name}</b>${i===0?` (${pl.name})`:''}</span><span class="small">${pl.bot?'':!pl.online?'kiesett, a gép lép helyette':pl.away?'a gép lép helyette':x.host===i?'házigazda':'bent van'}</span></li>`:'<li class="empty"><span>Üres hely</span><span class="small">indításkor gép ül ide</span></li>';}).join('');
+  const lob=x.status==='lobby';$('mpSheet').dataset.v=lob?'':'room';
+  $('mpSheet').innerHTML=`<div class="mhead"><h2>Szoba</h2></div>
+    <p class="small" style="text-align:center;margin:0">A szoba kódja</p><p class="mpcode">${x.code}</p>
+    <div class="row" style="justify-content:center"><button class="btn ghost" id="mpCopy">Link másolása</button></div>
+    ${m.reconnecting?'<p class="mpwarn">Újracsatlakozás…</p>':''}
+    <ul class="seats">${seats}</ul>
+    ${!lob?'<div class="row"><button class="btn" id="mpBack">Bezár</button></div>':x.host===0?'<div class="row"><button class="btn" id="mpGo">Indítás</button><button class="btn ghost" id="mpBack">Kilépés</button></div><p class="small">Az üres helyekre gép ül (Gellért, Samu).</p>':'<p class="status">A házigazda indítja a játékot.</p><div class="row"><button class="btn ghost" id="mpBack">Kilépés</button></div>'}`;
+  $('mpOv').classList.add('show');
+  $('mpCopy').onclick=async()=>{const u=mpLink(x.code);try{await navigator.clipboard.writeText(u);toast('A link a vágólapon: '+u);}catch(e){prompt('Másold ki a linket:',u);}};
+  if($('mpGo'))$('mpGo').onclick=()=>mpSend({t:'start'});
+  $('mpBack').onclick=lob?mpLeave:()=>$('mpOv').classList.remove('show');
+}
+// visszaszámláló: a soron lévő játékos határideje (a szerver órája szerint)
+function mpTick(){
+  const el=$('mpClock');if(!el||!MP||!MP.state||!MP.state.deadline)return;
+  const left=Math.max(0,Math.ceil((MP.state.deadline-Date.now())/1000));
+  el.textContent=left+' mp';$('mpClockRow').classList.toggle('low',left<=10);
+}
+setInterval(mpTick,500);
+$('mpBtn').onclick=()=>MP?mpLobby():mpOpenMenu();
+$('mpOv').onclick=e=>{if(e.target.id==='mpOv'&&!(MP&&MP.state&&MP.state.status==='lobby'))$('mpOv').classList.remove('show');};
+
 // ---- indulás: félbehagyott leosztás folytatása, első alkalommal bemutató ----
 let firstVisit=false;try{firstVisit=!localStorage.getItem(TOURKEY);}catch(e){}
+// szobalink (?szoba=KÓD): rögtön a belépés jön; frissítés után a tokennel visszalépünk a szobába
+const roomParam=(new URLSearchParams(location.search).get('szoba')||'').toUpperCase();
+if(roomParam)firstVisit=false;
 TOUR_ON=firstVisit;
 let resumed=false;
 if(loadGame()){try{advance();resumed=true;}catch(e){G=null;REV={bids:[],kon:null,plays:[],an:null,show:false};}}
 if(!resumed)nextDeal();
 else if(G.phase!=='result')toast('Folytatod a félbehagyott leosztást.');
 if(firstVisit)setTimeout(startTour,250);
+{const st=mpStore(),c=CODE_OK(roomParam)?roomParam:(st.last||'');
+ if(c&&st.tokens[c]&&st.name)mpStart({name:st.name,code:c});
+ else if(CODE_OK(roomParam))mpOpenMenu('',roomParam);}
 
 </script>
 </body>
