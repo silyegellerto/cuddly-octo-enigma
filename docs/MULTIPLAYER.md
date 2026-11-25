@@ -71,7 +71,7 @@ Minden üzenet JSON, legfeljebb 1 KB; 10 másodperc alatt legfeljebb 20 üzenet 
 | `trump` | `s` (1 tök, 2 zöld, 3 makk) | `G.phase === 'trump'` és te jössz. |
 | `kontra` | `keys` (pl. `["parti","ulti"]`, lehet üres) | `G.phase === 'kontra'` és te jössz; a kulcsok a `kontraOptions(0)`-ból. A kötelező kontrát a szerver magától hozzáteszi. |
 | `play` | `id` (a lap azonosítója) | Ha te jössz, és a lap benne van a `legalCards(0)`-ban. |
-| `claim` | | Felmutatás: ha `G.claimAt.n === G.trickNo`, van `G.claimAt.side`, és a `claimers(side)` tartalmazza a 0-t. |
+| `claim` | | Felmutatás ütés elején (az utolsó ütés előtt). A játékos maga dönt, a nézetben nincs `claimAt`. A szerver ekkor számol (`claimCheck`): ha a felmutató fél (felvevő, betlis felvevő, illetve a két védő; betliben csak a felvevő mutathat fel) biztosan nyer, a leosztás a szokásos módon véget ér; ha nem, `badClaim`: felvevőnél bukott, védőnél nyert játék (`G.result.badClaim`). |
 | `next` | | Leosztás végén: kész vagy a következőre. |
 
 ## Időzítések

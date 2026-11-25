@@ -135,6 +135,8 @@ details.more .pop button.danger.armed{background:var(--bad);color:var(--accent-i
 .sheet.menu{max-width:460px}
 .mhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
 .mhead h2{margin:0}
+/* hosszú ablak: a bezáró X görgetés közben is fent marad (-16px: az .ov felső belső margója, így a képernyő/biztonsági sáv tetejéhez tapad) */
+.mhead.xtop{position:sticky;top:-16px;z-index:3;background:var(--surface);margin:-18px -18px 6px;padding:12px 18px;border-radius:18px 18px 0 0}
 .mlist{display:flex;flex-direction:column}
 .mlist button{display:flex;align-items:center;gap:12px;min-height:50px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);font:inherit;font-size:calc(17px * var(--fs));font-weight:600;text-align:left;padding:0 4px}
 .mlist button:last-child{border-bottom:0}
@@ -388,6 +390,10 @@ img.ico{width:1.2em;height:1.2em;vertical-align:-.25em;object-fit:contain;displa
 .lshort{display:none}
 @media (max-width:979px) and (min-height:620px) and (max-width:440px){.lfull{display:none}.lshort{display:inline}}
 .warnbtn{flex:none;width:48px;height:48px;border-radius:999px;border:0;background:var(--bad);color:#fff;font-size:24px;font-weight:900;line-height:1;box-shadow:0 0 0 3px rgba(176,48,42,.25);animation:wpulse 1.6s ease-in-out 2}
+/* sárga: figyelmeztetés (mondható); piros: tiltás */
+.warnbtn.soft{background:var(--brass);color:#1d1a10;box-shadow:0 0 0 3px rgba(214,169,61,.3)}
+.stick.haserr .err{flex-basis:100%;margin:0 0 2px}
+.panel.fit .stick.haserr{flex-wrap:wrap}
 @keyframes wpulse{50%{box-shadow:0 0 0 7px rgba(176,48,42,.12)}}
 @media (prefers-reduced-motion:reduce){.warnbtn{animation:none}}
 .loglist{padding-left:22px;font-size:calc(15px * var(--fs));color:var(--muted);line-height:1.5}
@@ -549,7 +555,7 @@ html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:10
 
 <div class="ov" id="rules">
   <div class="sheet">
-    <h2>Röviden a szabályokról</h2>
+    <div class="mhead xtop"><h2>Röviden a szabályokról</h2><button class="iconbtn round" id="rulesX" aria-label="Bezár"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
     <p>32 lapos magyar kártya, három játékos. A kezdő 12 lapot kap, a többiek 10-et. A kezdőnek licitálnia kell: letesz 2 lapot a talonba, és bemond egy játékot. Utána sorban mindenki passzolhat, vagy felveheti a talont – ekkor neki is le kell tennie 2 lapot, és csak magasabbat mondhat. Ha a licit után ketten egymás után passzolnak, a licit véget ér, és a felvevő játszik a másik kettő ellen.</p>
     <h3>Lapsorrend</h3>
     <p>Adus játékban: ász, X, király, felső, alsó, IX, VIII, VII. Betliben és durchmarsban nincs adu, és a X a helyére kerül: ász, király, felső, alsó, X, IX, VIII, VII. Az ász és a X 10–10 pontot ér, az utolsó ütés további 10-et, összesen 90 pont van.</p>
@@ -880,6 +886,21 @@ function silentPending(){
 function allDecided(){return G.trickNo<10&&Object.keys(CONTRACTS[G.ci].comps).every(decidedComp)&&!silentPending();}
 // védő nyeresége egy tételen m szorzóval (bukott ulti: kontra nélkül 2x, kontrával 3x, rekontrával 5x)
 function defGain(r,m){return (r.k==='ulti'&&!r.win)?r.v*(m+1):-r.delta*m;}
+// a tételek elszámolása védőnként, a kontrákkal együtt
+function payRows(rows){
+  const d=G.decl,defs=[0,1,2].filter(p=>p!==d),change=[0,0,0];
+  for(const q of defs){let s=0;for(const r of rows)s-=defGain(r,r.k?(G.kmult[q][r.k]||1):1);change[q]=-s;change[d]+=s;}
+  for(const r of rows)if(r.k){const m=defs.filter(q=>G.kmult[q][r.k]).map(q=>`${NAME[q]} ×${G.kmult[q][r.k]}`);if(m.length)r.kontra=m.join(', ');}
+  return change;
+}
+// hibás felmutatás (multiplayer): a felmutató fél veszít, mintha a játék végén így dőlt volna el (felvevőnél bukott, védőnél nyert játék)
+function badClaim(side){
+  const c=CONTRACTS[G.ci],d=G.decl,win=side==='def';
+  const rows=Object.entries(c.comps).map(([k,v])=>({k,v,label:COMP_NAMES[k],detail:'Hibás felmutatás',win,delta:win?v:-(k==='ulti'?2*v:v)}));
+  const change=payRows(rows);
+  G.result={rows,change,declPts:0,defPts:0,badClaim:side};G.phase='result';G.turn=-1;
+  addLog(`${claimVerb(claimers(side),true)}, de nem volt biztos: ${claimText(side)}. ${NAME[d]} ${change[d]>0?'nyert':'vesztett'}: ${change[d]>0?'+':''}${change[d]} pont.`);
+}
 function finishHand(){
   const c=CONTRACTS[G.ci],d=G.decl;
   const cp=p=>G.won[p].reduce((a,x)=>a+pts(x),0);
@@ -919,9 +940,7 @@ function finishHand(){
     else if(defs.reduce((a,p)=>a+aces(p),0)===4)rows.push({k:null,label:'Csendes négy ász',detail:'A védők ütötték mind a négy ászt',win:false,delta:-2*base});
   }
   if(complete&&G.trumpGame&&!c.comps.durch&&G.tcount[d]===10)rows.push({k:null,label:'Csendes durchmars',detail:d===0?'Minden ütést elvittél':`${NAME[d]} minden ütést elvitt`,win:true,delta:3*base});
-  const change=[0,0,0];
-  for(const q of defs){let s=0;for(const r of rows)s-=defGain(r,r.k?(G.kmult[q][r.k]||1):1);change[q]=-s;change[d]+=s;}
-  for(const r of rows)if(r.k){const m=defs.filter(q=>G.kmult[q][r.k]).map(q=>`${NAME[q]} ×${G.kmult[q][r.k]}`);if(m.length)r.kontra=m.join(', ');}
+  const change=payRows(rows);
   G.result={rows,change,declPts,defPts};
   G.phase='result';
   addLog(change[d]===0?'Pénz az ablakban: senki nem kap pontot.':`${NAME[d]} ${change[d]>0?'nyert':'vesztett'}: ${change[d]>0?'+':''}${change[d]} pont.`);
@@ -1819,14 +1838,14 @@ const claimers=side=>side==='def'?[0,1,2].filter(q=>q!==G.decl):[G.decl];
 const claimHuman=side=>claimers(side).includes(0);
 // „X felmutatja a lapjait” helyes ragozással (múlt idő: past=true)
 function claimVerb(who,past){
-  const names=who.map(q=>NAME[q]).join(' és '),me=who.includes(0),pl=who.length>1;
+  const names=who.map(q=>NAME[q]).join(' és '),me=who.includes(0)&&NAME[0]==='Te',pl=who.length>1;
   if(me)return pl?`${names} felmutattátok a lapjaitokat`:(past?'Felmutattad a lapjaidat':'Felmutatod a lapjaidat');
   return pl?`${names} felmutat${past?'ták':'ják'} a lapjaikat`:`${names} felmutat${past?'ta':'ja'} a lapjait`;
 }
 function claimText(side){
-  const d=G.decl;
-  return side==='betli'?`${d===0?'innentől egy ütést sem viszel':NAME[d]+' innentől egy ütést sem visz'}`
-    :side==='decl'?`innentől minden ütés ${d===0?'a tiéd':NAME[d]+'é'}`:`innentől minden ütés a védőké`;
+  const d=G.decl,me=d===0&&NAME[0]==='Te';
+  return side==='betli'?`${me?'innentől egy ütést sem viszel':NAME[d]+' innentől egy ütést sem visz'}`
+    :side==='decl'?`innentől minden ütés ${me?'a tiéd':NAME[d]+'é'}`:`innentől minden ütés a védőké`;
 }
 // a felmutatás után a maradékot a gép lejátssza (a felmutató fél a keresés szerinti lapot teszi), így a pontozás a szokásos
 function resolveClaim(side){
@@ -2667,6 +2686,7 @@ function renderPanel0(el){
       const why=mm[0]>1||mm[1]>1?`<br><small>alap ${sg(base)}${x.k==='ulti'&&!x.win?' (bukott ulti)':''}, ${mm[0]===mm[1]?(mm[0]===2?'kontra':'rekontra'):'kontra'} ×${mm[0]===mm[1]?mm[0]:mm.join('/')}</small>`:'';
       return v[0]===v[1]?`${sg(v[0])}${why}`:defs.map((q,i)=>`${NAME[q]} ${sg(v[i])}`).join('<br>')+why;};
     if(G.claimShow){const cs=G.claimShow;h+=`<p class="rule">${cs.from+1}. ütéstől: ${claimVerb(cs.who,true)}, ${claimText(cs.side)}.</p>`;}
+    if(r.badClaim)h+=`<p class="rule">Hibás felmutatás: ${claimVerb(claimers(r.badClaim),true)}, de nem volt biztos, hogy ${claimText(r.badClaim).replace('innentől ','')}. Ezért ${r.badClaim==='def'?'a felvevő játéka nyert':'a játék bukott'}.</p>`;
     h+=`<div class="tw"><table class="res"><tr><td></td><td class="det"></td><td class="det">védőnként</td></tr>${r.rows.map(x=>`<tr><td><span class="mark ${x.win?'pos':'neg'}">${x.win?'✓':'✗'}</span> ${x.label}</td><td class="det">${x.detail}</td><td class="${x.delta>0?'pos':'neg'}">${cell(x)}</td></tr>`).join('')}</table></div>`;
     {const tot=defs.map(q=>-r.change[q]);
      h+=`<p class="status">${d===0?'Neked':`A felvevőnek (${NAME[d]})`} védőnként: ${defs.map((q,i)=>`${NAME[q]} ${sg(tot[i])}`).join(', ')}, összesen <b class="${r.change[d]>0?'pos':r.change[d]<0?'neg':''}">${sg(r.change[d])}</b>.</p>`;}
@@ -2694,8 +2714,9 @@ function renderPanel0(el){
       const head=G.bid?`A licit most: <b>${CONTRACTS[G.bid.ci].name}</b> (${NAME[G.bid.seat]}). Tegyél le 2 lapot, és mondj magasabbat.`:'Te kezdesz. Jelölj ki 2 lapot a talonba, és válassz játékot.';
       let fw='';
       if(c&&UI.sel.length===2&&isTrumpC(c)){const ids=new Set(UI.sel.map(x=>x.id)),rest=G.hands[0].filter(x=>!ids.has(x.id));const ok=suitsFor(c).filter(s=>!checkReq(rest,UI.ci,s));if(ok.length&&ok.every(s=>forcedParts(rest,UI.ci,s).length))fw=`Kényszervállalás: ehhez a játékhoz nincs meg a ${c.comps.c40?'40':'20'}. Mondhatod, de a bemondás pontja nem számít, és akinél a kulcslap van, kötelezően megkontrázza.`;}
+      const blk=c?bidBlock(UI.ci):'';
       const quick=min<CONTRACTS.length?`<button class="btn ghost" id="quickBtn">Passz: ${CONTRACTS[min].name}</button>`:'';
-      el.innerHTML=`<p class="status">${head}</p>${hintHTML()}<div class="listhead"><p class="lbl2">Talonba jelölve: ${UI.sel.length} / 2</p><button class="expbtn" id="bidsExp" aria-label="Az összes mondás teljes képernyőn" title="Az összes mondás teljes képernyőn">⤢</button></div>${opts}${UI.err?`<p class="err">${UI.err}</p>`:''}<div class="row stick" style="margin-top:10px"><button class="btn" id="bidBtn">${c?`<span class="lfull">Bemondom: ${c.name}</span><span class="lshort">Bemondom</span>`:'Licitálok'}</button>${fw?'<button class="warnbtn" id="fwBtn" aria-label="Figyelmeztetés: kényszervállalás" title="Kényszervállalás">!</button>':''}${quick}</div>`;
+      el.innerHTML=`<p class="status">${head}</p>${hintHTML()}<div class="listhead"><p class="lbl2">Talonba jelölve: ${UI.sel.length} / 2</p><button class="expbtn" id="bidsExp" aria-label="Az összes mondás teljes képernyőn" title="Az összes mondás teljes képernyőn">⤢</button></div>${opts}<div class="row stick${UI.err?' haserr':''}" style="margin-top:10px">${UI.err?`<p class="err" role="alert">${UI.err}</p>`:''}<button class="btn" id="bidBtn"${blk?' disabled':''}>${c?`<span class="lfull">Bemondom: ${c.name}</span><span class="lshort">Bemondom</span>`:'Licitálok'}</button>${blk?'<button class="warnbtn" id="blkBtn" aria-label="Ez a játék nem mondható be: miért?" title="Nem mondható be">!</button>':fw?'<button class="warnbtn soft" id="fwBtn" aria-label="Figyelmeztetés: kényszervállalás" title="Kényszervállalás">!</button>':''}${quick}</div>`;
       el.querySelectorAll('[data-ci]').forEach(b=>b.onclick=()=>{UI.ci=+b.dataset.ci;UI.err='';render();});
       // a mondások teljes képernyős ablakban: választás után bezárul, a lista a kiválasztottra gördül
       $('bidsExp').onclick=()=>{
@@ -2709,6 +2730,7 @@ function renderPanel0(el){
       };
       // a figyelmeztetés nem tolja ki a gombokat: a piros felkiáltójelre koppintva ablakban jelenik meg
       if($('fwBtn'))$('fwBtn').onclick=()=>infoSheet(`<h2>Kényszervállalás</h2><p>${fw}</p>`);
+      if($('blkBtn'))$('blkBtn').onclick=()=>infoSheet(`<h2>Nem mondható be</h2><p>${blk}</p>`);
       $('bidBtn').onclick=humanBid;
       if($('quickBtn'))$('quickBtn').onclick=()=>{UI.ci=min;if(UI.sel.length===2)humanBid();else{UI.err='Jelölj ki 2 lapot a talonba, aztán nyomd meg újra.';render();}};
     }else{
@@ -2742,9 +2764,14 @@ function renderPanel0(el){
   const play=G.phase==='play';
   const canClaim=!MP&&play&&G.claimAt&&G.claimAt.n===G.trickNo&&G.claimAt.side&&claimHuman(G.claimAt.side);
   const dots='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M5 12h.01M12 12h.01M19 12h.01"/></svg>';
-  const more=play&&!UI.auto&&(!MP||G.decl===0)?`<details class="more" id="moreDd"${UI.moreOpen?' open':''}><summary aria-label="További lehetőségek">${dots}</summary><div class="pop">${MP?'':'<button id="autoBtn">Játszd le helyettem</button>'}${G.decl===0?`<button class="danger${UI.armCon?' armed':''}" id="conBtn">${UI.armCon?`Biztos? Bedobás: ${fmt(-[1,2].reduce((a,q)=>a+concedeLoss(G.ci,G.kmult,q),0))} pont`:'Bedobom a lapjaimat'}</button>`:''}</div></details>`:'';
+  // multiplayerben a felmutatás a játékos döntése: a gép nem jelzi előre, hogy biztos-e (az tipp volna)
+  const mpClaim=MP&&play&&!G.trick.length&&G.trickNo<9&&(G.decl===0||CONTRACTS[G.ci].kind!=='betli'); // betliben csak a felvevő mutathat fel
+  const more=play&&!UI.auto&&(!MP||G.decl===0||mpClaim)?`<details class="more" id="moreDd"${UI.moreOpen?' open':''}><summary aria-label="További lehetőségek">${dots}</summary><div class="pop">${MP?(mpClaim?'<button id="mpClaimBtn">Felmutatom a lapjaimat</button>':''):'<button id="autoBtn">Játszd le helyettem</button>'}${G.decl===0?`<button class="danger${UI.armCon?' armed':''}" id="conBtn">${UI.armCon?`Biztos? Bedobás: ${fmt(-[1,2].reduce((a,q)=>a+concedeLoss(G.ci,G.kmult,q),0))} pont`:'Bedobom a lapjaimat'}</button>`:''}</div></details>`:'';
   el.innerHTML=`<p class="status">${statusText()}</p>${UI.err?`<p class="err">${UI.err}</p>`:''}${canClaim?`<div class="row" style="margin-top:8px;align-items:center"><button class="btn go" id="claimBtn">Felmutatom</button><span class="sub" style="color:var(--muted)">${claimText(G.claimAt.side).replace('innentől','Innentől biztosan')}.</span></div>`:''}${UI.auto?`<div class="actrow"><button class="btn ghost" id="autoBtn">Megállítás, játszom tovább</button></div>`:hintHTML(more)}`;
   if($('conBtn'))$('conBtn').onclick=()=>{if(!UI.armCon){UI.armCon=true;render();return;}UI.armCon=false;UI.moreOpen=false;if(MP)return mpSend({t:'concede'});clearTimeout(timer);doConcede(0);advance();};
+  if($('mpClaimBtn'))$('mpClaimBtn').onclick=()=>{UI.moreOpen=false;const side=G.decl===0?(CONTRACTS[G.ci].kind==='betli'?'betli':'decl'):'def';
+    infoSheet(`<h2>Felmutatás</h2><p>Akkor mutass fel, ha biztos vagy benne, hogy ${claimText(side)}, bárhogy is állnak a többiek lapjai.</p><p><b>Ha nem biztos, ${side==='def'?'a felvevő játéka nyertnek számít':'a játékod bukottnak számít'}.</b></p><div class="row"><button class="btn" id="mpClaimGo">Felmutatom</button></div>`);
+    $('mpClaimGo').onclick=()=>{$('infoOv').classList.remove('show');mpSend({t:'claim'});};};
   if($('claimBtn'))$('claimBtn').onclick=()=>{clearTimeout(timer);resolveClaim(G.claimAt.side);advance();};
   if($('autoBtn'))$('autoBtn').onclick=()=>{UI.auto=!UI.auto;UI.moreOpen=false;UI.warnId=null;UI.err='';advance();};
   bindHint();
@@ -2881,6 +2908,14 @@ function onCard(id){
     UI.flyFrom={id:c.id,rect:handRect(c.id)};playCard(0,c);advance();
   }
 }
+// ulti csak az adu VII-essel mondható: már a választáskor szólunk, ha a megmaradó lapokból nem jön ki
+function bidBlock(ci){
+  const c=CONTRACTS[ci];if(!isTrumpC(c)||!c.comps.ulti)return '';
+  const ids=new Set(UI.sel.map(x=>x.id)),rest=G.hands[0].filter(x=>!ids.has(x.id)),S=c.red?[0]:[1,2,3];
+  if(S.some(s=>hasC(rest,s,0)))return '';
+  const what=c.red?'a piros VII-es':'egy tök, zöld vagy makk VII-es (annak a színe lesz az adu)';
+  return `${c.name} csak úgy mondható be, ha nálad marad ${what}. `+(S.some(s=>hasC(G.hands[0],s,0))?'A VII-est a talonba jelölted: vedd ki onnan.':'Ilyen VII-esed nincs.');
+}
 function humanBid(){
   const e=validateBid(0,UI.sel,UI.ci,UI.ci==null?null:!isTrumpC(CONTRACTS[UI.ci])?-1:CONTRACTS[UI.ci].red?0:-2);
   if(e){UI.err=e;render();return;}
@@ -2969,7 +3004,7 @@ const openRules=()=>{$('menuOv').classList.remove('show');$('rules').classList.a
 $('navRules').onclick=openRules;$('mRules').onclick=openRules;
 document.querySelectorAll('[data-tip]').forEach(b=>b.onclick=()=>{SET.tip=+b.dataset.tip;saveSet();syncTutor();UI.hc=null;if(G)render();});
 syncTutor();
-$('closeRules').onclick=()=>$('rules').classList.remove('show');
+$('closeRules').onclick=$('rulesX').onclick=()=>$('rules').classList.remove('show');
 $('seeOv').onclick=e=>{if(e.target.id==='seeOv')$('seeOv').classList.remove('show');};
 $('rules').onclick=e=>{if(e.target.id==='rules')$('rules').classList.remove('show');};
 $('ctable').innerHTML=CONTRACTS.map(c=>`<tr><td>${c.name}</td><td style="text-align:right">${bidLabel(c)}</td></tr>`).join('');

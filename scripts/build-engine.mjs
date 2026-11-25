@@ -10,7 +10,7 @@ mkdirSync(new URL('../build/', import.meta.url), { recursive: true });
 writeFileSync(new URL('../build/engine.js', import.meta.url), s.slice(a, b) + `
 export { CONTRACTS, NAME, nxt, isTrumpC, checkReq, holding12, canPickUp, minBidIndex, validateBid, newDeal, doBid, doPass, doPickUp,
   doConcede, pickTrump, chooseTrump, kontraOptions, doKontra, legalCards, playCard, collectTrick, claimCheck, claimers,
-  resolveClaim, botBidAction, botKontra, botChoose };
+  resolveClaim, badClaim, botBidAction, botKontra, botChoose };
 // A motor egyetlen közös állapottal (G) dolgozik; a szerver asztalonként ezt cseréli be és ki.
 export const getG = () => G, setG = x => { G = x; };
 `);

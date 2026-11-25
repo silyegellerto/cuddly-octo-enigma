@@ -172,9 +172,12 @@ export class Table extends DurableObject {
         return null;
       }
       case 'claim': {
-        const side = G.phase === 'play' && !G.trick.length && G.claimAt && G.claimAt.n === G.trickNo && G.claimAt.side;
-        if (!side || !E.claimers(side).includes(p)) return 'Most nem mutathatsz fel.';
-        E.resolveClaim(side);
+        // A játékos maga dönt: a szerver csak most számol. Hibás felmutatásnál a felmutató fél veszít.
+        if (G.phase !== 'play' || G.trick.length || G.trickNo >= 9) return 'Felmutatni ütés elején lehet, az utolsó ütés előtt.';
+        const betli = E.CONTRACTS[G.ci].kind === 'betli';
+        if (betli && p !== G.decl) return 'Betliben csak a felvevő mutathat fel.';
+        const mine = p !== G.decl ? 'def' : betli ? 'betli' : 'decl';
+        if (E.claimCheck() === mine) E.resolveClaim(mine); else E.badClaim(mine);
         return null;
       }
     }
@@ -289,7 +292,7 @@ export class Table extends DurableObject {
     if (r.G) {
       G = structuredClone(r.G);
       const end = G.phase === 'result';
-      delete G.collect; delete G.deal; // a botok terve és az eredeti osztás titok
+      delete G.collect; delete G.deal; delete G.claimAt; // a botok terve, az eredeti osztás és a felmutathatóság (az tipp volna) titok
       for (let q = 0; q < 3; q++) if (q !== me && !end && !(G.revealed && q === G.decl)) G.hands[q] = G.hands[q].map(() => null);
       if (!end && G.talonBy !== me) { G.talon = G.talon.map(() => null); delete G.talonPts; }
       for (const k of ['hands', 'won', 'tcount', 'marr', 'lastAction', 'kmult']) if (G[k]) G[k] = perm(G[k]);

@@ -36,13 +36,21 @@ class Player {
     const G = m.G;
     ok('saját ülés a 0.', m.players[0] && m.players[0].name.startsWith(this.name), JSON.stringify(m.players));
     if (!G) return;
-    ok('nincs botterv és eredeti osztás a nézetben', !('collect' in G) && !('deal' in G));
+    ok('nincs botterv, eredeti osztás és felmutathatóság a nézetben', !('collect' in G) && !('deal' in G) && !('claimAt' in G));
+    if (G.phase === 'result' && this.claimed === m.deals && !this.done.has('cl' + m.deals)) {
+      this.done.add('cl' + m.deals);
+      ok('felmutatás után vége a leosztásnak (jó vagy hibás)', !!G.claimShow !== !!G.result.badClaim, JSON.stringify(G.result));
+      if (G.result.badClaim) ok('hibás felmutatás: a felvevő veszít', G.result.badClaim === 'decl' || G.result.badClaim === 'betli' ? G.result.change[0] < 0 : false, JSON.stringify(G.result));
+    }
     if (G.phase !== 'result') {
       for (const q of [1, 2]) if (!(G.revealed && G.decl === q)) ok('mások lapja rejtve', G.hands[q].every(x => x === null), this.name + ' ' + q);
       ok('a saját lap látszik', G.hands[0].every(x => x && Number.isInteger(x.id)));
       if (G.talonBy !== 0) ok('a talon rejtve, ha nem te tetted le', G.talon.every(x => x === null) && !('talonPts' in G));
-      if (G.turn === 0 && ['bid', 'trump', 'kontra', 'play'].includes(G.phase) && !(G.phase === 'play' && G.trick.length === 3) && m.players[0].online && !m.players[0].away)
-        ok('lépési határidő a soron lévő játékosnak', typeof m.deadline === 'number');
+      // ütés elején a gép felmutathat (gépi felvevő vagy két gépi védő): ilyenkor a szerver nem ad határidőt, hanem a felmutatásra vár
+      const bc = q => m.players[q].bot || !m.players[q].online || m.players[q].away;
+      const botClaim = G.phase === 'play' && !G.trick.length && (bc(G.decl) || [0, 1, 2].filter(q => q !== G.decl).every(bc));
+      if (G.turn === 0 && ['bid', 'trump', 'kontra', 'play'].includes(G.phase) && !(G.phase === 'play' && G.trick.length === 3) && m.players[0].online && !m.players[0].away && !botClaim)
+        ok('lépési határidő a soron lévő játékosnak', typeof m.deadline === 'number', JSON.stringify([G.phase, G.decl, G.trickNo, G.trick.length, m.players.map(x => x.bot)]));
     }
   }
   // Egyszerű, de mindig szabályos játék a motor saját függvényeivel.
@@ -55,7 +63,8 @@ class Player {
     if (this.done.has(key)) return;
     this.done.add(key);
     E.setG(G);
-    if (G.phase === 'play' && !G.trick.length && G.claimAt && G.claimAt.n === G.trickNo && G.claimAt.side && E.claimers(G.claimAt.side).includes(0)) return this.send({ t: 'claim' });
+    // felmutatás saját döntésre (a nézetben nincs jel, hogy biztos-e): felvevőként a 6. ütés elején
+    if (G.phase === 'play' && !G.trick.length && G.decl === 0 && G.trickNo === 5) { this.claimed = m.deals + 1; return this.send({ t: 'claim' }); }
     if (G.phase === 'bid') {
       if (!E.holding12(0)) return this.send({ t: E.canPickUp(0) && Math.random() < 0.15 ? 'pickup' : 'pass' });
       const h = G.hands[0];
@@ -91,7 +100,8 @@ try {
   A.send({ t: 'start' });
   await until(() => A.state && A.state.G, 3000, 'indulás');
   // nem soron lévő játékos lépése: hiba, az állapot nem változik
-  const idle = [A, B, C].find(p => p.state.G.turn !== 0 && p.state.G.hands[0].length);
+  // akinél a soron lévő a következő ülés (1.), annak még két lépést kell várnia: így nem jön sorra, mire az üzenete odaér
+  const idle = [A, B, C].find(p => p.state.G.turn === 1 && p.state.G.hands[0].length) || [A, B, C].find(p => p.state.G.turn !== 0 && p.state.G.hands[0].length);
   idle.auto = false;
   const before = JSON.stringify(idle.state.G.hands[0]);
   idle.errors = [];

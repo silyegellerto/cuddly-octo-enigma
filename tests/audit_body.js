@@ -78,6 +78,10 @@ newDeal(0);
 ok('bukott ulti: kontra nélkül 2x, kontrával 3x, rekontrával 5x',defGain({k:'ulti',v:4,win:false,delta:-8},1)===8&&defGain({k:'ulti',v:4,win:false,delta:-8},2)===12&&defGain({k:'ulti',v:4,win:false,delta:-8},4)===20);
 {newDeal(1);const ci=CONTRACTS.findIndex(c=>c.name==='Piros parti');const p=G.turn;doBid(p,G.hands[p].slice(0,2),ci,0);G.decl=p;G.ci=ci;G.kmult=[{},{},{}];
  const before=G.result;doConcede(p);const ch=G.result.change;ok('bedobás: piros parti védőnként 4',ch.filter((x,i)=>i!==p).every(x=>x===4));}
+// hibás felmutatás (multiplayer): a felmutató fél veszít, zéró összeggel
+{newDeal(1);const ci=CONTRACTS.findIndex(c=>c.name==='Piros parti');const p=G.turn;doBid(p,G.hands[p].slice(0,2),ci,0);G.decl=p;G.ci=ci;G.kmult=[{},{},{}];G.phase='play';
+ badClaim('decl');const a=G.result.change;G.phase='play';badClaim('def');const b=G.result.change;
+ ok('hibás felmutatás: felvevőnél bukott, védőnél nyert játék',a[p]<0&&b[p]>0&&a.reduce((x,y)=>x+y,0)===0&&b.reduce((x,y)=>x+y,0)===0&&a[p]===-b[p]);}
 // terített: könyv szerint hibátlan sor kell (normál)
 {const h=[C(0,6),C(0,3),C(0,2),C(0,0),C(1,5),C(2,6),C(2,3),C(2,2),C(2,0),C(3,5),C(3,3),C(3,0)];RANKC.clear();const L=rankOptions(h,0);
  ok('terített betli: hiányos sorral nem javasolja',!L.some(o=>CONTRACTS[o.ci].open&&CONTRACTS[o.ci].comps.betli));}

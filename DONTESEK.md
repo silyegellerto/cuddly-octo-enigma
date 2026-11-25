@@ -46,6 +46,8 @@ Forrás: <https://ultiblog.hu/a-talonozas/>
 - **Védekezés**: a felülütési kényszer mindenkire vonatkozik, a védő társára is. A védő minden hívást végigszámol az ismeretlen lapok lehetséges elosztásain, és azt hívja, amelyiknél a felvevő a legnagyobb eséllyel viszi az ütést. A talonban a magas lapok (ász, király, felső) valószínűbbek, mert a betlis felvevő ezeket teszi le. (Az „elsőként hívott szín rövid” feltevést elvetettük, félrevitt.)
 - **Színtelenítés**: ha a védő nem tud színt adni, abból a színből dob tovább, amelyikből már elkezdett dobni; ha még egyikből sem, a legmagasabb lapját dobja (azonos rangnál a rövidebb színből).
 - Ha a védő tud színt adni, és a felvevő az ütést már nem viszi, a legmagasabb lapját teszi (a kis lapokat az alá hívásokhoz tartja).
+- **Licit, nem mondható játék** (Gellért, 2026.11.25.): ha a választott ultihoz nem marad adu VII-es (nincs, vagy a talonba jelölted), a „Bemondom” halvány, mellette **piros** „!”, rákoppintva az ok. A kényszervállalás „!”-e **sárga** (figyelmeztetés, mondható). A licit hibaüzenete a gombsor fölött áll, nem a görgethető lista alatt.
+- **Ablakok bezárása** (Gellért, 2026.11.26.): a Szabályok ablak tetején is van X (görgetés közben is fent marad), nem csak alul a „Bezár”.
 - **Terített betli**: az első ütés után a felvevő lapjai kiterítődnek (napló, értesítés, „terítve” jelzés).
 
 ## Licit, kontra, játékmenet
@@ -55,6 +57,7 @@ Forrás: <https://ultiblog.hu/a-talonozas/>
 - Sima durchmars színtelen sorrenddel megy (MAUSZ szerint), adus változatnál az adu sorrend.
 - **Felmutatás** („Felmutatom”): ha egy ütés elején biztos, hogy minden ütés az egyik félé. Mindkét irányban működik. A botok maguktól felmutatnak, ilyenkor a két bot maradék lapja is látszik.
   - **Csak a felmutató tudása alapján biztos esetben** (`claimSafe`): minden lehetséges lapelosztásnál biztos legyen. Tudás: a saját lap (védőknél a két védőé együtt), a kiment lapok, felvevőnél a talon, a bemondásokból ismert lapok, a kiderült színhiányok. A rejtett lapokat a keresés a felmutatónak legrosszabb módon, de szabályosan osztja ki. Hibás volt: korábban a gép a valódi, eltakart lapokat is figyelembe vette (lyukas betlinél is felajánlotta).
+- **Felmutatás multiplayerben** (Gellért, 2026.11.26.): nincs előre jelzés, hogy biztos-e (az tipp volna; a szerver a `claimAt`-ot sem küldi el). Ütés elején, az utolsó ütés előtt a „⋯” menüben „Felmutatom a lapjaimat”; előbb figyelmeztető ablak, benne a „Felmutatom” gomb. A szerver ekkor számol: ha biztos, a szokásos felmutatás; ha nem, **bukott játék** (felvevőnél minden tétel bukott, védőknél a felvevő minden tétele nyert, a szokásos áron, kontrával együtt: `badClaim`). Betliben csak a felvevő mutathat fel. A botok felmutatása változatlan.
 - Felmutatásnál ultis felvevő az adu VII-et az utolsó ütésre tartja.
 - Elnevezés: a piros szín nélküli durchmars neve **Redurchmars**.
 
