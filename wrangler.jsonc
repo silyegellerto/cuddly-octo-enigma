@@ -3,6 +3,10 @@
 {
   "name": "rabloulti",
   "compatibility_date": "2026-11-01",
+  // Csak a saját domainen érhető el; a workers.dev és az előnézeti címek ki vannak kapcsolva.
+  "routes": [{ "pattern": "ulti.silyegellert.cc", "custom_domain": true }],
+  "workers_dev": false,
+  "preview_urls": false,
   "assets": {
     // A repó gyökere a statikus mappa; hogy mi kerül ki a webre, azt a .assetsignore szűri.
     "directory": ".",
