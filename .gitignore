@@ -3,3 +3,5 @@ play.png
 *.zip
 ulti_standalone.html
 backup/
+.wrangler/
+node_modules/

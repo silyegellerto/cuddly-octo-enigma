@@ -11,6 +11,7 @@ hogy egy korábbi javítás ne vesszen el.
 - A fejlesztés a repóban lévő `ulti.html`-ben folyik; a claude.ai-os artifact ugyanebből a fájlból frissül, a kettő mindig egyezzen.
 - A szerver (`ulti.silyegellert.cc`) a main ágat húzza: `ulti.html`, `cards/`, `fonts/` (és kell az `icons/` is).
 - Minden változtatás után lefut a szabályellenőrzés: `python3 tests/run_audit.py`.
+- **Átköltözés a Cloudflare-re** (2026.11.25., Gellért döntése): a játékot egy Cloudflare Worker szolgálja ki a repó gyökeréből (`wrangler.jsonc`), a Pi-n csak a garázs marad. A webre csak az kerül ki, amit a `.assetsignore` kifejezetten enged (`ulti.html`, `cards/`, `fonts/`, `icons/`); **új nyilvános fájlt vagy mappát ott is fel kell venni**. A biztonsági fejlécek (CSP stb.) és a gyorsítótárazás a `_headers` fájlban vannak, a `/` címet a `_redirects` irányítja az `ulti.html`-re.
 
 ## Alapelvek a gépi döntésekhez
 

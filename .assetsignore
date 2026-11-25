@@ -1,0 +1,9 @@
+# Ami a webre kikerül: csak a játék és a hozzá tartozó mappák. Minden más (dokumentáció, tesztek, beállítások) nem.
+*
+!ulti.html
+!cards/
+!cards/**
+!fonts/
+!fonts/**
+!icons/
+!icons/**

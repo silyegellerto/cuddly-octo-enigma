@@ -1,0 +1,23 @@
+# Biztonsági fejlécek minden fájlra (a korábbi Caddy-beállítás megfelelője).
+/*
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: no-referrer
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
+
+# A játék mindig a legfrissebb legyen.
+/
+  Cache-Control: public, max-age=0, must-revalidate
+/ulti.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Képek, betűk, ikonok: 7 napig a böngészőben. Ha egy képet azonos néven cserélsz, adj neki új nevet.
+/cards/*
+  Cache-Control: public, max-age=604800
+/fonts/*
+  Cache-Control: public, max-age=604800
+/icons/*
+  Cache-Control: public, max-age=604800

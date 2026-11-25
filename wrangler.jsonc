@@ -1,0 +1,13 @@
+// Cloudflare Worker: egyelőre csak a statikus játékot szolgálja ki (ulti.html, cards/, fonts/, icons/).
+// A multiplayer kód (API, WebSocket, Durable Objectek) később kerül ide.
+{
+  "name": "rabloulti",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    // A repó gyökere a statikus mappa; hogy mi kerül ki a webre, azt a .assetsignore szűri.
+    "directory": ".",
+    // A fájlok pontosan azon a címen érhetők el, ahol vannak (/ulti.html nem ugrik át /ulti-ra).
+    "html_handling": "none",
+    "not_found_handling": "none"
+  }
+}
