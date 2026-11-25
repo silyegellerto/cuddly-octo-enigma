@@ -12,6 +12,7 @@ hogy egy korábbi javítás ne vesszen el.
 - A szerver (`ulti.silyegellert.cc`) a main ágat húzza: `ulti.html`, `cards/`, `fonts/` (és kell az `icons/` is).
 - Minden változtatás után lefut a szabályellenőrzés: `python3 tests/run_audit.py`.
 - **Átköltözés a Cloudflare-re** (2026.11.25., Gellért döntése): a játékot egy Cloudflare Worker szolgálja ki a repó gyökeréből (`wrangler.jsonc`), a Pi-n csak a garázs marad. A webre csak az kerül ki, amit a `.assetsignore` kifejezetten enged (`ulti.html`, `cards/`, `fonts/`, `icons/`); **új nyilvános fájlt vagy mappát ott is fel kell venni**. A biztonsági fejlécek (CSP stb.) és a gyorsítótárazás a `_headers` fájlban vannak, a `/` címet a `_redirects` irányítja az `ulti.html`-re.
+- **A motor a szerveren is fut** (multiplayer, 2026.11.25.): telepítéskor a `scripts/build-engine.mjs` kivágja az `ulti.html`-ből az `// ===== ENGINE START` és `// ===== ENGINE END` közötti részt. Ezért a jelölők maradjanak meg, és a motor ne nyúljon a felülethez (`document`, `window`, `localStorage`). A szerveren a botlicit átlagosan ~0,4 s processzoridő; a Durable Objectben ez belefér az ingyenes csomagba, egy sima Worker-hívásban nem.
 
 ## Alapelvek a gépi döntésekhez
 
