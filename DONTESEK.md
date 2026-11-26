@@ -47,6 +47,7 @@ Forrás: <https://ultiblog.hu/a-talonozas/>
 - **Színtelenítés**: ha a védő nem tud színt adni, abból a színből dob tovább, amelyikből már elkezdett dobni; ha még egyikből sem, a legmagasabb lapját dobja (azonos rangnál a rövidebb színből).
 - Ha a védő tud színt adni, és a felvevő az ütést már nem viszi, a legmagasabb lapját teszi (a kis lapokat az alá hívásokhoz tartja).
 - **Licit, nem mondható játék** (Gellért, 2026.11.25.): ha a választott ultihoz nem marad adu VII-es (nincs, vagy a talonba jelölted), a „Bemondom” halvány, mellette **piros** „!”, rákoppintva az ok. A kényszervállalás „!”-e **sárga** (figyelmeztetés, mondható). A licit hibaüzenete a gombsor fölött áll, nem a görgethető lista alatt.
+- **Link előnézete** (2026.11.26.): Open Graph címkék az `ulti.html` fejében, kép: `icons/og.jpg` (1200×630, zöld asztal, legyező, név, rövid leírás, „Barátokkal · Gép ellen · Tanuló tipp”). Az `og:image` teljes címmel (`https://ulti.silyegellert.cc/...`) szerepel, mert az üzenetküldők csak így töltik le.
 - **Ablakok bezárása** (Gellért, 2026.11.26.): a Szabályok ablak tetején is van X (görgetés közben is fent marad), nem csak alul a „Bezár”.
 - **Terített betli**: az első ütés után a felvevő lapjai kiterítődnek (napló, értesítés, „terítve” jelzés).
 
