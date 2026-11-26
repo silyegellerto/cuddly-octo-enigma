@@ -21,3 +21,5 @@
   Cache-Control: public, max-age=604800
 /icons/*
   Cache-Control: public, max-age=604800
+/emotes/*
+  Cache-Control: public, max-age=604800

@@ -14,7 +14,7 @@ const sleep = ms => new Promise(f => setTimeout(f, ms));
 const until = async (cond, ms, what) => { const t0 = Date.now(); while (!cond()) { if (Date.now() - t0 > ms) throw new Error('Időtúllépés: ' + what); await sleep(25); } };
 
 class Player {
-  constructor(name) { this.name = name; this.auto = true; this.errors = []; this.state = null; this.done = new Set(); }
+  constructor(name) { this.name = name; this.auto = true; this.errors = []; this.state = null; this.done = new Set(); this.emotes = []; this.nState = 0; }
   open(path) {
     this.ws = new WebSocket(WSB + path, { headers: { Origin: BASE } });
     this.ws.onmessage = e => this.onMsg(JSON.parse(e.data));
@@ -26,8 +26,9 @@ class Player {
   onMsg(m) {
     if (m.t === 'welcome') { this.token = m.token; this.code = m.code; }
     if (m.t === 'error') { this.errors.push(m); if (m.fatal) this.ready(m); }
+    if (m.t === 'emote') this.emotes.push(m);
     if (m.t !== 'state') return;
-    this.state = m; this.ready(m);
+    this.nState++; this.state = m; this.ready(m);
     this.check(m);
     if (this.auto) this.play(m);
   }
@@ -97,6 +98,25 @@ try {
   ok('a negyedik nem fér be', D.errors.some(e => e.fatal && /megtelt/.test(e.msg)));
   ok('vendég nem indíthat', await (async () => { B.send({ t: 'start' }); await sleep(150); return B.errors.some(e => /házigazda/.test(e.msg)); })());
 
+  // emót (a váróban is): mindenki megkapja a küldő helyével a saját szemszögéből; nem jár állapotküldéssel; a spamet a szerver eldobja
+  const nameOf = (p, e) => (p.state.players[e.from] || {}).name || '';
+  const ns = B.nState;
+  A.send({ t: 'emote', id: 'szep' }); A.send({ t: 'emote', id: 'jaj' });
+  await until(() => [A, B, C].every(p => p.emotes.length), 2000, 'emót érkezése').catch(() => {});
+  await sleep(100);
+  ok('az emót mindenkihez megérkezik, a küldő helyével', [A, B, C].every(p => p.emotes.length === 1 && p.emotes[0].id === 'szep' && nameOf(p, p.emotes[0]) === 'Anna'), JSON.stringify([A, B, C].map(p => p.emotes)));
+  ok('túl gyors második emót eldobva', B.emotes.length === 1);
+  ok('az emót nem küld állapotot (nem ment semmit)', B.nState === ns);
+  C.send({ t: 'emote', id: 'hu' });
+  await until(() => B.emotes.length === 2, 2000, 'Cili emótja').catch(() => {});
+  ok('más játékos emótját nem fogja a korlát', B.emotes[1] && B.emotes[1].id === 'hu' && nameOf(B, B.emotes[1]) === 'Cili', JSON.stringify(B.emotes));
+  for (let i = 0; i < 5; i++) { await sleep(250); A.send({ t: 'emote', id: 'taps' }); }
+  await sleep(200);
+  ok('30 s (itt 2 s) alatt legfeljebb 5 emót', B.emotes.filter(e => nameOf(B, e) === 'Anna').length === 5, JSON.stringify(B.emotes));
+  A.send({ t: 'emote', id: '<b>csúnya szó</b>' });
+  await until(() => A.errors.some(e => /emót/.test(e.msg)), 2000, 'hibás emót').catch(() => {});
+  ok('ismeretlen formájú emót elutasítva', A.errors.some(e => /Ismeretlen emót/.test(e.msg)) && B.emotes.length === 6);
+
   A.send({ t: 'start' });
   await until(() => A.state && A.state.G, 3000, 'indulás');
   // nem soron lévő játékos lépése: hiba, az állapot nem változik
@@ -143,7 +163,7 @@ try {
 
   await until(() => A.state.deals >= 4, 240e3, 'négy leosztás');
   ok('négy leosztás után is kiegyenlített a pontszám', A.state.players.reduce((s, p) => s + p.score, 0) === 0);
-  ok('nincs váratlan hiba a lépéseknél', [A, B, C].every(p => !p.errors.some(e => !/nem te|házigazda|Még tart/.test(e.msg))), JSON.stringify([A, B, C].flatMap(p => p.errors)));
+  ok('nincs váratlan hiba a lépéseknél', [A, B, C].every(p => !p.errors.some(e => !/nem te|házigazda|Még tart|Ismeretlen emót/.test(e.msg))), JSON.stringify([A, B, C].flatMap(p => p.errors)));
   for (const p of [A, B, C, D, late]) p.ws.close();
 
   // egyedül indított szoba: két bot tölti fel; aki nem jön vissza időben, annak helyén a gép marad; az üres szoba bezárul

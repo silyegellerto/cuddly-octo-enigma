@@ -5,7 +5,7 @@ ugyanaz a motor adja, mint az egyjátékos módban: telepítéskor a `scripts/bu
 (`// ===== ENGINE START` és `// ===== ENGINE END` között). A szerver az igazság egyetlen forrása: ő oszt, ő ellenőriz
 minden lépést, ő számol, és mindenki csak azt látja, amit az asztalnál is látna.
 
-Jelenleg: **privát szoba, vendégként** (fiók, párosítás, ranglétra, emótok később).
+Jelenleg: **privát szoba, vendégként** és emótok (fiók, párosítás, ranglétra később).
 
 ## Csatlakozás
 
@@ -28,6 +28,7 @@ WebSocket, ugyanarról a címről, ahonnan a játék jön (a CSP `connect-src 's
 |---|---|---|
 | `welcome` | `code`, `token` | Csatlakozáskor. |
 | `state` | lásd lent | Minden változás után, mindenkinek a saját nézetével. |
+| `emote` | `from`, `id` | Valaki emótot küldött (te is megkapod a sajátodat). `from` a küldő ülése a te szemszögedből (0 = te). |
 | `error` | `msg` (magyar szöveg), `fatal` | Elutasított lépés (az állapot nem változott). `fatal: true` esetén a szerver bontja a kapcsolatot (nincs ilyen szoba, megtelt, már elindult). |
 
 A `state` üzenet:
@@ -73,6 +74,19 @@ Minden üzenet JSON, legfeljebb 1 KB; 10 másodperc alatt legfeljebb 20 üzenet 
 | `play` | `id` (a lap azonosítója) | Ha te jössz, és a lap benne van a `legalCards(0)`-ban. |
 | `claim` | | Felmutatás ütés elején (az utolsó ütés előtt). A játékos maga dönt, a nézetben nincs `claimAt`. A szerver ekkor számol (`claimCheck`): ha a felmutató fél (felvevő, betlis felvevő, illetve a két védő; betliben csak a felvevő mutathat fel) biztosan nyer, a leosztás a szokásos módon véget ér; ha nem, `badClaim`: felvevőnél bukott, védőnél nyert játék (`G.result.badClaim`). |
 | `next` | | Leosztás végén: kész vagy a következőre. |
+| `emote` | `id` (kisbetű, szám, kötőjel, legfeljebb 24 jel) | Bármikor (váróban, játék közben, eredménynél). Lásd lent. |
+
+### Emótok
+
+- A képek a felületé: `emotes/ID.svg` (vagy `.png`/`.webp`), az azonosító és a magyar felirat listája az `ulti.html`-ben.
+  A szerver nem ismeri a listát, csak a formát ellenőrzi, ezért **a kliens csak a saját listájában lévő azonosítót
+  jelenítse meg**, az ismeretlent hagyja figyelmen kívül (így új emót felvételéhez nem kell a szerverhez nyúlni).
+- A szerver azonnal továbbküldi mindenkinek, a küldőnek is (a saját buborékot ez alapján érdemes mutatni). Nem menti,
+  nem küld `state`-et, a lépési időt és az `away` állapotot nem érinti; visszacsatlakozáskor a régi emótok nem jönnek újra.
+- Korlát ülésenként: 3 másodpercenként egy, 30 másodperc alatt legfeljebb 5. A többit a szerver **csendben eldobja**
+  (nincs hibaüzenet, a kapcsolat marad), ezért a felület is tartsa a 3 s-os várakozást. Hibás formájú `id`-ra
+  `error` jön („Ismeretlen emót.”).
+- Elnémítás (egy játékosé vagy az összesé) csak a kliensen történik.
 
 ## Időzítések
 
@@ -82,6 +96,7 @@ Minden üzenet JSON, legfeljebb 1 KB; 10 másodperc alatt legfeljebb 20 üzenet 
 | Lap kijátszása | 30 s | Ugyanígy. 3 egymás utáni lejárat után `away`: a gép lép, amíg újra nem lépsz. |
 | Kiesés (bontott kapcsolat) | 3 perc | Addig a gép lép helyetted 2,5 s-onként; ha nem jössz vissza, a helyeden végleg a gép marad. |
 | Leosztás vége | 30 s | Ha nem mindenki nyomott `next`-et, magától jön a következő osztás. |
+| Emót | 3 s, 30 s alatt 5 | Ülésenként; a többit a szerver eldobja. |
 | Üres szoba (nincs bent ember) | 3 perc | A szoba bezárul, a kód megszűnik. |
 
 A botok lépései között kb. 0,85 s telik el; a teljes ütés 1 s-ig látszik, mielőtt a szerver begyűjti.
@@ -90,7 +105,7 @@ A botok lépései között kb. 0,85 s telik el; a teljes ütés 1 s-ig látszik,
 
 ```bash
 npx wrangler dev --var MP_FAST:1 --var MP_DEV:1    # MP_FAST: minden idő a tizenötödére rövidül; MP_DEV: helyi Origin
-node tests/mp_test.mjs                             # három szimulált játékos, kiesés, lejárt idő, botok, rejtett lapok
+node tests/mp_test.mjs                             # három szimulált játékos, kiesés, lejárt idő, botok, rejtett lapok, emótok
 ```
 
 ## Ismert korlátok

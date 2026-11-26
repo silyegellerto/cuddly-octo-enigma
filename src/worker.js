@@ -9,10 +9,12 @@ const ORIGIN = 'https://ulti.silyegellert.cc';
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // nincs 0/O, 1/I: könnyű bediktálni
 const CODE_RE = /^[A-HJ-NP-Z2-9]{6}$/;
 // Időzítések (ms). Helyi tesztnél (MP_FAST) mind a tizenötödére rövidül.
-const T = { bid: 45e3, play: 30e3, reconnect: 180e3, empty: 180e3, next: 30e3, bot: 850, botForHuman: 2500, collect: 1000, claim: 900 };
+const T = { bid: 45e3, play: 30e3, reconnect: 180e3, empty: 180e3, next: 30e3, bot: 850, botForHuman: 2500, collect: 1000, claim: 900, emote: 3e3, emoteWin: 30e3 };
 const BOT_NAMES = ['Gellért', 'Samu'];
 const MAX_MSG = 1024, RATE_N = 20, RATE_MS = 10e3;
 const NOT_TURN = 'Most nem te következel.';
+// Emót: a képek a felületen vannak (emotes/), a szerver csak a formát nézi; ismeretlen azonosítót a kliens nem jelenít meg.
+const EMOTE_RE = /^[a-z0-9-]{1,24}$/, EMOTE_N = 5;
 
 const randomCode = () => Array.from(crypto.getRandomValues(new Uint8Array(6)), b => CODE_CHARS[b % 32]).join('');
 const randomToken = () => Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('');
@@ -24,6 +26,7 @@ export class Table extends DurableObject {
   constructor(ctx, env) {
     super(ctx, env);
     this.rate = new Map();
+    this.emotes = new Map();
     ctx.blockConcurrencyWhile(async () => { this.room = (await ctx.storage.get('room')) ?? null; });
   }
 
@@ -76,10 +79,25 @@ export class Table extends DurableObject {
     if (hits.length > RATE_N * (this.env.MP_FAST ? 15 : 1) || typeof data !== 'string' || data.length > MAX_MSG) return ws.close(4008, 'Túl sok vagy túl nagy üzenet.');
     let m;
     try { m = JSON.parse(data); } catch { m = null; }
+    if (m && m.t === 'emote') return this.emote(ws, seat, m.id);
     const err = m && typeof m === 'object' ? this.act(seat, m) : 'Hibás üzenet.';
     if (err) ws.send(JSON.stringify({ t: 'error', msg: err }));
     s.misses = 0; s.away = false;
     await this.commit();
+  }
+
+  // Emót: továbbküldjük mindenkinek (a küldőnek is), nem mentjük és nem változtat az állapoton.
+  // Spam: ülésenként 3 s-onként egy, 30 s alatt legfeljebb 5; a többit csendben eldobjuk.
+  // shortcut: a korlát memóriában van, hibernálás után nullázódik; ha visszaélnek vele, a socket csatolmányába kell tenni.
+  emote(ws, seat, id) {
+    if (typeof id !== 'string' || !EMOTE_RE.test(id)) return ws.send(JSON.stringify({ t: 'error', msg: 'Ismeretlen emót.' }));
+    const now = Date.now(), sent = (this.emotes.get(seat) || []).filter(x => now - x < this.t('emoteWin'));
+    if (sent.length >= EMOTE_N || (sent.length && now - sent[sent.length - 1] < this.t('emote'))) return;
+    sent.push(now); this.emotes.set(seat, sent);
+    for (const w of this.ctx.getWebSockets()) {
+      const a = w.deserializeAttachment();
+      if (a) try { w.send(JSON.stringify({ t: 'emote', from: (seat - a.seat + 3) % 3, id })); } catch {}
+    }
   }
 
   async webSocketClose(ws) { await this.dropped(ws); }
