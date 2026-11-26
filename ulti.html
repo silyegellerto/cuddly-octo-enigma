@@ -435,6 +435,31 @@ body.mp .log,body.mp #mLog{display:none}
 .seats{list-style:none;padding:0;margin:12px 0;display:flex;flex-direction:column;gap:6px}
 .seats li{display:flex;justify-content:space-between;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
 .seats li.empty{color:var(--muted);border-style:dashed}
+/* emótok (multiplayer): lebegő gomb a jobb alsó sarokban, választó, buborékok. A kezed lapjait semmi nem takarhatja:
+   a kéz sora jobbról annyi helyet hagy, hogy az utolsó lap is kigörgethető legyen a gomb alól */
+.emofab{display:none;position:fixed;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);z-index:45;width:54px;height:54px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);box-shadow:0 6px 18px rgba(0,0,0,.22);align-items:center;justify-content:center;padding:0}
+body.mp .emofab{display:flex}
+.emofab img{width:36px;height:36px;pointer-events:none}
+.emofab[disabled] img{opacity:.45}
+.emofab .ring{position:absolute;inset:-4px;border-radius:999px;pointer-events:none;-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 3px));mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 3px));background:conic-gradient(var(--brass) calc(var(--p,0) * 1%),transparent 0)}
+@media (max-width:979px){body.mp .hand{padding-right:74px;scroll-padding-right:74px}}
+@media (min-width:980px){body.mp .panel{max-height:calc(100vh - 150px)}} /* a jobb oldali panel alja ne fusson a gomb alá */
+.epick{position:fixed;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 76px);z-index:46;width:min(420px,calc(100vw - 24px));background:var(--surface);color:var(--ink);border-radius:20px;padding:12px 12px 10px;box-shadow:0 18px 40px rgba(0,0,0,.35)}
+.epick[hidden]{display:none}
+.epick .hd{display:flex;justify-content:space-between;align-items:baseline;margin:0 4px 8px;font-weight:700}
+.epick .hd small{font-weight:500;color:var(--muted)}
+.epick .g{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.epick .g button{border:0;background:var(--chip);color:var(--ink);border-radius:14px;padding:6px 2px 5px;display:flex;flex-direction:column;align-items:center;gap:2px;font:inherit;font-size:calc(13px * var(--fs));font-weight:600;line-height:1.15;min-height:44px}
+.epick .g button img{width:52px;height:52px;pointer-events:none}
+.ebub{position:fixed;z-index:47;width:100px;height:100px;pointer-events:none;filter:drop-shadow(0 8px 14px rgba(0,0,0,.25));animation:ebIn .35s cubic-bezier(.3,1.6,.5,1) both}
+.ebub img{width:100%;height:100%;display:block}
+.ebub.out{animation:ebOut .35s ease both}
+@keyframes ebIn{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}
+@keyframes ebOut{to{transform:translateY(-8px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.ebub,.ebub.out{animation:none}}
+.seats .mute{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:4px 10px;font:inherit;font-size:calc(13px * var(--fs));margin-left:6px}
+.seats .mute[aria-pressed="true"]{background:var(--chip);color:var(--muted)}
+
 .mpclock{display:flex;justify-content:space-between;gap:8px;font-size:calc(14px * var(--fs));color:var(--muted);margin:0 0 6px}
 .mpclock b{color:var(--ink);font-variant-numeric:tabular-nums}
 .mpclock.low b{color:var(--bad)}
@@ -560,6 +585,8 @@ html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:10
 <div class="ov" id="bidsOv"></div>
 <div class="ov" id="infoOv"><div class="sheet" id="infoSheet"></div></div>
 <div class="ov" id="mpOv" role="dialog" aria-modal="true" aria-label="Játék barátokkal"><div class="sheet" id="mpSheet"></div></div>
+<button class="emofab" id="emoFab" aria-label="Emót küldése" aria-haspopup="dialog" aria-expanded="false"><img src="emotes/kicsi/szia.svg" alt=""><span class="ring"></span></button>
+<div class="epick" id="emoPick" role="dialog" aria-label="Emót küldése" hidden></div>
 <div class="ov" id="a2hsOv"><div class="sheet" id="a2hsSheet"></div></div>
 <div class="ov" id="statsOv"><div class="sheet" id="statsSheet"></div></div>
 <div id="tour" role="dialog" aria-modal="true" aria-label="Bemutató"><div class="tspot"></div><div class="tbub" id="tourBub"></div></div>
@@ -3269,7 +3296,7 @@ function mpOpenMenu(msg='',code=''){
 function mpStart({name,code}){
   if(!MP){clearTimeout(timer);SP={G,REV};}
   document.body.classList.add('mp');
-  MP={name,code:code||null,token:code?mpStore().tokens[code]||null:null,ws:null,state:null,dealIdx:0,retry:0,reconnecting:false,closing:false,wait:false,busy:false,pending:null};
+  MP={name,code:code||null,token:code?mpStore().tokens[code]||null:null,ws:null,state:null,dealIdx:0,retry:0,sent:[],reconnecting:false,closing:false,wait:false,busy:false,pending:null};
   $('newBtn').textContent='Kilépés';
   mpConnect();
 }
@@ -3281,6 +3308,7 @@ function mpConnect(){
   ws.onmessage=e=>{if(MP!==m)return;let x;try{x=JSON.parse(e.data);}catch(err){return;}
     if(x.t==='welcome'){m.code=x.code;m.token=x.token;m.retry=0;m.reconnecting=false;m.wait=false;mpSave(o=>{o.tokens[x.code]=x.token;o.last=x.code;});}
     else if(x.t==='error'){m.wait=false;if(x.fatal){mpFail(x.msg,true);}else toast(x.msg);}
+    else if(x.t==='emote')mpEmote(x.from,x.id);
     else if(x.t==='state')mpState(x);};
   ws.onclose=e=>{if(MP!==m||m.closing)return;
     if(e.code===4002)return mpFail('A játékot egy másik lapon vagy eszközön folytatod.');
@@ -3312,6 +3340,7 @@ function mpLeave(){
 }
 // vissza az egyjátékos játékhoz, ott folytatva, ahol abbahagytad
 function mpEnd(){
+  emoClose();document.querySelectorAll('.ebub').forEach(e=>e.remove());
   MP=null;document.body.classList.remove('mp');NAME.splice(0,3,'Te','Gellért','Samu');
   $('newBtn').textContent='Új játék';$('mpOv').classList.remove('show');
   ANIM={};UI.slotSeen=null;UI.sel=[];UI.ci=null;UI.err='';UI.kon=new Set();UI.armCon=false;
@@ -3346,19 +3375,71 @@ function mpApply(x){
 function mpLobby(){
   const m=MP,x=m.state;hideTip();
   if(!x){$('mpSheet').dataset.v='';$('mpSheet').innerHTML=`<h2>Játék barátokkal</h2><p class="status">${m.reconnecting?'Újracsatlakozás…':'Kapcsolódás…'}</p><div class="row"><button class="btn ghost" id="mpBack">Mégse</button></div>`;$('mpOv').classList.add('show');$('mpBack').onclick=mpLeave;return;}
-  const seats=[0,1,2].map(i=>{const pl=x.players[i];return pl?`<li><span><b>${i===0?'Te':pl.name}</b>${i===0?` (${pl.name})`:''}</span><span class="small">${pl.bot?'':!pl.online?'kiesett, a gép lép helyette':pl.away?'a gép lép helyette':x.host===i?'házigazda':'bent van'}</span></li>`:'<li class="empty"><span>Üres hely</span><span class="small">indításkor gép ül ide</span></li>';}).join('');
+  const mu=emoMuted();
+  const seats=[0,1,2].map(i=>{const pl=x.players[i];return pl?`<li data-seat="${i}"><span><b>${i===0?'Te':pl.name}</b>${i===0?` (${pl.name})`:''}</span><span class="small">${pl.bot?'':!pl.online?'kiesett, a gép lép helyette':pl.away?'a gép lép helyette':x.host===i?'házigazda':'bent van'}${i>0&&!pl.bot?`<button class="mute" data-mute="${i}" aria-pressed="${mu.has(i)}" aria-label="${pl.name} emótjainak némítása">${mu.has(i)?'Némítva':'Némítás'}</button>`:''}</span></li>`:'<li class="empty"><span>Üres hely</span><span class="small">indításkor gép ül ide</span></li>';}).join('');
   const lob=x.status==='lobby';$('mpSheet').dataset.v=lob?'':'room';
   $('mpSheet').innerHTML=`<div class="mhead"><h2>Szoba</h2></div>
     <p class="small" style="text-align:center;margin:0">A szoba kódja</p><p class="mpcode">${x.code}</p>
     <div class="row" style="justify-content:center"><button class="btn ghost" id="mpCopy">Link másolása</button></div>
     ${m.reconnecting?'<p class="mpwarn">Újracsatlakozás…</p>':''}
     <ul class="seats">${seats}</ul>
+    <label class="auto" style="margin:0 0 10px"><input type="checkbox" id="muteAll"${mu.has('all')?' checked':''}> Mások emótjainak elrejtése</label>
     ${!lob?'<div class="row"><button class="btn" id="mpBack">Bezár</button></div>':x.host===0?'<div class="row"><button class="btn" id="mpGo">Indítás</button><button class="btn ghost" id="mpBack">Kilépés</button></div><p class="small">Az üres helyekre gép ül (Gellért, Samu).</p>':'<p class="status">A házigazda indítja a játékot.</p><div class="row"><button class="btn ghost" id="mpBack">Kilépés</button></div>'}`;
   $('mpOv').classList.add('show');
   $('mpCopy').onclick=async()=>{const u=mpLink(x.code);try{await navigator.clipboard.writeText(u);toast('A link a vágólapon: '+u);}catch(e){prompt('Másold ki a linket:',u);}};
   if($('mpGo'))$('mpGo').onclick=()=>mpSend({t:'start'});
+  $('mpSheet').querySelectorAll('[data-mute]').forEach(b=>b.onclick=()=>{emoMute(+b.dataset.mute);mpLobby();});
+  $('muteAll').onchange=()=>{emoMute('all');mpLobby();};
   $('mpBack').onclick=lob?mpLeave:()=>$('mpOv').classList.remove('show');
 }
+// ---- emótok: a szerver csak továbbküldi (a küldőnek is), a lista és a képek itt vannak; ismeretlen azonosítót nem mutatunk ----
+const EMOTES=[['szia','Szia!'],['sok-sikert','Sok sikert!'],['jo-jatek','Jó játék!'],['szep-volt','Szép volt!'],['koszi','Köszi!'],
+  ['hoppa','Hoppá!'],['huha','Hűha!'],['gyerunk','Gyerünk!'],['haha','Haha!'],['ajjaj','Ajjaj…']];
+const EMO_GAP=3000,EMO_WIN=30000,EMO_N=5; // a szerver korlátja: 3 s-onként egy, 30 s alatt 5 (a többit csendben eldobná)
+// némítás: csak ezen a gépen, szobánként ('all' = mindenki más)
+const emoMuted=()=>new Set((MP&&MP.code&&(mpStore().mute||{})[MP.code])||[]);
+function emoMute(k){const s=emoMuted();s.has(k)?s.delete(k):s.add(k);mpSave(o=>{o.mute=o.mute||{};o.mute[MP.code]=[...s];});}
+// mennyit kell még várni a következő küldésig (ms)
+function emoWait(){const now=Date.now(),t=(MP.sent||[]).filter(x=>now-x<EMO_WIN);MP.sent=t;if(!t.length)return 0;
+  return Math.max(0,EMO_GAP-(now-t[t.length-1]),t.length>=EMO_N?EMO_WIN-(now-t[0]):0);}
+function emoClose(){$('emoPick').hidden=true;$('emoFab').setAttribute('aria-expanded','false');}
+function emoOpen(){
+  $('emoPick').innerHTML=`<div class="hd">Emót küldése <small>3 mp-enként egy</small></div><div class="g">${EMOTES.map(([id,t])=>`<button data-emo="${id}"><img src="emotes/kicsi/${id}.svg" alt=""><span>${t}</span></button>`).join('')}</div>`;
+  $('emoPick').hidden=false;$('emoFab').setAttribute('aria-expanded','true');
+  $('emoPick').querySelectorAll('[data-emo]').forEach(b=>b.onclick=()=>{emoClose();emoSend(b.dataset.emo);});
+  $('emoPick').querySelector('button').focus({preventScroll:true});
+}
+function emoSend(id){
+  const m=MP;if(!m||!m.ws||m.ws.readyState!==1||emoWait())return;
+  m.ws.send(JSON.stringify({t:'emote',id}));m.sent.push(Date.now());emoCool();
+}
+// a gomb a várakozás alatt halvány, a gyűrű a hátralévő időt mutatja
+function emoCool(){
+  const b=$('emoFab'),r=b.querySelector('.ring'),w0=emoWait();if(!w0)return;
+  b.disabled=true;
+  const step=()=>{const w=emoWait();r.style.setProperty('--p',w?100*w/w0:0);if(w&&MP)requestAnimationFrame(step);else{b.disabled=false;r.style.setProperty('--p',0);}};
+  step();
+}
+// a buborék soha nem takarja a lapokat: mások emótja az ő mezőjük fölött, a sajátod a kezed sora fölött (vagy a gomb fölött)
+function mpEmote(from,id){
+  const e=EMOTES.find(x=>x[0]===id);if(!e||!MP||!MP.state)return;
+  const mu=emoMuted();if(from!==0&&(mu.has('all')||mu.has(from)))return;
+  const pl=MP.state.players[from];$('live').textContent=`${from===0?'Te':pl?pl.name:''}: ${e[1]}`;
+  document.querySelectorAll(`.ebub[data-from="${from}"]`).forEach(x=>x.remove());
+  const b=document.createElement('div');b.className='ebub';b.dataset.from=from;b.innerHTML=`<img src="emotes/${id}.svg" alt="">`;
+  const S=100,seat=$('mpOv').classList.contains('show')&&$('mpSheet').querySelector(`[data-seat="${from}"]`);
+  let x,y;
+  if(seat){const r=seat.getBoundingClientRect();x=r.right-S+8;y=r.top+r.height/2-S/2;}
+  else if(from!==0){const r=$('opp'+from).getBoundingClientRect();x=r.left+r.width/2-S/2;y=r.bottom-S+12;}
+  else{const f=$('emoFab').getBoundingClientRect(),narrow=matchMedia('(max-width:979px)').matches; // keskenyen a kezed alul van: fölé
+    x=innerWidth-S-12;y=(narrow?Math.min(f.top,$('dock').getBoundingClientRect().top):f.top)-S-6;}
+  b.style.left=Math.max(4,Math.min(innerWidth-S-4,x))+'px';b.style.top=Math.max(4,y)+'px';
+  document.body.appendChild(b);
+  setTimeout(()=>{b.classList.add('out');setTimeout(()=>b.remove(),RM()?0:350);},3000);
+}
+$('emoFab').onclick=e=>{e.stopPropagation();$('emoPick').hidden?emoOpen():emoClose();};
+document.addEventListener('click',e=>{if(!$('emoPick').hidden&&!$('emoPick').contains(e.target))emoClose();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('emoPick').hidden){emoClose();$('emoFab').focus();}});
 // visszaszámláló: a soron lévő játékos határideje (a szerver órája szerint)
 function mpTick(){
   const el=$('mpClock');if(!el||!MP||!MP.state||!MP.state.deadline)return;

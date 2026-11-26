@@ -78,7 +78,7 @@ Minden üzenet JSON, legfeljebb 1 KB; 10 másodperc alatt legfeljebb 20 üzenet 
 
 ### Emótok
 
-- A képek a felületé: `emotes/ID.svg` (vagy `.png`/`.webp`), az azonosító és a magyar felirat listája az `ulti.html`-ben.
+- A képek a felületé: `emotes/ID.svg` (felirattal, a buborékhoz) és `emotes/kicsi/ID.svg` (felirat nélkül, a választóhoz); az azonosító és a magyar felirat listája (`EMOTES`) az `ulti.html`-ben.
   A szerver nem ismeri a listát, csak a formát ellenőrzi, ezért **a kliens csak a saját listájában lévő azonosítót
   jelenítse meg**, az ismeretlent hagyja figyelmen kívül (így új emót felvételéhez nem kell a szerverhez nyúlni).
 - A szerver azonnal továbbküldi mindenkinek, a küldőnek is (a saját buborékot ez alapján érdemes mutatni). Nem menti,
