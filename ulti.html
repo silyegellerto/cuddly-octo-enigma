@@ -214,6 +214,9 @@ details.more .pop button.danger.armed{background:var(--bad);color:var(--accent-i
 /* a kéz egy sorban, minden lap a saját helyén; ha nem fér ki, jobbra-balra húzható */
 .hand{display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto;overflow-y:hidden;padding:14px 6px 10px;scroll-snap-type:x proximity;scroll-padding:0 6px;-webkit-overflow-scrolling:touch;scrollbar-width:thin;overscroll-behavior-x:contain}
 .hand>.card:first-child{margin-left:auto}.hand>.card:last-child{margin-right:auto}
+/* telefonon több sor, ha a panelben van hely (fitHand) */
+.hand.rows{flex-wrap:wrap;overflow:visible;row-gap:10px;scroll-snap-type:none}
+.hand.rows>.card:first-child,.hand.rows>.card:last-child{margin-left:0;margin-right:0}
 .hand .card{--cw:64px;width:var(--cw);transition:transform .15s;scroll-snap-align:center}
 .dock{position:sticky;bottom:0;z-index:5;background:var(--bg);margin:0 -12px;padding:6px 12px calc(env(safe-area-inset-bottom,0px) + 4px);box-shadow:0 -6px 14px rgba(0,0,0,.08)}
 .dock .more{font-size:calc(13px * var(--fs));color:var(--muted)}
@@ -2883,8 +2886,32 @@ function panelScroll(){
   if(UI.panelKey!==key){UI.panelKey=key;el.scrollTop=0;}
   if(UI.scrollHint){UI.scrollHint=false;const hb=el.querySelector('.hintbox');if(hb&&el.scrollHeight>el.clientHeight)scrollInside(el,hb,false);}
 }
-function render(){syncHint();renderTable();renderPanel();panelScroll();renderHand();renderLog();maybeTip();zoomCheck();const st=statusText();if($('live').textContent!==st)$('live').textContent=st;}
+function render(){syncHint();renderTable();renderPanel();panelScroll();renderHand();fitHand();clearTimeout(fitT);fitT=setTimeout(fitHand,260);renderLog();maybeTip();zoomCheck();const st=statusText();if($('live').textContent!==st)$('live').textContent=st;}
 
+// Telefonon (alkalmazás-nézet) a kéz egy sorban, vízszintesen húzható. Ha a döntési panelben maradt annyi üres hely,
+// hogy a lapok több sorban mind kiférjenek, több sorba tördeljük őket (a sorok egyenletesek: 6 lap = 3+3).
+// A panel ettől a sor magasságával kisebb lesz, ezért csak akkor, ha a tartalma így is kifér benne (nem kell görgetni).
+// az asztal magassága animálva változik (.center transition .2s): utána még egyszer megnézzük
+let fitT=0;
+const APPVIEW=matchMedia('(max-width:979px) and (min-height:620px)');
+function fitHand(){
+  const h=$('hand'),p=$('panel');h.classList.remove('rows');h.style.paddingLeft=h.style.paddingRight='';
+  const cards=[...h.children];if(!APPVIEW.matches||cards.length<2)return;
+  const cs=getComputedStyle(h),gap=parseFloat(cs.columnGap)||6,cw=cards[0].offsetWidth,rowH=cards[0].offsetHeight+10;
+  const pl=parseFloat(cs.paddingLeft),pr=parseFloat(cs.paddingRight),avail=h.clientWidth-pl-pr;
+  const per=Math.max(1,Math.floor((avail+gap)/(cw+gap))),n=cards.length;
+  if(n<=per)return; // egy sorban is kifér
+  const rows=Math.ceil(n/per),each=Math.ceil(n/rows),rowW=each*cw+(each-1)*gap;
+  // a panel üres helye: a látható magasság és a tartalom alja közti rész
+  const pr2=p.getBoundingClientRect(),pb=parseFloat(getComputedStyle(p).paddingBottom);
+  const bottom=Math.max(0,...[...p.children].map(c=>c.getBoundingClientRect().bottom));
+  const free=pr2.bottom-pb-bottom;
+  if(p.scrollHeight>p.clientHeight+1||free<(rows-1)*rowH+4)return;
+  const extra=h.clientWidth-rowW,left=Math.max(pl,(extra-pr)/2);
+  h.classList.add('rows');h.style.paddingLeft=left+'px';h.style.paddingRight=Math.max(pr,extra-left)+'px';
+}
+APPVIEW.addEventListener('change',()=>{if(G)fitHand();});
+addEventListener('resize',()=>{if(G)fitHand();});
 // ---- Tanuló tipp: figyelmeztetés nagy hibánál ----
 // A többi lapot a játékos tudása szerint véletlenül kiosztjuk (bemondásból ismert lapok, ismert színhiányok), és
 // ugyanazokon a világokon végigjátsszuk a választott és a javasolt lapot. Akkor szólunk, ha a javaslat átlagosan
