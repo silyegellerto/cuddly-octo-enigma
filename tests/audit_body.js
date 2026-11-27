@@ -78,6 +78,15 @@ newDeal(0);
 ok('bukott ulti: kontra nélkül 2x, kontrával 3x, rekontrával 5x',defGain({k:'ulti',v:4,win:false,delta:-8},1)===8&&defGain({k:'ulti',v:4,win:false,delta:-8},2)===12&&defGain({k:'ulti',v:4,win:false,delta:-8},4)===20);
 {newDeal(1);const ci=CONTRACTS.findIndex(c=>c.name==='Piros parti');const p=G.turn;doBid(p,G.hands[p].slice(0,2),ci,0);G.decl=p;G.ci=ci;G.kmult=[{},{},{}];
  const before=G.result;doConcede(p);const ch=G.result.change;ok('bedobás: piros parti védőnként 4',ch.filter((x,i)=>i!==p).every(x=>x===4));}
+// betli védekezés: a társ üres színéből is a fogó (kis) lapot hívja, ne a magasat (2026.11.27-i leosztás)
+{newDeal(0);const ci=CONTRACTS.findIndex(c=>c.name==='Piros betli');
+ G.hands=[[C(0,4),C(0,3),C(0,2),C(1,2),C(1,6),C(1,4),C(1,3),C(2,6),C(2,5)],
+          [C(3,3),C(3,2),C(3,0),C(1,0),C(2,3),C(2,0),C(2,1),C(2,2),C(0,0)],
+          [C(3,6),C(3,4),C(3,1),C(1,1),C(1,5),C(2,7),C(2,4),C(0,6),C(0,1)]];
+ const t1=[{p:1,c:C(3,5)},{p:2,c:C(3,7)},{p:0,c:C(0,5)}],used=new Set([...G.hands.flat(),...t1.map(t=>t.c)].map(x=>x.id));
+ Object.assign(G,{phase:'play',ci,decl:1,trump:0,trumpGame:false,kmult:[{},{},{}],bid:{ci,seat:1,suit:0},talon:makeDeck().filter(x=>!used.has(x.id)),talonBy:1,
+   hist:[t1],played:t1.map(t=>t.c),trick:[],trickNo:1,turn:2,leader:2,tcount:[0,0,1],won:[[],[],t1.map(t=>t.c)]});
+ const x=botChoose(2);ok('betli ellen a társ üres színéből is a fogó lapot hívja',x.id===C(3,1).id,cardName(x));}
 // hibás felmutatás (multiplayer): a felmutató fél veszít, zéró összeggel
 {newDeal(1);const ci=CONTRACTS.findIndex(c=>c.name==='Piros parti');const p=G.turn;doBid(p,G.hands[p].slice(0,2),ci,0);G.decl=p;G.ci=ci;G.kmult=[{},{},{}];G.phase='play';
  badClaim('decl');const a=G.result.change;G.phase='play';badClaim('def');const b=G.result.change;

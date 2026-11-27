@@ -2026,8 +2026,11 @@ function botChoose(p){
     if(lead){
       const pa=partnerOf(p);
       const shed=L.filter(x=>knownVoid(pa,x.s)&&!knownVoid(G.decl,x.s));
-      if(shed.length)return R(maxBy(shed,P),`${BOOK}: a társad már nem tud ebből a színből adni, így most eldobhatja a veszélyes magas lapjait (színtelenítés). Később ezért nem neki kell ütnie a felvevő kis lapja fölé.`);
-      const pick=betliLead(p,L);
+      // az ütésre kényszerítés az első: a színtelenítő hívás csak akkor jön, ha egyik hívással sem foghatjuk a felvevőt.
+      // A társ üres színéből hívva ő úgyis dobhat, ezért ott is azt a lapot hívjuk, amelyik foghatja (gyakran a legkisebb).
+      const pick=betliLead(p,L),sh=shed.length?betliLead(p,shed):null;
+      if(sh&&sh.pc>=(pick?pick.pc:0))return R(sh.x,sh.pc>0?`${sh.why} A társad ebből a színből már nem tud adni, így közben ő eldobhatja a veszélyes magas lapjait (színtelenítés).`
+        :`${BOOK}: a társad már nem tud ebből a színből adni, így most eldobhatja a veszélyes magas lapjait (színtelenítés). Később ezért nem neki kell ütnie a felvevő kis lapja fölé.`);
       if(pick)return R(pick.x,pick.why);
     }
     return R(minBy(L,P),'Betli ellen tegyél kicsit, hogy a felvevőnek kelljen ütnie.');
