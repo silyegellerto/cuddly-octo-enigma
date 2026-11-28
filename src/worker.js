@@ -19,8 +19,9 @@ const EMOTE_RE = /^[a-z0-9-]{1,24}$/, EMOTE_N = 5;
 const randomCode = () => Array.from(crypto.getRandomValues(new Uint8Array(6)), b => CODE_CHARS[b % 32]).join('');
 const randomToken = () => Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('');
 const cleanName = n => String(n || '').replace(/[\u0000-\u001f\u007f<>&"']/g, '').trim().slice(0, 16) || 'Vendég';
-// Gép játszik az ülésen: valódi bot, vagy kiesett / többször lejárt idejű játékos helyett.
-const botCtl = s => s.bot || !s.online || s.away;
+// Gép játszik az ülésen azonnal: valódi bot, kilépett (Kilépés gomb) vagy többször lejárt idejű játékos helyett.
+// Megszakadt kapcsolatnál (pl. telefonon másik alkalmazásra vált) nem: ott a lépési idő végén lép a gép (Gellért, 2026.11.28.).
+const botCtl = s => s.bot || s.left || s.away;
 
 export class Table extends DurableObject {
   constructor(ctx, env) {
@@ -62,7 +63,7 @@ export class Table extends DurableObject {
       for (const old of this.ctx.getWebSockets(String(seat))) old.close(4002, 'Másik kapcsolat vette át.');
     }
     const s = r.seats[seat];
-    Object.assign(s, { online: true, away: false, misses: 0, droppedAt: null });
+    Object.assign(s, { online: true, away: false, left: false, misses: 0, droppedAt: null });
     this.ctx.acceptWebSocket(ws, [String(seat)]);
     ws.serializeAttachment({ seat, token: s.token });
     ws.send(JSON.stringify({ t: 'welcome', code: r.code, token: s.token }));
@@ -80,9 +81,10 @@ export class Table extends DurableObject {
     let m;
     try { m = JSON.parse(data); } catch { m = null; }
     if (m && m.t === 'emote') return this.emote(ws, seat, m.id);
+    if (m && m.t === 'leave') { s.left = true; await this.commit(); return; } // Kilépés: innentől a gép játszik helyette
     const err = m && typeof m === 'object' ? this.act(seat, m) : 'Hibás üzenet.';
     if (err) ws.send(JSON.stringify({ t: 'error', msg: err }));
-    s.misses = 0; s.away = false;
+    s.misses = 0; s.away = false; s.left = false;
     await this.commit();
   }
 
@@ -109,6 +111,8 @@ export class Table extends DurableObject {
     if (!s || s.bot) return;
     if (this.ctx.getWebSockets(String(seat)).some(w => w !== ws && w.readyState === 1)) return;
     s.online = false; s.droppedAt = Date.now();
+    // az üres szoba ideje a kiesés pillanatától számít (a gép már nem lép azonnal, így ritkábban van ébresztő)
+    if (!r.seats.some(x => x && !x.bot && x.online)) r.emptySince ??= s.droppedAt;
     await this.commit();
   }
 
@@ -305,7 +309,7 @@ export class Table extends DurableObject {
   // Az állapot egy játékos szemszögéből: ő a 0. ülés (mint az egyjátékos módban), a mások lapjai rejtve (null).
   view(me) {
     const r = this.room, rot = p => (p < 0 ? p : (p - me + 3) % 3), perm = a => [0, 1, 2].map(i => a[(i + me) % 3]);
-    const players = perm(r.seats.map((s, i) => s && { name: s.name, bot: !!s.bot, online: !!(s.bot || s.online), away: !!s.away, score: r.score[i] }));
+    const players = perm(r.seats.map((s, i) => s && { name: s.name, bot: !!s.bot, online: !!(s.bot || s.online), away: !!s.away, left: !!s.left, score: r.score[i] }));
     let G = null;
     if (r.G) {
       G = structuredClone(r.G);

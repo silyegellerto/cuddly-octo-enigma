@@ -38,7 +38,7 @@ A `state` üzenet:
 | `code` | A szoba kódja. |
 | `status` | `lobby` (várakozás) vagy `playing`. |
 | `host` | A házigazda ülése a te szemszögedből (0 = te vagy). Csak ő küldhet `start`-ot. |
-| `players[3]` | A **0. mindig te vagy**, utána az óramutató szerint a többiek, mint az egyjátékos módban. Elemei: `{name, bot, online, away, score}`, üres hely: `null`. `away`: többször lejárt az ideje, a gép lép helyette, amíg újra nem lép. |
+| `players[3]` | A **0. mindig te vagy**, utána az óramutató szerint a többiek, mint az egyjátékos módban. Elemei: `{name, bot, online, away, left, score}`, üres hely: `null`. `away`: többször lejárt az ideje, a gép lép helyette, amíg újra nem lép. `left`: a Kilépés gombbal ment el, a gép azonnal játszik helyette. `online: false` (megszakadt kapcsolat) önmagában nem gépi lépés: a gép csak a lépési idő végén lép helyette. |
 | `deals` | Lejátszott leosztások száma. |
 | `ready[3]` | Leosztás végén ki nyomott már „Következő osztás”-t. |
 | `deadline` | A soron lévő játékos határideje (ms, Unix-idő), ha ember lép; különben `null`. |
@@ -74,6 +74,7 @@ Minden üzenet JSON, legfeljebb 1 KB; 10 másodperc alatt legfeljebb 20 üzenet 
 | `play` | `id` (a lap azonosítója) | Ha te jössz, és a lap benne van a `legalCards(0)`-ban. |
 | `claim` | | Felmutatás ütés elején (az utolsó ütés előtt). A játékos maga dönt, a nézetben nincs `claimAt`. A szerver ekkor számol (`claimCheck`): ha a felmutató fél (felvevő, betlis felvevő, illetve a két védő; betliben csak a felvevő mutathat fel) biztosan nyer, a leosztás a szokásos módon véget ér; ha nem, `badClaim`: felvevőnél bukott, védőnél nyert játék (`G.result.badClaim`). |
 | `next` | | Leosztás végén: kész vagy a következőre. |
+| `leave` | | Kilépés gomb: innentől a gép azonnal játszik helyetted (a kliens utána bontja a kapcsolatot). Visszatéréskor (tokennel) megszűnik. |
 | `emote` | `id` (kisbetű, szám, kötőjel, legfeljebb 24 jel) | Bármikor (váróban, játék közben, eredménynél). Lásd lent. |
 
 ### Emótok
@@ -94,7 +95,7 @@ Minden üzenet JSON, legfeljebb 1 KB; 10 másodperc alatt legfeljebb 20 üzenet 
 |---|---|---|
 | Licit, talon, adu, kontra | 45 s | A gép lép helyetted, te a helyeden maradsz. |
 | Lap kijátszása | 30 s | Ugyanígy. 3 egymás utáni lejárat után `away`: a gép lép, amíg újra nem lépsz. |
-| Kiesés (bontott kapcsolat) | 3 perc | Addig a gép lép helyetted 2,5 s-onként; ha nem jössz vissza, a helyeden végleg a gép marad. |
+| Kiesés (bontott kapcsolat, pl. telefonon másik alkalmazás) | 3 perc | Addig a lépési idő végén lép helyetted a gép (3 lejárat után `away`, onnan 2,5 s-onként); ha nem jössz vissza, a helyeden végleg a gép marad. Kilépés gombnál (`leave`) a gép azonnal lép. |
 | Leosztás vége | 30 s | Ha nem mindenki nyomott `next`-et, magától jön a következő osztás. |
 | Emót | 3 s, 30 s alatt 5 | Ülésenként; a többit a szerver eldobja. |
 | Üres szoba (nincs bent ember) | 3 perc | A szoba bezárul, a kód megszűnik. |

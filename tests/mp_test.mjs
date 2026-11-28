@@ -48,9 +48,9 @@ class Player {
       ok('a saját lap látszik', G.hands[0].every(x => x && Number.isInteger(x.id)));
       if (G.talonBy !== 0) ok('a talon rejtve, ha nem te tetted le', G.talon.every(x => x === null) && !('talonPts' in G));
       // ütés elején a gép felmutathat (gépi felvevő vagy két gépi védő): ilyenkor a szerver nem ad határidőt, hanem a felmutatásra vár
-      const bc = q => m.players[q].bot || !m.players[q].online || m.players[q].away;
+      const bc = q => m.players[q].bot || m.players[q].left || m.players[q].away;
       const botClaim = G.phase === 'play' && !G.trick.length && (bc(G.decl) || [0, 1, 2].filter(q => q !== G.decl).every(bc));
-      if (G.turn === 0 && ['bid', 'trump', 'kontra', 'play'].includes(G.phase) && !(G.phase === 'play' && G.trick.length === 3) && m.players[0].online && !m.players[0].away && !botClaim)
+      if (G.turn === 0 && ['bid', 'trump', 'kontra', 'play'].includes(G.phase) && !(G.phase === 'play' && G.trick.length === 3) && m.players[0].online && !m.players[0].away && !m.players[0].left && !botClaim)
         ok('lépési határidő a soron lévő játékosnak', typeof m.deadline === 'number', JSON.stringify([G.phase, G.decl, G.trickNo, G.trick.length, m.players.map(x => x.bot)]));
     }
   }
@@ -140,6 +140,10 @@ try {
   B.ws.close();
   await until(() => A.state.players.some(p => p && p.name === 'Béla' && !p.online), 3000, 'kiesés látszik');
   ok('a kiesés a többieknél látszik', true);
+  // megszakadt kapcsolatnál (pl. másik alkalmazás) a gép nem lép azonnal: Béla körében is fut a lépési idő
+  const bSeat = () => A.state.players.findIndex(p => p && p.name === 'Béla');
+  await until(() => { const G = A.state.G; return G && G.turn === bSeat() && ['bid', 'kontra', 'play'].includes(G.phase) && !(G.phase === 'play' && !G.trick.length); }, 60e3, 'Béla köre kiesve');
+  ok('kiesett játékosnak is jár a lépési idő (a gép csak a végén lép)', typeof A.state.deadline === 'number' || A.state.players[bSeat()].away, JSON.stringify([A.state.deadline, A.state.players[bSeat()]]));
   const deals0 = A.state.deals;
   await until(() => A.state.deals > deals0 || (A.state.G && A.state.G.phase === 'play' && A.state.G.trickNo >= 2), 60e3, 'a játék megy tovább Béla nélkül');
   ok('Béla nélkül is megy a játék (gép lép helyette)', true);
@@ -177,6 +181,12 @@ try {
   await until(() => H.state.deals >= 2, 120e3, 'két leosztás botokkal');
   ok('botokkal is végigmegy a játék', H.state.players.reduce((s, p) => s + p.score, 0) === 0);
   const gTok = G2.token;
+  // Kilépés gomb: a gép azonnal lép helyette (nincs lépési idő)
+  G2.auto = false; G2.send({ t: 'leave' });
+  await until(() => H.state.players.some(p => p.name === 'Gabi' && p.left), 3000, 'kilépés látszik');
+  const gSeat = H.state.players.findIndex(p => p.name === 'Gabi');
+  await until(() => { const G = H.state.G; return G && G.turn === gSeat && ['bid', 'kontra', 'play'].includes(G.phase) && !(G.phase === 'play' && !G.trick.length); }, 60e3, 'Gabi köre kilépve');
+  ok('kilépés után a gép azonnal lép (nincs lépési idő)', H.state.deadline == null, String(H.state.deadline));
   G2.ws.close();
   await until(() => H.state.players.some(p => p.name === 'Gabi (gép)' && p.bot), 30e3, 'Gabi helyére gép ül');
   ok('3 perc (itt 12 s) után a kiesett helyére végleg gép ül', true);

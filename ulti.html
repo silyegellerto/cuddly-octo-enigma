@@ -2636,7 +2636,7 @@ function oppHTML(p){
     // az ultiban csak az értéket mondják be (20 vagy 40), a színt nem
     if(G.marr[p].length)parts.push('Bemondás: '+G.marr[p].map(m=>m.v).join('+'));
   }
-  if(MP&&MP.state){const pl=MP.state.players[p];if(pl&&!pl.bot&&(pl.away||!pl.online))parts.push(pl.online?'a gép lép helyette':'kiesett, a gép lép helyette');}
+  if(MP&&MP.state){const t=mpSeatNote(MP.state.players[p]);if(t)parts.push(t);}
   const HH=shownHand(p),n=HH.length;
   const showOpen=(G.revealed&&p===G.decl)||G.phase==='result';
   const ok=(G.phase==='result'?'res':'rev')+':'+dealNo()+':'+G.dealer+':'+p;
@@ -3374,9 +3374,12 @@ function mpFail(msg,gone){
   mpEnd();
   mpOpenMenu(msg,code);
 }
+// a játékos állapota a többiek szemével: kilépett (gép azonnal), többször lejárt (gép), megszakadt (gép csak a lépési idő végén)
+const mpSeatNote=pl=>!pl||pl.bot?'':pl.left?'kilépett, a gép játszik helyette':pl.away?(pl.online?'a gép lép helyette':'kiesett, a gép lép helyette'):!pl.online?'kiesett, az idő végén a gép lép':'';
 function mpLeave(){
   const m=MP;if(!m)return;
-  m.closing=true;try{m.ws&&m.ws.close(1000);}catch(e){}
+  // Kilépés gomb: szólunk a szervernek, hogy innentől azonnal a gép játsszon helyettünk (megszakadt kapcsolatnál csak az idő végén)
+  m.closing=true;try{if(m.ws&&m.ws.readyState===1)m.ws.send(JSON.stringify({t:'leave'}));m.ws&&m.ws.close(1000);}catch(e){}
   mpSave(o=>{if(o.last===m.code)o.last=null;});
   mpEnd();
 }
@@ -3418,7 +3421,7 @@ function mpLobby(){
   const m=MP,x=m.state;hideTip();
   if(!x){$('mpSheet').dataset.v='';$('mpSheet').innerHTML=`<h2>Játék barátokkal</h2><p class="status">${m.reconnecting?'Újracsatlakozás…':'Kapcsolódás…'}</p><div class="row"><button class="btn ghost" id="mpBack">Mégse</button></div>`;$('mpOv').classList.add('show');$('mpBack').onclick=mpLeave;return;}
   const mu=emoMuted();
-  const seats=[0,1,2].map(i=>{const pl=x.players[i];return pl?`<li data-seat="${i}"><span><b>${i===0?'Te':pl.name}</b>${i===0?` (${pl.name})`:''}</span><span class="small">${pl.bot?'':!pl.online?'kiesett, a gép lép helyette':pl.away?'a gép lép helyette':x.host===i?'házigazda':'bent van'}${i>0&&!pl.bot?`<button class="mute" data-mute="${i}" aria-pressed="${mu.has(i)}" aria-label="${pl.name} emótjainak némítása">${mu.has(i)?'Némítva':'Némítás'}</button>`:''}</span></li>`:'<li class="empty"><span>Üres hely</span><span class="small">indításkor gép ül ide</span></li>';}).join('');
+  const seats=[0,1,2].map(i=>{const pl=x.players[i];return pl?`<li data-seat="${i}"><span><b>${i===0?'Te':pl.name}</b>${i===0?` (${pl.name})`:''}</span><span class="small">${pl.bot?'':mpSeatNote(pl)||(x.host===i?'házigazda':'bent van')}${i>0&&!pl.bot?`<button class="mute" data-mute="${i}" aria-pressed="${mu.has(i)}" aria-label="${pl.name} emótjainak némítása">${mu.has(i)?'Némítva':'Némítás'}</button>`:''}</span></li>`:'<li class="empty"><span>Üres hely</span><span class="small">indításkor gép ül ide</span></li>';}).join('');
   const lob=x.status==='lobby';$('mpSheet').dataset.v=lob?'':'room';
   $('mpSheet').innerHTML=`<div class="mhead"><h2>Szoba</h2></div>
     <p class="small" style="text-align:center;margin:0">A szoba kódja</p><p class="mpcode">${x.code}</p>
