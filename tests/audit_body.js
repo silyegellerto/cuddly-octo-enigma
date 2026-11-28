@@ -20,7 +20,7 @@ for(let g=0;g<60;g++){
   const a=botBidAction(p);
   if(a.type==='bid'){const c=CONTRACTS[a.ci],h=[...G.hands[p]];
     ok('licit érvényes (validateBid)',!validateBid(p,a.disc,a.ci,a.suit));
-    if(c.kind!=='betli'){let tMin=2;for(let i=0;i<h.length;i++)for(let j=i+1;j<h.length;j++)tMin=Math.min(tMin,discardTier([h[i],h[j]],h,a.ci,a.suit));
+    if(c.kind!=='betli'){let tMin=TIER_MAX;for(let i=0;i<h.length;i++)for(let j=i+1;j<h.length;j++)tMin=Math.min(tMin,discardTier([h[i],h[j]],h,a.ci,a.suit));
       ok('talon: a legkisebb elérhető fokozatból (nincs ász/X/VII/K/F/piros alacsony licitnél, nincs adu adus játékban)',discardTier(a.disc,h,a.ci,a.suit)===tMin,a.disc.map(cardName).join('+'));}
     // a Tipp ugyanazt mondja, mint a bot
     if(p===G.turn){const d=bidDecision(h,minBidIndex()),t=d.plan?{ci:d.plan.H,suit:d.plan.suit,disc:d.plan.disc}:d.b;ok('Tipp = bot licitdöntés (gyűjtéssel együtt)',t.ci===a.ci&&t.suit===a.suit&&sameD(t.disc,a.disc));}
@@ -78,6 +78,10 @@ newDeal(0);
 ok('bukott ulti: kontra nélkül 2x, kontrával 3x, rekontrával 5x',defGain({k:'ulti',v:4,win:false,delta:-8},1)===8&&defGain({k:'ulti',v:4,win:false,delta:-8},2)===12&&defGain({k:'ulti',v:4,win:false,delta:-8},4)===20);
 {newDeal(1);const ci=CONTRACTS.findIndex(c=>c.name==='Piros parti');const p=G.turn;doBid(p,G.hands[p].slice(0,2),ci,0);G.decl=p;G.ci=ci;G.kmult=[{},{},{}];
  const before=G.result;doConcede(p);const ch=G.result.change;ok('bedobás: piros parti védőnként 4',ch.filter((x,i)=>i!==p).every(x=>x===4));}
+// egyszerű partinál a figura (VII/K/F) előbb kerül a talonba, mint a piros lap (2026.11.28-i bejelentés)
+{const h=[C(3,5),C(2,6),C(0,3),C(1,7),C(1,4),C(0,4),C(2,3),C(1,3),C(0,1),C(2,5),C(0,2),C(3,6)],ci=CONTRACTS.findIndex(c=>c.name==='Parti');
+ let tMin=TIER_MAX;const pairs=[];for(let i=0;i<h.length;i++)for(let j=i+1;j<h.length;j++){const t=discardTier([h[i],h[j]],h,ci,2);if(t<tMin){tMin=t;pairs.length=0;}if(t===tMin)pairs.push([h[i],h[j]]);}
+ ok('partinál piros lap csak akkor a talonba, ha figurával sem megy',pairs.length&&pairs.every(d=>d.every(x=>x.s!==0)),pairs.map(d=>d.map(cardName).join('+')).join(' | '));}
 // betli védekezés: a társ üres színéből is a fogó (kis) lapot hívja, ne a magasat (2026.11.27-i leosztás)
 {newDeal(0);const ci=CONTRACTS.findIndex(c=>c.name==='Piros betli');
  G.hands=[[C(0,4),C(0,3),C(0,2),C(1,2),C(1,6),C(1,4),C(1,3),C(2,6),C(2,5)],
